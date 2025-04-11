@@ -15,6 +15,23 @@
             [swa.platform.utils.interface.resilience :as u-res]
             [swa.platform.utils.interface.str :as u-str]))
 
+;; TODO: Do a complete rewrite of the `telegrambot-lib` under the SWA Platform.
+;;       - ideally, should (semi)auto-update upon the Telegram Bot API updates
+;;       - hence, it makes sense to have a web-scraping web app backing it up,
+;;         figuring out changes in the Bot API, and applying these changes to
+;;         to existing "static" library code
+;;       - therefore, it also makes sense to completely get rid of any "moving
+;;         parts" of the original library (building a request body in a manual
+;;         way, making HTTP requests, etc.) which are notoriously laborious to
+;;         maintain
+;;       - drop all `async?` processing logic as a part of the previous point!
+;;       - uniform the Bot API method contract — drop unnecessary fancy arity,
+;;         add configurable auto-transformations of cases (mainly for dashes),
+;;         use Malli schemas for validation/coercion/etc., postpone making the
+;;         actual request (e.g. with `martian` serving as an adaptor layer)
+;;       - serve all "moving parts" (making HTTP requests, polling updates) as
+;;         separate sub-libraries that can be plugged-in by an end user
+
 ;; shared context
 
 ;; TODO: Make the 'clj-http' connection managers used by 'telegrambot-lib' configurable.
@@ -123,7 +140,7 @@
 
 ;; making the Telegram Bot API calls
 
-;; TODO: Get rid of this var and related response service logic.
+;; TODO: Get rid of the `max-responses-per-second` var and related response service logic.
 (def max-responses-per-second 1)
 
 ;; NB: The Bots FAQ on the official Telegram website lists the following limits
@@ -203,7 +220,7 @@
 
 ;;
 
-;; TODO: Get rid of this hack and the `best-guess-chat-id` fn.
+;; TODO: Get rid of the `tg-bot-api:chat-id-fns` hack and the `best-guess-chat-id` fn.
 (def ^:private tg-bot-api:chat-id-fns
   #{tg-bot-api/send-message
     tg-bot-api/edit-message-text
@@ -305,8 +322,8 @@
       ;; NB: An `error` is processed by the `handle-response-sync`.
       {:error client-code-ex})))
 
-;; TODO: This design won't play well with the `:async?` option being `true`.
-;;       Drop `:async?` in favor of v-threads OR push limiting inside a lib.
+;; TODO: Drop `:async?` in favor of v-threads OR push limiting inside a lib.
+;;       This design won't play well with the `:async?` option being `true`.
 (defn- with-rate-limiter:call-bot-api-method!
   [{:keys [bot-id in-test?] :as tg-bot-api-client} method-fn method-args]
   (if in-test?
