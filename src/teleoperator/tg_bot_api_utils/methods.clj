@@ -106,8 +106,8 @@
            (true? persistent) (assoc :is_persistent true)
            (true? resize) (assoc :resize_keyboard true)
            (true? one-time) (assoc :one_time_keyboard true)
-           (and (some? placeholder)
-                (< 1 (count placeholder))) (assoc :input_field_placeholder (u-str/truncate placeholder 64))
+           (u-str/not-empty? placeholder)
+           (assoc :input_field_placeholder (u-str/truncate placeholder 64))
            (true? selective) (assoc :selective true))))
 
 ; KeyboardButton
@@ -253,8 +253,8 @@
    default-force-reply)
   ([{:keys [placeholder selective] :as _options}]
    (cond-> default-force-reply
-           (and (some? placeholder)
-                (< 1 (count placeholder))) (assoc :input_field_placeholder (u-str/truncate placeholder 64))
+           (u-str/not-empty? placeholder)
+           (assoc :input_field_placeholder (u-str/truncate placeholder 64))
            (true? selective) (assoc :selective true))))
 
 ; Reply Markups
