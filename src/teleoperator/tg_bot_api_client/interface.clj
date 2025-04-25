@@ -49,13 +49,94 @@
   [tg-bot-api-client & args]
   (impl/call-bot-api! tg-bot-api-client args))
 
-(def get-result impl/get-result)
-(def assert-result impl/assert-result)
+;;
 
-(def log-failure-reason impl/log-failure-reason)
-(def log-failure-reason-and-throw impl/log-failure-reason-and-throw)
-(def throw-for-failure impl/throw-for-failure)
+(defn get-result
+  "Returns a successful response, otherwise a given `default-val` or `nil`.
+   To be used as an `:on-success` callback fn."
+  ([tg-resp]
+   (impl/get-result tg-resp))
+  ([tg-resp default-val]
+   (impl/get-result tg-resp default-val)))
 
-(def log-error impl/log-error)
-(def log-error-and-rethrow impl/log-error-and-rethrow)
-(def rethrow-error impl/rethrow-error)
+(defn assert-result
+  "Checks that a response is successful and equals to the `expected` value.
+   To be used as an `:on-success` callback fn."
+  [expected tg-resp]
+  (impl/assert-result expected tg-resp))
+
+;;
+
+(defn get-error
+  "For an unsuccessful Telegram Bot API request, returns the response error.
+   To be used as an `:on-failure` callback fn."
+  [method-fn method-args failed-tg-resp]
+  (impl/get-error method-fn method-args failed-tg-resp))
+
+(defn log-failure-reason
+  "For an unsuccessful Telegram Bot API request, logs the response error.
+   To be used as an `:on-failure` callback fn."
+  ([method-fn method-args failed-tg-resp]
+   (impl/log-failure-reason
+     method-fn method-args failed-tg-resp))
+  ([base-msg method-fn method-args failed-tg-resp]
+   (impl/log-failure-reason
+     base-msg method-fn method-args failed-tg-resp))
+  ([log-level base-msg method-fn method-args failed-tg-resp]
+   (impl/log-failure-reason
+     log-level base-msg method-fn method-args failed-tg-resp)))
+
+(defn log-failure-reason-and-throw
+  "For an unsuccessful Telegram Bot API request, logs the response error and
+   then throws an exception with the relevant data (`:response`, `:method-fn`
+   and `:method-args`).
+   To be used as an `:on-failure` callback fn."
+  ([method-fn method-args failed-tg-resp]
+   (impl/log-failure-reason-and-throw
+     method-fn method-args failed-tg-resp))
+  ([base-msg method-fn method-args failed-tg-resp]
+   (impl/log-failure-reason-and-throw
+     base-msg method-fn method-args failed-tg-resp))
+  ([log-level base-msg method-fn method-args failed-tg-resp]
+   (impl/log-failure-reason-and-throw
+     log-level base-msg method-fn method-args failed-tg-resp)))
+
+(defn throw-for-failure
+  "For an unsuccessful Telegram Bot API request, throws an exception with the
+   relevant data (`:response`, `:method-fn` and `:method-args`), w/o logging.
+   To be used as an `:on-failure` callback fn."
+  ([method-fn method-args failed-tg-resp]
+   (impl/throw-for-failure method-fn method-args failed-tg-resp))
+  ([base-msg method-fn method-args failed-tg-resp]
+   (impl/throw-for-failure base-msg method-fn method-args failed-tg-resp)))
+
+;;
+
+(defn log-error
+  "For in case there was an error while making a Telegram Bot API request,
+   logs the corresponding exception `ex`.
+   To be used as an `:on-error` callback fn."
+  ([method-fn method-args ex]
+   (impl/log-error method-fn method-args ex))
+  ([base-msg method-fn method-args ex]
+   (impl/log-error base-msg method-fn method-args ex)))
+
+(defn log-error-and-rethrow
+  "For in case there was an error while making a Telegram Bot API request,
+   logs the corresponding exception `ex`, wraps it in a new exception that
+   has the relevant data (`:method-fn` and `:method-args`) and `ex` as its
+   cause, and then throws the latter one.
+   To be used as an `:on-error` callback fn."
+  ([method-fn method-args ex]
+   (impl/log-error-and-rethrow method-fn method-args ex))
+  ([base-msg method-fn method-args ex]
+   (impl/log-error-and-rethrow base-msg method-fn method-args ex)))
+
+(defn rethrow-error
+  "For in case there was an error while making a Telegram Bot API request,
+   wraps the corresponding exception `ex` in a new exception that has the
+   relevant data (`:method-fn` and `:method-args`) and `ex` as its cause,
+   and throws the latter one w/o logging.
+   To be used as an `:on-error` callback fn."
+  [method-fn method-args ex]
+  (impl/rethrow-error method-fn method-args ex))

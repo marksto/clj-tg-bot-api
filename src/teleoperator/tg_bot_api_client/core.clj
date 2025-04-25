@@ -60,7 +60,12 @@
     tg-resp-result))
 
 
-;; operations on response 'description' & 'error'
+;; operations on response 'error'
+
+(defn get-error
+  [method-fn method-args failed-tg-resp]
+  (let [resp-error (tg-bot-api-utils/get-response-error failed-tg-resp)]
+    (assoc resp-error :method-fn method-fn :method-args method-args)))
 
 (def failure-msg "Unsuccessful Telegram Bot API request")
 
@@ -73,7 +78,8 @@
                        method-fn method-args failed-tg-resp))
   ([log-level base-msg method-fn method-args failed-tg-resp]
    (let [logged-msg (u-fns/apply-if-fn base-msg)
-         error-text (->> (tg-bot-api-utils/get-response-error failed-tg-resp)
+         resp-error (tg-bot-api-utils/get-response-error failed-tg-resp)
+         error-text (->> (seq resp-error)
                          (map (fn [[k v]] (str (name k) "=\"" v "\"")))
                          (u-str/join* ", "))
          method-name (u-fns/fn-name method-fn true)]
@@ -81,6 +87,7 @@
            :let   [logged-msg' (if (seq error-text)
                                  (format "%s: %s" logged-msg error-text)
                                  logged-msg)]
+           :data  {:tg-error resp-error}
            :msg   (format "%s (method='%s' args=%s)" logged-msg' method-name method-args)}))))
 
 (defn throw-for-failure
@@ -308,11 +315,10 @@
 
 (defn- call-bot-api-method!
   [tg-bot-api-client method-fn method-args]
-  ;; NB: The `telegrambot-lib.http/request` returns a map with
-  ;;     an `:error` key in case when request was unsuccessful
-  ;;     (status codes other than 200-207, 300-303, or 307) or
-  ;;     in any of other exceptional situations (e.g. when the
-  ;;     lib is unable to retrieve the response body).
+  ;; NB: The `telegrambot-lib.http/request` returns a map with an `:error` key
+  ;;     in case if request was unsuccessful (status codes other than 200-207,
+  ;;     300-303, or 307) or in any of other exceptional situations (e.g. when
+  ;;     the lib is unable to retrieve the response body).
   (try
     (if (seq method-args)
       (apply method-fn tg-bot-api-client method-args)
