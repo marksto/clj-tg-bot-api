@@ -2,8 +2,7 @@
   "Provides a convenient wrapper around the 'telegrambot-lib' client library fns
    adding handy callback fns (operations) that handle Telegram Bot API responses
    and any errors (exceptions)."
-  (:require [clojure.core.async :refer [go <!]]
-            [clj-http.conn-mgr :as conn]
+  (:require [clj-http.conn-mgr :as conn]
             [taoensso.truss :refer [have!]]
 
             [telegrambot-lib.core :as tg-bot-api]
@@ -24,7 +23,8 @@
 ;;         parts" of the original library (building a request body in a manual
 ;;         way, making HTTP requests, etc.) which are notoriously laborious to
 ;;         maintain
-;;       - drop all `async?` processing logic as a part of the previous point!
+;;       - drop all `async?` processing logic as a part of the previous point
+;;         and push rate limiting inside the lib
 ;;       - uniform the Bot API method contract — drop unnecessary fancy arity,
 ;;         add configurable auto-transformations of cases (mainly for dashes),
 ;;         use Malli schemas for validation/coercion/etc., postpone making the
@@ -328,8 +328,6 @@
       ;; NB: An `error` is processed by the `handle-response-sync`.
       {:error client-code-ex})))
 
-;; TODO: Drop `:async?` in favor of v-threads OR push limiting inside a lib.
-;;       This design won't play well with the `:async?` option being `true`.
 (defn- with-rate-limiter:call-bot-api-method!
   [{:keys [bot-id in-test?] :as tg-bot-api-client} method-fn method-args]
   (if in-test?
@@ -347,7 +345,7 @@
   (when (and (some? callback-fn) (not= :ignore callback-fn))
     (callback-fn method-fn method-args arg-val)))
 
-(defn- handle-response-sync
+(defn- handle-response
   [method-fn method-args api-resp
    {:keys [on-success on-failure on-error] :as _callbacks}]
   (have! some? api-resp)
@@ -366,11 +364,6 @@
     :else
     (throw (IllegalStateException. "Malformed Telegram Bot API response"))))
 
-(defn- handle-response-async
-  [method-fn method-args api-resp-chan callbacks]
-  (have! some? api-resp-chan)
-  (go (handle-response-sync method-fn method-args (<! api-resp-chan) callbacks)))
-
 ;;
 
 ;; TODO: Add an auto-retry strategy for Telegram Bot API response 'parameters' with 'migrate_to_chat_id'.
@@ -378,24 +371,20 @@
 
 (defn- make-request!
   [tg-bot-api-client call-opts method-fn method-args]
-  (let [async? (:async? call-opts false)
-        callbacks {:on-success (or (:on-success call-opts)
+  (let [callbacks {:on-success (or (:on-success call-opts)
                                    get-result)
                    :on-failure (or (:on-failure call-opts)
                                    log-failure-reason-and-throw)
                    :on-error   (or (:on-error call-opts)
                                    log-error-and-rethrow)}
         api-resp (with-rate-limiter:call-bot-api-method!
-                   (assoc tg-bot-api-client :async async?)
-                   method-fn method-args)]
+                   tg-bot-api-client method-fn method-args)]
     (event ::make-request!
            {:level :debug
             :data  {:api-resp api-resp}
             :msg   ["Telegram Bot API returned:" api-resp]})
     (when (some? api-resp)
-      (if async?
-        (handle-response-async method-fn method-args api-resp callbacks)
-        (handle-response-sync method-fn method-args api-resp callbacks)))))
+      (handle-response method-fn method-args api-resp callbacks))))
 
 (defn call-bot-api!
   [tg-bot-api-client args]

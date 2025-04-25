@@ -6,9 +6,9 @@
 (defn call-bot-api!
   "Makes a request to the Telegram Bot API on behalf of the `tg-bot-api-client`.
 
-   By default, this function makes a request synchronously, i.e. it waits for a
-   Telegram's response and only then returns, but this behaviour can be changed
-   by providing `options`.
+   It makes a request in a synchronous blocking way, therefore it is up to the
+   caller to take care of making the call async/non-blocking, for instance, by
+   wrapping it into a virtual thread.
 
    A `method-fn` is a fn of the `tg-bot-api-client` and, possibly, other params
    needed to make an actual HTTP request to the Telegram Bot API method via the
@@ -17,10 +17,6 @@
    the HTTP client) are re-thrown as is.
 
    Supported `call-opts` are:
-   - `:async?`
-     If `true`, makes the whole process asynchronous — will return immediately
-     with a one-off channel which will receive the result of some callback fn;
-     by default, is `false` (synchronous request processing)
    - `:on-success`
      A unary callback fn of response that handles a Telegram Bot API response
      body for a successful request, i.e. one containing the `:ok true` entry;
@@ -39,8 +35,7 @@
      logs and rethrows an exception by default; supports `:ignore` value
 
    In case of a successful request, if not overridden, returns the `on-success`
-   callback result: either wrapped in a channel (for asynchronous requests) or
-   as a plain value (synchronous).
+   callback result.
 
    In other cases, when `on-failure`/`on-error` was called, if not overridden,
    the result of this fn is undefined (because of an exception being thrown)."
