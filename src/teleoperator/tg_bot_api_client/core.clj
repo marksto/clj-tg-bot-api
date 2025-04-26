@@ -145,9 +145,6 @@
 
 ;; making the Telegram Bot API calls
 
-;; TODO: Get rid of the `max-responses-per-second` var and related response service logic.
-(def max-responses-per-second 1)
-
 ;; NB: The Bots FAQ on the official Telegram website lists the following limits
 ;;     on server requests.
 ;;
