@@ -35,10 +35,8 @@
 ;; shared context
 
 ;; TODO: Make the 'clj-http' connection managers used by 'telegrambot-lib' configurable.
-(alter-var-root #'conn/*connection-manager*
-                (constantly (conn/make-reusable-conn-manager {})))
-(alter-var-root #'conn/*async-connection-manager*
-                (constantly (conn/make-reusable-async-conn-manager {})))
+(u-lang/set-var-root! conn/*connection-manager* (conn/make-reusable-conn-manager {}))
+(u-lang/set-var-root! conn/*async-connection-manager* (conn/make-reusable-async-conn-manager {}))
 
 
 ;; operations on response 'result'
