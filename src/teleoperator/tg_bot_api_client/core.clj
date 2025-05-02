@@ -9,9 +9,11 @@
             [teleoperator.tg-bot-api-utils.interface :as tg-bot-api-utils]
 
             [swa.platform.o11y.interface.log :refer [log event error]]
+            [swa.platform.utils.interface.ex :as u-ex]
             [swa.platform.utils.interface.fns :as u-fns]
             [swa.platform.utils.interface.lang :as u-lang]
             [swa.platform.utils.interface.resilience :as u-res]
+            [swa.platform.utils.interface.runtime :as u-runtime]
             [swa.platform.utils.interface.str :as u-str]))
 
 ;; TODO: Do a complete rewrite of the `telegrambot-lib` under the SWA Platform.
@@ -137,9 +139,11 @@
 (defn log-error-and-rethrow
   ([method-fn method-args ex]
    (log-error method-fn method-args ex)
+   (when-not (u-runtime/in-repl?) (u-ex/clear-stack-trace ex))
    (rethrow-error method-fn method-args ex))
   ([base-msg method-fn method-args ex]
    (log-error base-msg method-fn method-args ex)
+   (when-not (u-runtime/in-repl?) (u-ex/clear-stack-trace ex))
    (rethrow-error method-fn method-args ex)))
 
 

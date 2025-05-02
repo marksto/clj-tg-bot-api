@@ -119,7 +119,10 @@
    logs the corresponding exception `ex`, wraps it in a new exception that
    has the relevant data (`:method-fn` and `:method-args`) and `ex` as its
    cause, and then throws the latter one.
-   To be used as an `:on-error` callback fn."
+   To be used as an `:on-error` callback fn.
+
+   NB: If called not from a REPL, clears the stack trace of the exception
+       being rethrown."
   ([method-fn method-args ex]
    (impl/log-error-and-rethrow method-fn method-args ex))
   ([base-msg method-fn method-args ex]
