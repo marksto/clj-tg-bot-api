@@ -1,0 +1,4 @@
+;; Run with "bb -f bb/update_spec.clj" or "./bb/update_spec.clj"
+{:paths ["bb" "resources"]
+ :deps  {;; The only lib that is not built-in into bb
+         org.clj-commons/hickory {:mvn/version "0.7.7"}}}

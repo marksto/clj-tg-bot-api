@@ -1,0 +1,41 @@
+**/classes
+**/log
+**/out
+**/target
+**/tmp
+**/.artifacts
+**/.cpcache
+**/.DS_Store
+**/.env
+**/.envrc
+
+# Java
+*.jar
+*.class
+
+# Emacs / Cider
+.make_kondo_classpath
+.make_kondo_prep
+.projectile
+
+# VS Code / Calva
+.calva/output-window/output.calva-repl
+
+# IDEA / Cursive
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/shelf
+.idea/**/statistic.xml
+.idea/dictionaries/**
+.idea/libraries/**
+.idea/replstate.xml
+*.iml
+*.iws
+*.ipr
+
+# Clojure dev tools
+.nrepl-port
+**/.lsp/.cache
+**/.clj-kondo/.cache
+.eastwood
