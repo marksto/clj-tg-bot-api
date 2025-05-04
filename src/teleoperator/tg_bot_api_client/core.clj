@@ -3,18 +3,17 @@
    adding handy callback fns (operations) that handle Telegram Bot API responses
    and any errors (exceptions)."
   (:require [clj-http.conn-mgr :as conn]
-            [taoensso.truss :refer [have!]]
+            [clojure.string :as str]
+            [clojure.tools.logging :as log]
 
             [telegrambot-lib.core :as tg-bot-api]
             [teleoperator.tg-bot-api-utils.interface :as tg-bot-api-utils]
 
-            [swa.platform.o11y.interface.log :refer [log event error]]
             [swa.platform.utils.interface.ex :as u-ex]
             [swa.platform.utils.interface.fns :as u-fns]
             [swa.platform.utils.interface.lang :as u-lang]
             [swa.platform.utils.interface.resilience :as u-res]
-            [swa.platform.utils.interface.runtime :as u-runtime]
-            [swa.platform.utils.interface.str :as u-str]))
+            [swa.platform.utils.interface.runtime :as u-runtime]))
 
 ;; TODO: Do a complete rewrite of the `telegrambot-lib` under the SWA Platform.
 ;;       - ideally, should (semi)auto-update upon the Telegram Bot API updates
@@ -69,6 +68,9 @@
 
 (def failure-msg "Unsuccessful Telegram Bot API request")
 
+(defn- format-msg [base-msg method-name method-args]
+  (format "%s (method='%s' args=%s)" base-msg method-name method-args))
+
 (defn log-failure-reason
   ([method-fn method-args failed-tg-resp]
    (log-failure-reason :error failure-msg
@@ -77,18 +79,15 @@
    (log-failure-reason :error base-msg
                        method-fn method-args failed-tg-resp))
   ([log-level base-msg method-fn method-args failed-tg-resp]
-   (let [logged-msg (u-fns/apply-if-fn base-msg)
-         resp-error (tg-bot-api-utils/get-response-error failed-tg-resp)
-         error-text (->> (seq resp-error)
-                         (map (fn [[k v]] (str (name k) "=\"" v "\"")))
-                         (u-str/join* ", "))
+   (let [resp-error (tg-bot-api-utils/get-response-error failed-tg-resp)
+         error-text (some->> (seq resp-error)
+                             (map (fn [[k v]] (str (name k) "=\"" v "\"")))
+                             (not-empty)
+                             (str/join ", "))
+         base-msg' (cond-> (u-fns/apply-if-fn base-msg)
+                           (seq error-text) (str ": " error-text))
          method-name (u-fns/fn-name method-fn true)]
-     (log {:level log-level
-           :let   [logged-msg' (if (seq error-text)
-                                 (format "%s: %s" logged-msg error-text)
-                                 logged-msg)]
-           :data  {:tg-error resp-error}
-           :msg   (format "%s (method='%s' args=%s)" logged-msg' method-name method-args)}))))
+     (log/log log-level (format-msg base-msg' method-name method-args)))))
 
 (defn throw-for-failure
   ([method-fn method-args failed-tg-resp]
@@ -123,10 +122,9 @@
   ([method-fn method-args ex]
    (log-error error-msg method-fn method-args ex))
   ([base-msg method-fn method-args ex]
-   (let [logged-msg (u-fns/apply-if-fn base-msg)
+   (let [base-msg' (u-fns/apply-if-fn base-msg)
          method-name (u-fns/fn-name method-fn true)]
-     (error {:msg (format "%s (method='%s' args=%s)" logged-msg method-name method-args)}
-            ex))))
+     (log/log :error ex (format-msg base-msg' method-name method-args)))))
 
 ;; NB: For async requests, this strategy is of little use, since the provided
 ;;     callback will be processed on different threads and any exception will
@@ -191,10 +189,11 @@
 ;;     - No more than 20 messages per minute in the same group chat,
 ;;     - No more than 30 messages per second in total (for broadcasting).
 
-(u-lang/defonce+ *rate-limiters
-  "An atom that holds a map of the following structure:
-   {<bot-id> {:total    <total bot rate limiter>
-              <chat-id> <some chat rate limiter>}}"
+(defonce
+  ^{:doc "An atom that holds a map of the following structure:
+          {<bot-id> {:total    <total bot rate limiter>
+                     <chat-id> <some chat rate limiter>}}"}
+  *rate-limiters
   (atom {}))
 
 (defn ->total-rate-limiter []
@@ -323,7 +322,7 @@
       (apply method-fn tg-bot-api-client method-args)
       (method-fn tg-bot-api-client))
     (catch Throwable client-code-ex
-      (error {:msg "An error in the client code"} client-code-ex)
+      (log/log :error client-code-ex "An error in the client code")
       ;; NB: An `error` is processed by the `handle-response-sync`.
       {:error client-code-ex})))
 
@@ -347,7 +346,6 @@
 (defn- handle-response
   [method-fn method-args api-resp
    {:keys [on-success on-failure on-error] :as _callbacks}]
-  (have! some? api-resp)
   ;; NB: The order of checks here is crucial. First, we handle valid responses,
   ;;     including unsuccessful ones (also contain `:error` key). Only then we
   ;;     handle other `:error`-containing results, i.e. HTTP client exceptions.
@@ -378,10 +376,7 @@
                                    log-error-and-rethrow)}
         api-resp (with-rate-limiter:call-bot-api-method!
                    tg-bot-api-client method-fn method-args)]
-    (event ::make-request!
-           {:level :debug
-            :data  {:api-resp api-resp}
-            :msg   ["Telegram Bot API returned:" api-resp]})
+    (log/debugf "Telegram Bot API returned: %s" api-resp)
     (when (some? api-resp)
       (handle-response method-fn method-args api-resp callbacks))))
 
