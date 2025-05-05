@@ -10,14 +10,15 @@
   '[clojure.pprint :as pp]
   '[clojure.string :as str]
   '[clojure.tools.logging :as log]
-  '[clojure.walk :as walk]
-  '[flatland.ordered.map :refer [ordered-map]])
+  '[clojure.walk :as walk])
 
 ;;; Utils
 
-(def blank-string? #(and (string? %) (str/blank? %)))
+(def blank-string?
+  #(and (string? %) (str/blank? %)))
 
-(def uppercase-string? #(Character/isUpperCase ^char (get % 0)))
+(def uppercase-string?
+  #(and (string? %) (Character/isUpperCase ^char (get % 0))))
 
 (defn removev
   [pred coll]
@@ -39,12 +40,6 @@
     (when-let [s (seq coll)]
       (let [run (cons (first s) (take-while #(not (f %)) (rest s)))]
         (cons run (partition-at f (drop (count run) s)))))))
-
-(defn index-by
-  ([key-fn coll]
-   (index-by {} key-fn coll))
-  ([init-map key-fn coll]
-   (reduce #(assoc %1 (key-fn %2) %2) init-map coll)))
 
 ;;; Files
 
@@ -117,7 +112,6 @@
 (def array-type-prefix? #{"Array"})
 (def array-type-postfix "of")
 (def union-type-separator ",")
-
 (def type-noise? (some-fn empty? #{array-type-postfix union-type-separator}))
 
 (defn prepare-type-node
@@ -218,9 +212,9 @@
   [col-names row-nodes]
   (reduce (fn [type-acc single-row-nodes]
             (let [field (get-api-type-field col-names single-row-nodes)]
-              (update type-acc :fields conj [(:name field) field])))
+              (update type-acc :fields conj field)))
           {:kind   :type
-           :fields (ordered-map)}
+           :fields []}
           row-nodes))
 
 ;;;; Parsing > API Element > API Method
@@ -249,9 +243,9 @@
   [col-names row-nodes]
   (reduce (fn [method-acc single-row-nodes]
             (let [param (get-api-method-param col-names single-row-nodes)]
-              (update method-acc :params conj [(:name param) param])))
+              (update method-acc :params conj param)))
           {:kind   :method
-           :params (ordered-map)
+           :params []
            #_#_:returns nil} ; no need for the return type in Clojure
           row-nodes))
 
@@ -317,6 +311,9 @@
                      api-elements)]
     (walk/postwalk-replace smap api-elements)))
 
+(defn shape-into-map [api-elements]
+  (group-by #(case (:kind %) :type :types :method :methods) api-elements))
+
 (defn parse-tg-bot-api-page [html-str]
   (let [page-hy-tree (-> html-str (h/parse) (h/as-hickory))
         page-content (->dev-page-content page-hy-tree)]
@@ -326,7 +323,7 @@
          (map #(when-not (notes-subsection? %) (->api-element %)))
          (remove nil?)
          (normalize-all-ids)
-         (index-by (ordered-map) :id))))
+         (shape-into-map))))
 
 ;;; Entrypoint
 
