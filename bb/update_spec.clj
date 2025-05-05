@@ -104,15 +104,15 @@
           (first)
           (get-anchor-id)))
 
-(defn ->temp-id [anchor-id]
-  (keyword "temp-id" anchor-id))
-
 ;;;; Parsing > Data Types
 
 (def array-type-prefix? #{"Array"})
 (def array-type-postfix "of")
 (def union-type-separator ",")
 (def type-noise? (some-fn empty? #{array-type-postfix union-type-separator}))
+
+(defn ->temp-id [anchor-id]
+  (keyword "tmp" anchor-id))
 
 (defn prepare-type-node
   [type-node]
@@ -304,12 +304,13 @@
       (remove-blank-strings)
       :content))
 
-(defn normalize-all-ids [api-elements]
-  (let [smap (reduce (fn [acc {:keys [id name]}]
-                       (assoc acc id (csk/->kebab-case-keyword name)))
-                     {}
-                     api-elements)]
-    (walk/postwalk-replace smap api-elements)))
+(defn normalize-ids [api-elements]
+  (walk/postwalk-replace
+    (reduce (fn [acc {:keys [id name kind] :as _api-element}]
+              (assoc acc id (subs (str kind "/" (csk/->kebab-case name)) 1)))
+            {}
+            api-elements)
+    api-elements))
 
 (defn shape-into-map [api-elements]
   (group-by #(case (:kind %) :type :types :method :methods) api-elements))
@@ -322,7 +323,7 @@
          (apply concat)
          (map #(when-not (notes-subsection? %) (->api-element %)))
          (remove nil?)
-         (normalize-all-ids)
+         (normalize-ids)
          (shape-into-map))))
 
 ;;; Entrypoint
