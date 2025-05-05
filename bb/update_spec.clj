@@ -1,8 +1,8 @@
 #!/usr/bin/env bb
-
 (require
   '[babashka.fs :as fs]
   '[babashka.http-client :as http]
+  '[camel-snake-kebab.core :as csk]
   '[hickory.core :as h]
   '[hickory.render :as r]
   '[hickory.select :as s]
@@ -40,9 +40,11 @@
       (let [run (cons (first s) (take-while #(not (f %)) (rest s)))]
         (cons run (partition-at f (drop (count run) s)))))))
 
-(defn ordered-map-by
-  [key-fn coll]
-  (ordered-map (map (juxt key-fn identity) coll)))
+(defn index-by
+  ([key-fn coll]
+   (index-by {} key-fn coll))
+  ([init-map key-fn coll]
+   (reduce #(assoc %1 (key-fn %2) %2) init-map coll)))
 
 ;;; Files
 
@@ -99,13 +101,16 @@
 
 (defn get-anchor-id
   [node]
-  (keyword (subs (-> node :attrs :href) 1)))
+  (subs (-> node :attrs :href) 1))
 
 (defn get-first-anchor-id
   [node]
   (some-> (s/select (s/child id-anchor-selector) node)
           (first)
           (get-anchor-id)))
+
+(defn ->temp-id [anchor-id]
+  (keyword "temp-id" anchor-id))
 
 ;;;; Parsing > Data Types
 
@@ -117,7 +122,7 @@
 
 (defn prepare-type-node
   [type-node]
-  (cond (map? type-node) (get-anchor-id type-node)
+  (cond (map? type-node) (->temp-id (get-anchor-id type-node))
         (string? type-node) (remove type-noise?
                                     (-> type-node
                                         (str/trim)
@@ -167,7 +172,7 @@
 (defn get-api-element-basics
   [[node & rest]]
   (assert-node-tag :h4 node)
-  (let [id (get-first-anchor-id node)
+  (let [id (->temp-id (get-first-anchor-id node))
         name (text node)
         kind (best-guess-kind name)
         [tags rest'] (split-with #(description-tags (:tag %)) rest)
@@ -275,7 +280,7 @@
   [list-node]
   (let [subtypes (->> list-node
                       (s/select (s/child (s/tag :li) id-anchor-selector))
-                      (mapv get-anchor-id))]
+                      (mapv (comp ->temp-id get-anchor-id)))]
     {:kind     :type
      :subtypes subtypes}))
 
@@ -305,6 +310,13 @@
       (remove-blank-strings)
       :content))
 
+(defn normalize-all-ids [api-elements]
+  (let [smap (reduce (fn [acc {:keys [id name]}]
+                       (assoc acc id (csk/->kebab-case-keyword name)))
+                     {}
+                     api-elements)]
+    (walk/postwalk-replace smap api-elements)))
+
 (defn parse-tg-bot-api-page [html-str]
   (let [page-hy-tree (-> html-str (h/parse) (h/as-hickory))
         page-content (->dev-page-content page-hy-tree)]
@@ -313,7 +325,8 @@
          (apply concat)
          (map #(when-not (notes-subsection? %) (->api-element %)))
          (remove nil?)
-         (ordered-map-by :id))))
+         (normalize-all-ids)
+         (index-by (ordered-map) :id))))
 
 ;;; Entrypoint
 

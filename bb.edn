@@ -1,4 +1,5 @@
 ;; Run with "bb -f bb/update_spec.clj" or "./bb/update_spec.clj"
 {:paths ["bb" "resources"]
- :deps  {;; The only lib that is not built-in into bb
-         org.clj-commons/hickory {:mvn/version "0.7.7"}}}
+ :deps  {;; Including only the libs that are not built-in into `bb`
+         camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
+         org.clj-commons/hickory             {:mvn/version "0.7.7"}}}
