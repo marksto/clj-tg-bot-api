@@ -3,7 +3,8 @@
             [clojure.string :as str]
             [jsonista.core :as json]
             [martian.core :as m]
-            [schema.core :as s])
+            [schema.core :as s]
+            [schema-tools.coerce :as stc])
   (:import (java.io File InputStream)
            (java.net URI URL)
            (java.nio.file Path)))
@@ -140,6 +141,10 @@
             (some? body-schema) (assoc :body-schema {:body body-schema}))))
 
 ;;; Martian
+
+;; TODO: Change to an exposed Martian option after the PR #221 is merged.
+(alter-var-root #'martian.schema/coercion-matchers
+                (constantly stc/json-coercion-matcher))
 
 (defn build-handlers [tg-bot-api-spec]
   (binding [*id->api-type* (index-by :id (:types tg-bot-api-spec))]
