@@ -15,24 +15,6 @@
             [swa.platform.utils.interface.resilience :as u-res]
             [swa.platform.utils.interface.runtime :as u-runtime]))
 
-;; TODO: Do a complete rewrite of the `telegrambot-lib` under the SWA Platform.
-;;       - ideally, should (semi)auto-update upon the Telegram Bot API updates
-;;       - hence, it makes sense to have a web-scraping web app backing it up,
-;;         figuring out changes in the Bot API, and applying these changes to
-;;         to existing "static" library code
-;;       - therefore, it also makes sense to completely get rid of any "moving
-;;         parts" of the original library (building a request body in a manual
-;;         way, making HTTP requests, etc.) which are notoriously laborious to
-;;         maintain
-;;       - drop all `async?` processing logic as a part of the previous point
-;;         and push rate limiting inside the lib
-;;       - uniform the Bot API method contract — drop unnecessary fancy arity,
-;;         add configurable auto-transformations of cases (mainly for dashes),
-;;         use Malli schemas for validation/coercion/etc., postpone making the
-;;         actual request (e.g. with `martian` serving as an adaptor layer)
-;;       - serve all "moving parts" (making HTTP requests, polling updates) as
-;;         separate sub-libraries that can be plugged-in by an end user
-
 ;; shared context
 
 ;; TODO: Make the 'clj-http' connection managers used by 'telegrambot-lib' configurable.
