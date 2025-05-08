@@ -1,9 +1,9 @@
-(ns teleoperator.tg-bot-api-utils.interface
+(ns  marksto.clj-tg-bot-api.utils.interface
   "Aux checks, utilities & method params builders for the Telegram Bot API"
-  (:require [teleoperator.tg-bot-api-utils.types :as types]
-            [teleoperator.tg-bot-api-utils.update :as update]
-            [teleoperator.tg-bot-api-utils.api-response :as api-response]
-            [teleoperator.tg-bot-api-utils.methods :as methods]))
+  (:require [marksto.clj-tg-bot-api.utils.types :as types]
+            [marksto.clj-tg-bot-api.utils.update :as update]
+            [marksto.clj-tg-bot-api.utils.api-response :as api-response]
+            [marksto.clj-tg-bot-api.utils.methods :as methods]))
 
 ;; AUXILIARY CHECKS & UTILS
 

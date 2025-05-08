@@ -1,4 +1,4 @@
-(ns teleoperator.tg-bot-api-utils.methods
+(ns marksto.clj-tg-bot-api.utils.methods
   "Parameters builders for the Telegram Bot API methods"
   (:require [clojure.string :as str]
             [clojure.walk :as walk]

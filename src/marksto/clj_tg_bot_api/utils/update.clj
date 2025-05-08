@@ -1,6 +1,6 @@
-(ns teleoperator.tg-bot-api-utils.update
+(ns marksto.clj-tg-bot-api.utils.update
   "Telegram Bot API 'Update' type data accessors and utils"
-  (:require [teleoperator.tg-bot-api-utils.types :as types]
+  (:require [marksto.clj-tg-bot-api.utils.types :as types]
 
             [swa.platform.utils.interface.coll :as u-coll]))
 

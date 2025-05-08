@@ -7,7 +7,7 @@
             [clojure.tools.logging :as log]
 
             [telegrambot-lib.core :as tg-bot-api]
-            [teleoperator.tg-bot-api-utils.interface :as tg-bot-api-utils]
+            [marksto.clj-tg-bot-api.utils.interface :as utils]
 
             [swa.platform.utils.interface.ex :as u-ex]
             [swa.platform.utils.interface.fns :as u-fns]
@@ -46,7 +46,7 @@
   ([tg-resp]
    (get-result tg-resp nil))
   ([tg-resp default-val]
-   (or (tg-bot-api-utils/get-response-result tg-resp) default-val)))
+   (or (utils/get-response-result tg-resp) default-val)))
 
 (defn assert-result
   [expected tg-resp]
@@ -63,7 +63,7 @@
 
 (defn get-error
   [method-fn method-args failed-tg-resp]
-  (let [resp-error (tg-bot-api-utils/get-response-error failed-tg-resp)]
+  (let [resp-error (utils/get-response-error failed-tg-resp)]
     (assoc resp-error :method-fn method-fn :method-args method-args)))
 
 (def failure-msg "Unsuccessful Telegram Bot API request")
@@ -79,7 +79,7 @@
    (log-failure-reason :error base-msg
                        method-fn method-args failed-tg-resp))
   ([log-level base-msg method-fn method-args failed-tg-resp]
-   (let [resp-error (tg-bot-api-utils/get-response-error failed-tg-resp)
+   (let [resp-error (utils/get-response-error failed-tg-resp)
          error-text (some->> (seq resp-error)
                              (map (fn [[k v]] (str (name k) "=\"" v "\"")))
                              (not-empty)
@@ -350,8 +350,8 @@
   ;;     including unsuccessful ones (also contain `:error` key). Only then we
   ;;     handle other `:error`-containing results, i.e. HTTP client exceptions.
   (cond
-    (tg-bot-api-utils/valid-response? api-resp)
-    (if (tg-bot-api-utils/successful-response? api-resp)
+    (utils/valid-response? api-resp)
+    (if (utils/successful-response? api-resp)
       (when (some? on-success) (on-success api-resp))
       (call-ignorable-callback on-failure method-fn method-args api-resp))
     ;;
