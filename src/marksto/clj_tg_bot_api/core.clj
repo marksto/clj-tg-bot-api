@@ -1,4 +1,4 @@
-(ns teleoperator.tg-bot-api-client.core
+(ns marksto.clj-tg-bot-api.core
   "Provides a convenient wrapper around the 'telegrambot-lib' client library fns
    adding handy callback fns (operations) that handle Telegram Bot API responses
    and any errors (exceptions)."

@@ -1,5 +1,5 @@
-(ns teleoperator.tg-bot-api-client.interface
-  (:require [teleoperator.tg-bot-api-client.core :as impl]))
+(ns marksto.clj-tg-bot-api.interface
+  (:require [marksto.clj-tg-bot-api.core :as impl]))
 
 (defn call-bot-api!
   "Makes a request to the Telegram Bot API on behalf of the `tg-bot-api-client`.
