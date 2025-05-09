@@ -9,10 +9,7 @@
    wrapping it into a virtual thread.
 
    A `method-fn` is a fn of the `tg-bot-api-client` and, possibly, other params
-   needed to make an actual HTTP request to the Telegram Bot API method via the
-   'telegrambot-lib' under the hood. Its invocation is wrapped in a `try-catch`
-   block, so that any exceptions in the client code (i.e. those not coming from
-   the HTTP client) are re-thrown as is.
+   needed to make an actual HTTP request to the Telegram Bot API method.
 
    Supported `call-opts` are:
    - `:on-success`
@@ -31,6 +28,9 @@
      that are not related to an unsuccessful request, i.e. if an error happens
      upon making a Telegram Bot API request or retrieving the response body;
      logs and rethrows an exception by default; supports `:ignore` value
+
+   Any exception in the client code (i.e. those not coming from an HTTP client)
+   is re-thrown as is.
 
    In case of a successful request, if not overridden, returns the `on-success`
    callback result.

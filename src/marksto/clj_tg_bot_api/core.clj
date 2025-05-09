@@ -1,25 +1,16 @@
 (ns marksto.clj-tg-bot-api.core
-  "Provides a convenient wrapper around the 'telegrambot-lib' client library fns
-   adding handy callback fns (operations) that handle Telegram Bot API responses
-   and any errors (exceptions)."
-  (:require [clj-http.conn-mgr :as conn]
-            [clojure.string :as str]
+  "Provides a convenient wrapper (a client library) around the Telegram Bot API
+   adding handy callback fns (operations) handling responses (success, failure)
+   and any errors (exception)."
+  (:require [clojure.string :as str]
             [clojure.tools.logging :as log]
 
-            [telegrambot-lib.core :as tg-bot-api]
             [marksto.clj-tg-bot-api.utils.interface :as utils]
 
             [swa.platform.utils.interface.ex :as u-ex]
             [swa.platform.utils.interface.fns :as u-fns]
-            [swa.platform.utils.interface.lang :as u-lang]
             [swa.platform.utils.interface.resilience :as u-res]
             [swa.platform.utils.interface.runtime :as u-runtime]))
-
-;; shared context
-
-;; TODO: Make the 'clj-http' connection managers used by 'telegrambot-lib' configurable.
-(u-lang/set-var-root! conn/*connection-manager* (conn/make-reusable-conn-manager {}))
-(u-lang/set-var-root! conn/*async-connection-manager* (conn/make-reusable-async-conn-manager {}))
 
 
 ;; operations on response 'result'
@@ -209,81 +200,7 @@
 
 ;; TODO: Get rid of the `tg-bot-api:chat-id-fns` hack and the `best-guess-chat-id` fn.
 (def ^:private tg-bot-api:chat-id-fns
-  #{tg-bot-api/send-message
-    tg-bot-api/edit-message-text
-    tg-bot-api/edit-message-caption
-    tg-bot-api/edit-message-media
-    tg-bot-api/edit-message-reply-markup
-    tg-bot-api/delete-message
-    tg-bot-api/delete-messages
-    tg-bot-api/forward-message
-    tg-bot-api/forward-messages
-    tg-bot-api/copy-message
-    tg-bot-api/copy-messages
-    tg-bot-api/send-photo
-    tg-bot-api/send-audio
-    tg-bot-api/send-document
-    tg-bot-api/send-video
-    tg-bot-api/send-animation
-    tg-bot-api/send-voice
-    tg-bot-api/send-video-note
-    tg-bot-api/send-media-group
-    tg-bot-api/send-location
-    tg-bot-api/edit-message-live-location
-    tg-bot-api/stop-message-live-location
-    tg-bot-api/send-venue
-    tg-bot-api/send-contact
-    tg-bot-api/send-poll
-    tg-bot-api/stop-poll
-    tg-bot-api/send-dice
-    tg-bot-api/send-chat-action
-    tg-bot-api/set-message-reaction
-    tg-bot-api/ban-chat-member
-    tg-bot-api/unban-chat-member
-    tg-bot-api/restrict-chat-member
-    tg-bot-api/promote-chat-member
-    tg-bot-api/set-chat-administrator-custom-title
-    tg-bot-api/ban-chat-sender-chat
-    tg-bot-api/unban-chat-sender-chat
-    tg-bot-api/set-chat-permissions
-    tg-bot-api/export-chat-invite-link
-    tg-bot-api/create-chat-invite-link
-    tg-bot-api/edit-chat-invite-link
-    tg-bot-api/revoke-chat-invite-link
-    tg-bot-api/approve-chat-join-request
-    tg-bot-api/decline-chat-join-request
-    tg-bot-api/set-chat-photo
-    tg-bot-api/delete-chat-photo
-    tg-bot-api/set-chat-title
-    tg-bot-api/set-chat-description
-    tg-bot-api/pin-chat-message
-    tg-bot-api/unpin-chat-message
-    tg-bot-api/unpin-all-chat-messages
-    tg-bot-api/leave-chat
-    tg-bot-api/get-chat
-    tg-bot-api/get-chat-administrators
-    tg-bot-api/get-chat-member-count
-    tg-bot-api/get-chat-member
-    tg-bot-api/set-chat-sticker-set
-    tg-bot-api/delete-chat-sticker-set
-    tg-bot-api/create-forum-topic
-    tg-bot-api/edit-forum-topic
-    tg-bot-api/close-forum-topic
-    tg-bot-api/reopen-forum-topic
-    tg-bot-api/delete-forum-topic
-    tg-bot-api/unpin-all-forum-topic-messages
-    tg-bot-api/edit-general-forum-topic
-    tg-bot-api/close-general-forum-topic
-    tg-bot-api/reopen-general-forum-topic
-    tg-bot-api/hide-general-forum-topic
-    tg-bot-api/unhide-general-forum-topic
-    tg-bot-api/unpin-all-general-forum-topic-messages
-    tg-bot-api/get-user-chat-boosts
-    tg-bot-api/send-sticker
-    tg-bot-api/send-invoice
-    tg-bot-api/send-game
-    tg-bot-api/set-game-score
-    tg-bot-api/get-game-high-scores})
+  #{})
 
 (defn- best-guess-chat-id
   [method-fn method-args]
@@ -295,7 +212,8 @@
 
 (defn- call-bot-api-method!
   [tg-bot-api-client method-fn method-args]
-  ;; NB: The `telegrambot-lib.http/request` returns a map with an `:error` key
+  ;; TODO: Double-check with all popular clients and re-implement if necessary.
+  ;; NB: Expects an HTTP client library to return a map with the `:error` key
   ;;     in case if request was unsuccessful (status codes other than 200-207,
   ;;     300-303, or 307) or in any of other exceptional situations (e.g. when
   ;;     the lib is unable to retrieve the response body).
@@ -376,7 +294,7 @@
 
 ;; IMMEDIATE RESPONSE
 
-;; TODO: Call a 'telegrambot-lib' fn w/o actually making an HTTP request.
+;; TODO: Call a Bot API method fn w/o actually making an HTTP request.
 ;;       Inject a `:method <method-name>` entry into the returned map.
 (defn build-immediate-response
   "Builds an immediate response, i.e. a reply payload for an incoming update.
