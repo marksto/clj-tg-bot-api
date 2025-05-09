@@ -7,12 +7,6 @@
             [swa.platform.o11y.interface.log :refer [log]]
             [swa.platform.utils.interface.str :as u-str]))
 
-;; TODO: Automatically convert all '_'s into '-'s in params map keys for all Telegram Bot API methods.
-;;       For all functions representing the Telegram Bot API methods, add input params transformation.
-
-;; TODO: Specify preconditions that check each passed argument for its type, optionality, and other constraints.
-;;       According to the Telegram Bot API documentation (https://core.telegram.org/bots/api).
-
 ;; TODO: Re-impl method params builder fns atop of Malli Schema transformations.
 ;;       All of the following "METHODS"-related things can be reimplemented in
 ;;       the form of Malli Schemas and passed around as pure data (which avoids

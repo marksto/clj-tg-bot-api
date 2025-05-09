@@ -14,7 +14,7 @@ Features:
 
 - Uniform Bot API method contract
 
-  Drops unnecessary fancy arities (unlocks certain logic), adds keywords auto-transformations (dashes to underscores), uses schemas for validation/coercion
+  Drops unnecessary fancy arities (unlocks certain logic), adds method params keys auto-conversion (dashes to underscores), uses schemas for validation/coercion (checks each method param for its type and optionality)
 
 - Built-in rate limiting using Telegram defaults, yet re-configurable
 
