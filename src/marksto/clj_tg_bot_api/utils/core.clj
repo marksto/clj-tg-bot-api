@@ -2,8 +2,8 @@
   "Aux checks, utilities & method params builders for the Telegram Bot API"
   (:require [marksto.clj-tg-bot-api.utils.types :as types]
             [marksto.clj-tg-bot-api.utils.update :as update]
-            [marksto.clj-tg-bot-api.utils.api-response :as api-response]
-            [marksto.clj-tg-bot-api.utils.methods :as methods]))
+            [marksto.clj-tg-bot-api.utils.methods :as methods]
+            [marksto.clj-tg-bot-api.utils.response :as response]))
 
 ;; AUXILIARY CHECKS & UTILS
 
@@ -255,7 +255,7 @@
    From the Telegram Bot API documentation:
    The response contains a JSON object, which always has a Boolean field 'ok'."
   [response]
-  (api-response/valid-response? response))
+  (response/valid-response? response))
 
 (defn successful-response?
   "Checks if a Telegram Bot API `response` is successful.
@@ -263,7 +263,7 @@
    From the Telegram Bot API documentation:
    If 'ok' equals true, the request was successful <...>."
   [response]
-  (api-response/successful-response? response))
+  (response/successful-response? response))
 
 (defn get-response-result
   "For a `response` returns its 'result', if available; otherwise `nil`.
@@ -272,12 +272,12 @@
    If 'ok' equals true, the request was successful and the result of the query
    can be found in the 'result' field."
   [response]
-  (api-response/get-response-result response))
+  (response/get-response-result response))
 
 (defn get-response-result-chat-id
   "For a `response-result` returns its chat ID, if available; otherwise `nil`."
   [response-result]
-  (api-response/get-response-result-chat-id response-result))
+  (response/get-response-result-chat-id response-result))
 
 (defn get-response-error
   "For a `response` returns its error map with 'error_code' and 'description',
@@ -291,7 +291,7 @@
    An Integer 'error_code' field is also returned, but its contents are subject
    to change in the future."
   [response]
-  (api-response/get-response-error response))
+  (response/get-response-error response))
 
 (defn get-response-parameters
   "For a `response` returns its 'parameters', if available; otherwise `nil`.
@@ -300,18 +300,18 @@
    Some errors may also have an optional field 'parameters' of the type
    'ResponseParameters', which can help to automatically handle errors."
   [response]
-  (api-response/get-response-parameters response))
+  (response/get-response-parameters response))
 
 (defn migrated-to-supergroup?
   "Returns a Chat ID of a supergroup to which the group has been migrated."
   [response]
-  (api-response/migrated-to-supergroup? response))
+  (response/migrated-to-supergroup? response))
 
 (defn retry-request-after-sec
   "Returns a number of seconds left to wait before the request can be repeated
    in case of exceeding the Telegram Bot API flood control."
   [response]
-  (api-response/retry-request-after-sec response))
+  (response/retry-request-after-sec response))
 
 ;; METHOD PARAMS BUILDERS
 
