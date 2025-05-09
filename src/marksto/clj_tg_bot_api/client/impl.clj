@@ -1,11 +1,11 @@
-(ns marksto.clj-tg-bot-api.core
+(ns marksto.clj-tg-bot-api.client.impl
   "Provides a convenient wrapper (a client library) around the Telegram Bot API
    adding handy callback fns (operations) handling responses (success, failure)
    and any errors (exception)."
   (:require [clojure.string :as str]
             [clojure.tools.logging :as log]
 
-            [marksto.clj-tg-bot-api.utils.interface :as utils]
+            [marksto.clj-tg-bot-api.utils.core :as utils]
 
             [swa.platform.utils.interface.ex :as u-ex]
             [swa.platform.utils.interface.fns :as u-fns]

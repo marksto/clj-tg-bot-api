@@ -1,4 +1,4 @@
-(ns  marksto.clj-tg-bot-api.utils.interface
+(ns  marksto.clj-tg-bot-api.utils.core
   "Aux checks, utilities & method params builders for the Telegram Bot API"
   (:require [marksto.clj-tg-bot-api.utils.types :as types]
             [marksto.clj-tg-bot-api.utils.update :as update]
