@@ -1,10 +1,12 @@
-(ns teleoperator.markdown.md-v2
-  "MarkdownV2 implementation."
+(ns marksto.clj-tg-bot-api.utils.md-v2
+  "A minor part of the MarkdownV2 functionality that is absolutely necessary."
   (:require [clojure.string :as str]
 
             [swa.platform.utils.interface.coll :as u-coll]
             [swa.platform.utils.interface.regexp :as u-re]
             [swa.platform.utils.interface.str :as u-str]))
+
+;; escaping
 
 (def ^:private inline-url-re
   #"\[(?<text>[^]]+)\]\((?<href>[^\s]+)\)")
@@ -40,20 +42,28 @@
       (u-str/join* (u-coll/interleave* (map escape-text text-fragments)
                                        (map escape-inline-url inline-urls))))))
 
-;;
+;; formatting
 
 (defn format-bold
-  [text-str escape?]
-  (str "*" (if escape? (escape text-str) text-str) "*"))
+  ([text-str]
+   (format-bold text-str true))
+  ([text-str escape?]
+   (str "*" (if escape? (escape text-str) text-str) "*")))
 
 (defn format-italic
-  [text-str escape?]
-  (str "_" (if escape? (escape text-str) text-str) "_"))
+  ([text-str]
+   (format-italic text-str true))
+  ([text-str escape?]
+   (str "_" (if escape? (escape text-str) text-str) "_")))
 
 (defn format-underline
-  [text-str escape?]
-  (str "__" (if escape? (escape text-str) text-str) "__"))
+  ([text-str]
+   (format-underline text-str true))
+  ([text-str escape?]
+   (str "__" (if escape? (escape text-str) text-str) "__")))
 
 (defn format-strikethrough
-  [text-str escape?]
-  (str "~" (if escape? (escape text-str) text-str) "~"))
+  ([text-str]
+   (format-strikethrough text-str true))
+  ([text-str escape?]
+   (str "~" (if escape? (escape text-str) text-str) "~")))

@@ -3,7 +3,7 @@
   (:require [clojure.string :as str]
             [taoensso.truss :refer [have!]]
 
-            [teleoperator.markdown.interface :as md]))
+            [marksto.clj-tg-bot-api.utils.md-v2 :as md-v2]))
 
 ; Date/Time
 
@@ -31,7 +31,7 @@
   ([{user-id :id first-name :first_name ?last-name :last_name ?username :username :as user}
     mention-type]
    (have! [:in mention-types] mention-type)
-   (md/escape
+   (md-v2/escape
      (case mention-type
        :by-name (str "[" first-name "](tg://user?id=" user-id ")")
        :by-full-name (if (some? ?last-name)
