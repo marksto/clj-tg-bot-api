@@ -4,13 +4,11 @@
    and any errors (exception)."
   (:require [clojure.string :as str]
             [clojure.tools.logging :as log]
+            [diehard.core :as dh]
+            [diehard.rate-limiter :as dh.rl]
 
-            [marksto.clj-tg-bot-api.utils.core :as utils]
-
-            [swa.platform.utils.interface.ex :as u-ex]
-            [swa.platform.utils.interface.fns :as u-fns]
-            [swa.platform.utils.interface.resilience :as u-res]
-            [swa.platform.utils.interface.runtime :as u-runtime]))
+            [marksto.clj-tg-bot-api.impl.utils :as impl.utils]
+            [marksto.clj-tg-bot-api.utils.core :as utils]))
 
 
 ;; operations on response 'result'
@@ -57,16 +55,16 @@
                              (map (fn [[k v]] (str (name k) "=\"" v "\"")))
                              (not-empty)
                              (str/join ", "))
-         base-msg' (cond-> (u-fns/apply-if-fn base-msg)
+         base-msg' (cond-> (impl.utils/apply-if-fn base-msg)
                            (seq error-text) (str ": " error-text))
-         method-name (u-fns/fn-name method-fn true)]
+         method-name (impl.utils/fn-name method-fn)]
      (log/log log-level (format-msg base-msg' method-name method-args)))))
 
 (defn throw-for-failure
   ([method-fn method-args failed-tg-resp]
    (throw-for-failure failure-msg method-fn method-args failed-tg-resp))
   ([base-msg method-fn method-args failed-tg-resp]
-   (let [ex-msg (u-fns/apply-if-fn base-msg)
+   (let [ex-msg (impl.utils/apply-if-fn base-msg)
          response (dissoc failed-tg-resp :error)]
      (throw (ex-info ex-msg {:response    response
                              :method-fn   method-fn
@@ -95,8 +93,8 @@
   ([method-fn method-args ex]
    (log-error error-msg method-fn method-args ex))
   ([base-msg method-fn method-args ex]
-   (let [base-msg' (u-fns/apply-if-fn base-msg)
-         method-name (u-fns/fn-name method-fn true)]
+   (let [base-msg' (impl.utils/apply-if-fn base-msg)
+         method-name (impl.utils/fn-name method-fn)]
      (log/log :error ex (format-msg base-msg' method-name method-args)))))
 
 ;; NB: For async requests, this strategy is of little use, since the provided
@@ -110,11 +108,11 @@
 (defn log-error-and-rethrow
   ([method-fn method-args ex]
    (log-error method-fn method-args ex)
-   (when-not (u-runtime/in-repl?) (u-ex/clear-stack-trace ex))
+   (when-not (impl.utils/in-repl?) (impl.utils/clear-stack-trace ex))
    (rethrow-error method-fn method-args ex))
   ([base-msg method-fn method-args ex]
    (log-error base-msg method-fn method-args ex)
-   (when-not (u-runtime/in-repl?) (u-ex/clear-stack-trace ex))
+   (when-not (impl.utils/in-repl?) (impl.utils/clear-stack-trace ex))
    (rethrow-error method-fn method-args ex)))
 
 
@@ -169,14 +167,16 @@
   *rate-limiters
   (atom {}))
 
+(defn ->rate [n sec]
+  (/ (double n) sec))
+
 (defn ->total-rate-limiter []
-  (u-res/rate-limiter {:rate (u-res/->rate 30 1)}))
+  (dh.rl/rate-limiter {:rate (->rate 30 1)}))
 
 (defn ->chat-rate-limiter [chat-id]
   (if-let [_is-group? (neg? chat-id)]
-    (u-res/composite-rate-limiter {:rates [(u-res/->rate 1 1)
-                                           (u-res/->rate 20 60)]})
-    (u-res/rate-limiter {:rate (u-res/->rate 1 1)})))
+    (dh.rl/rate-limiter {:rate (->rate 20 60)})
+    (dh.rl/rate-limiter {:rate (->rate 1 1)})))
 
 (defn- get-rate-limiter!
   ([bot-id]
@@ -230,9 +230,9 @@
   [{:keys [bot-id in-test?] :as tg-bot-api-client} method-fn method-args]
   (if in-test?
     (call-bot-api-method! tg-bot-api-client method-fn method-args)
-    (u-res/with-rate-limiter {:ratelimiter (get-rate-limiter! bot-id)}
+    (dh/with-rate-limiter {:ratelimiter (get-rate-limiter! bot-id)}
       (if-some [chat-id (best-guess-chat-id method-fn method-args)]
-        (u-res/with-rate-limiter {:ratelimiter (get-rate-limiter! bot-id chat-id)}
+        (dh/with-rate-limiter {:ratelimiter (get-rate-limiter! bot-id chat-id)}
           (call-bot-api-method! tg-bot-api-client method-fn method-args))
         (call-bot-api-method! tg-bot-api-client method-fn method-args)))))
 

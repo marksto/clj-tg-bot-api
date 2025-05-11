@@ -2,10 +2,10 @@
   "Telegram Bot API 'Update' type data accessors and utils"
   (:require [marksto.clj-tg-bot-api.utils.types :as types]
 
-            [swa.platform.utils.interface.coll :as u-coll]))
+            [flatland.ordered.set :refer [ordered-set]]))
 
 (def all-update-types
-  (u-coll/ordered-set
+  (ordered-set
     :message
     :edited_message
     :channel_post

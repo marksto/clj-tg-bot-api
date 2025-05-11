@@ -1,11 +1,11 @@
 (ns marksto.clj-tg-bot-api.utils.methods
   "Parameters builders for the Telegram Bot API methods"
   (:require [clojure.string :as str]
+            [clojure.tools.logging :as log]
             [clojure.walk :as walk]
             [taoensso.truss :refer [have!]]
 
-            [swa.platform.o11y.interface.log :refer [log]]
-            [swa.platform.utils.interface.str :as u-str]))
+            [marksto.clj-tg-bot-api.impl.utils :as impl.utils]))
 
 ;; TODO: Re-impl method params builder fns atop of Malli Schema transformations.
 ;;       All of the following "METHODS"-related things can be reimplemented in
@@ -100,8 +100,8 @@
            (true? persistent) (assoc :is_persistent true)
            (true? resize) (assoc :resize_keyboard true)
            (true? one-time) (assoc :one_time_keyboard true)
-           (u-str/not-empty? placeholder)
-           (assoc :input_field_placeholder (u-str/truncate placeholder 64))
+           (impl.utils/not-empty? placeholder)
+           (assoc :input_field_placeholder (impl.utils/truncate placeholder 64))
            (true? selective) (assoc :selective true))))
 
 ; KeyboardButton
@@ -193,11 +193,7 @@
   (have! keyword? type-key)
   (let [field (keyword (str/replace (name type-key) "-" "_"))]
     (when-not (contains? known-inline-kbd-btn-types field)
-      (log {:level :warn
-            :data  {:known-types known-inline-kbd-btn-types
-                    :given-type  field}
-            :msg   (format "An unknown '%s' InlineKeyboardButton type provided"
-                           field)}))
+      (log/warnf "An unknown '%s' InlineKeyboardButton type provided" field))
     {:text (str text)
      field (str (or type-val text))}))
 
@@ -247,8 +243,8 @@
    default-force-reply)
   ([{:keys [placeholder selective] :as _options}]
    (cond-> default-force-reply
-           (u-str/not-empty? placeholder)
-           (assoc :input_field_placeholder (u-str/truncate placeholder 64))
+           (impl.utils/not-empty? placeholder)
+           (assoc :input_field_placeholder (impl.utils/truncate placeholder 64))
            (true? selective) (assoc :selective true))))
 
 ; Reply Markups
