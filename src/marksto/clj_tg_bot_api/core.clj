@@ -1,5 +1,8 @@
-(ns marksto.clj-tg-bot-api.client.core
-  (:require [marksto.clj-tg-bot-api.client.impl :as impl]))
+(ns marksto.clj-tg-bot-api.core
+  "Provides a convenient wrapper (a client library) around the Telegram Bot API
+   adding handy callback fns (operations) handling responses (success, failure)
+   and any errors (exception)."
+  (:require [marksto.clj-tg-bot-api.impl.client :as impl]))
 
 (defn make-request!
   "Makes a request to the Telegram Bot API on behalf of the `tg-bot-api-client`.

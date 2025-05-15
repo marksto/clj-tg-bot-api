@@ -1,4 +1,4 @@
-(ns marksto.clj-tg-bot-api.utils.response
+(ns marksto.clj-tg-bot-api.impl.utils.response
   "Utilities for Telegram Bot API responses")
 
 (defn valid-response?

@@ -1,14 +1,11 @@
-(ns marksto.clj-tg-bot-api.client.impl
-  "Provides a convenient wrapper (a client library) around the Telegram Bot API
-   adding handy callback fns (operations) handling responses (success, failure)
-   and any errors (exception)."
+(ns marksto.clj-tg-bot-api.impl.client
   (:require [clojure.string :as str]
             [clojure.tools.logging :as log]
             [diehard.core :as dh]
             [diehard.rate-limiter :as dh.rl]
 
-            [marksto.clj-tg-bot-api.impl.utils :as impl.utils]
-            [marksto.clj-tg-bot-api.utils.core :as utils]))
+            [marksto.clj-tg-bot-api.impl.utils :as utils]
+            [marksto.clj-tg-bot-api.impl.utils.response :as response]))
 
 
 ;; operations on response 'result'
@@ -17,7 +14,7 @@
   ([tg-resp]
    (get-result tg-resp nil))
   ([tg-resp default-val]
-   (or (utils/get-response-result tg-resp) default-val)))
+   (or (response/get-response-result tg-resp) default-val)))
 
 (defn assert-result
   [expected tg-resp]
@@ -34,7 +31,7 @@
 
 (defn get-error
   [method-fn method-args failed-tg-resp]
-  (let [resp-error (utils/get-response-error failed-tg-resp)]
+  (let [resp-error (response/get-response-error failed-tg-resp)]
     (assoc resp-error :method-fn method-fn :method-args method-args)))
 
 (def failure-msg "Unsuccessful Telegram Bot API request")
@@ -50,21 +47,21 @@
    (log-failure-reason :error base-msg
                        method-fn method-args failed-tg-resp))
   ([log-level base-msg method-fn method-args failed-tg-resp]
-   (let [resp-error (utils/get-response-error failed-tg-resp)
+   (let [resp-error (response/get-response-error failed-tg-resp)
          error-text (some->> (seq resp-error)
                              (map (fn [[k v]] (str (name k) "=\"" v "\"")))
                              (not-empty)
                              (str/join ", "))
-         base-msg' (cond-> (impl.utils/apply-if-fn base-msg)
+         base-msg' (cond-> (utils/apply-if-fn base-msg)
                            (seq error-text) (str ": " error-text))
-         method-name (impl.utils/fn-name method-fn)]
+         method-name (utils/fn-name method-fn)]
      (log/log log-level (format-msg base-msg' method-name method-args)))))
 
 (defn throw-for-failure
   ([method-fn method-args failed-tg-resp]
    (throw-for-failure failure-msg method-fn method-args failed-tg-resp))
   ([base-msg method-fn method-args failed-tg-resp]
-   (let [ex-msg (impl.utils/apply-if-fn base-msg)
+   (let [ex-msg (utils/apply-if-fn base-msg)
          response (dissoc failed-tg-resp :error)]
      (throw (ex-info ex-msg {:response    response
                              :method-fn   method-fn
@@ -93,8 +90,8 @@
   ([method-fn method-args ex]
    (log-error error-msg method-fn method-args ex))
   ([base-msg method-fn method-args ex]
-   (let [base-msg' (impl.utils/apply-if-fn base-msg)
-         method-name (impl.utils/fn-name method-fn)]
+   (let [base-msg' (utils/apply-if-fn base-msg)
+         method-name (utils/fn-name method-fn)]
      (log/log :error ex (format-msg base-msg' method-name method-args)))))
 
 ;; NB: For async requests, this strategy is of little use, since the provided
@@ -108,11 +105,11 @@
 (defn log-error-and-rethrow
   ([method-fn method-args ex]
    (log-error method-fn method-args ex)
-   (when-not (impl.utils/in-repl?) (impl.utils/clear-stack-trace ex))
+   (when-not (utils/in-repl?) (utils/clear-stack-trace ex))
    (rethrow-error method-fn method-args ex))
   ([base-msg method-fn method-args ex]
    (log-error base-msg method-fn method-args ex)
-   (when-not (impl.utils/in-repl?) (impl.utils/clear-stack-trace ex))
+   (when-not (utils/in-repl?) (utils/clear-stack-trace ex))
    (rethrow-error method-fn method-args ex)))
 
 
@@ -250,8 +247,8 @@
   ;;     including unsuccessful ones (also contain `:error` key). Only then we
   ;;     handle other `:error`-containing results, i.e. HTTP client exceptions.
   (cond
-    (utils/valid-response? api-resp)
-    (if (utils/successful-response? api-resp)
+    (response/valid-response? api-resp)
+    (if (response/successful-response? api-resp)
       (when (some? on-success) (on-success api-resp))
       (call-ignorable-callback on-failure method-fn method-args api-resp))
     ;;

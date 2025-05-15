@@ -1,8 +1,8 @@
-(ns marksto.clj-tg-bot-api.utils.md-v2
+(ns marksto.clj-tg-bot-api.impl.utils.md-v2
   "A minor part of the MarkdownV2 functionality that is absolutely necessary."
   (:require [clojure.string :as str]
 
-            [marksto.clj-tg-bot-api.impl.utils :as impl.utils]))
+            [marksto.clj-tg-bot-api.impl.utils :as utils]))
 
 ;; escaping
 
@@ -24,7 +24,7 @@
 (defn- escape-inline-url
   "Escapes the \"[inline URL](http://www.example.com/)\" strings."
   [inline-url-str]
-  (let [{:keys [text href]} (impl.utils/re-match-get-groups
+  (let [{:keys [text href]} (utils/re-match-get-groups
                               inline-url-re
                               inline-url-str
                               [:text :href])
@@ -36,10 +36,10 @@
   (if (str/blank? text-str)
     text-str
     (let [text-fragments (str/split text-str inline-url-re)
-          inline-urls (map first (impl.utils/re-find-all inline-url-re text-str))]
-      (impl.utils/join*
-        (impl.utils/interleave* (map escape-text text-fragments)
-                                (map escape-inline-url inline-urls))))))
+          inline-urls (map first (utils/re-find-all inline-url-re text-str))]
+      (utils/join*
+        (utils/interleave* (map escape-text text-fragments)
+                           (map escape-inline-url inline-urls))))))
 
 ;; formatting
 

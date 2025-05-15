@@ -1,9 +1,9 @@
-(ns marksto.clj-tg-bot-api.utils.types
+(ns marksto.clj-tg-bot-api.impl.utils.types
   "Aux checks and utilities for the Telegram Bot API types"
   (:require [clojure.string :as str]
             [taoensso.truss :refer [have!]]
 
-            [marksto.clj-tg-bot-api.utils.md-v2 :as md-v2]))
+            [marksto.clj-tg-bot-api.impl.utils.md-v2 :as md-v2]))
 
 ; Date/Time
 
