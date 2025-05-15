@@ -8,6 +8,10 @@ Features:
 
   The Telegram Bot API get web-scraped and parsed, the spec file gets formed, some of the "static" code gets recompiled
 
+- Does things on a right level of abstraction
+
+  Uses `martian` under the hood and leverages its full potential to enable the best feature set possible (pluggable HTTP clients, generative testing, recording and playing back responses in a VCR style, etc.)
+
 - Has no "moving parts" a.k.a. Bring Your Own HTTP client
 
   Building a request body in a manual way, making HTTP requests, etc. is notoriously laborious and hard to maintain and, moreover, often unnecessary (tests, immediate responses, etc.), so we postpone making actual request
@@ -21,6 +25,8 @@ Features:
 - Built-in auto-retry strategies for failed Telegram Bot API requests
 
 - Provides a long-polling for the ease of local development and debug
+
+- Supports multiple simultaneously running bots (via associating different instances with unique IDs)
 
 ## Usage
 
