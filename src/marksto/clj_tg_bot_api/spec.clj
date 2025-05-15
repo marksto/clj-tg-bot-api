@@ -1,8 +1,12 @@
 (ns marksto.clj-tg-bot-api.spec
   (:require [clojure.java.io :as io]
+            [clojure.set :as set]
             [clojure.string :as str]
             [jsonista.core :as json]
             [martian.core :as m]
+            [martian.encoders :as me]
+            [martian.encoding :as encoding]
+            [martian.interceptors :as mi]
             [schema.core :as s]
             [schema-tools.coerce :as stc])
   (:import (java.io File InputStream)
@@ -127,25 +131,66 @@
         param-val (type->schema type)]
     [param-key param-val]))
 
+(defn api-method-param-of-input-type?
+  [{:keys [type]}]
+  (or (= "type/input-file" type)
+      (contains? (set (flatten type)) "type/input-file")))
+
 (defn api-method->handler
-  [{:keys [id name params]}]
-  (let [body-schema (when params
-                      (into {} (map api-method-param->param-schema params)))]
-    ;; TODO: Figure out how to set `:consumes ["multipart/form-data"]`
-    ;;       or add an interceptor that transforms the request into a
-    ;;       `{:multipart [{:name K :content V} ...]}` map, when this
-    ;;       is absolutely necessary.
-    (cond-> {:route-name (keyword (subs id (count api-method-prefix)))
-             :path-parts [(str "/" name)]
-             :method     (if (str/starts-with? name "get") :get :post)}
-            (some? body-schema) (assoc :body-schema {:body body-schema}))))
+  [{:keys [id name description params]}]
+  (let [params-schema (when params
+                        (into {} (map api-method-param->param-schema params)))
+        uploads-file? (some api-method-param-of-input-type? params)
+        use-http-get? (and (not uploads-file?) (str/starts-with? name "get"))]
+    (conj {:route-name (keyword (subs id (count api-method-prefix)))
+           :path-parts [(str "/" name)]
+           :method     (if use-http-get? :get :post)
+           :summary    description
+           :consumes   (if uploads-file?
+                         ["multipart/form-data"]
+                         ["application/json"])}
+          (when params-schema
+            (if use-http-get?
+              {:query-schema params-schema}
+              {:body-schema {:body params-schema}})))))
 
 ;;; Martian
+
+;; NB: W/o this function produces a request map of a wrong shape.
+;; {:body {:multipart [{:name "chat_id", :content 1} ...]}, ...}
+;; TODO: Fix/improve this upstream, in the `martian` codebase?
+(defn encode-request [encoders]
+  {:name    ::encode-request
+   :encodes (keys encoders)
+   :enter   (fn [{:keys [request handler] :as ctx}]
+              (let [has-body? (get-in ctx [:request :body])
+                    content-type (and has-body?
+                                      (not (get-in request [:headers "Content-Type"]))
+                                      (encoding/choose-content-type encoders (:consumes handler)))
+                    multipart? (= "multipart/form-data" content-type)
+                    {:keys [encode]} (encoding/find-encoder encoders content-type)]
+                (cond-> ctx
+                        has-body? (update-in [:request :body] encode)
+                        ;; NB: Luckily, all target HTTP clients — clj-http (but not lite), http-kit,
+                        ;;     hato, and even babashka/http-client — all support the same syntax.
+                        multipart? (update :request set/rename-keys {:body :multipart})
+                        content-type (assoc-in [:request :headers "Content-Type"] content-type))))})
+
+(defn multipart-encode [body]
+  (mapv (fn [[k v]] {:name (name k) :content v}) body))
+
+(def encoders (assoc (me/default-encoders)
+                "multipart/form-data" {:encode multipart-encode
+                                       :as     :multipart}))
+
+(alter-var-root #'mi/default-encode-body
+                (constantly (encode-request encoders)))
 
 (defn build-handlers [tg-bot-api-spec]
   (binding [*id->api-type* (index-by :id (:types tg-bot-api-spec))]
     (mapv api-method->handler (:methods tg-bot-api-spec))))
 
+;; TODO: Make an actual HTTP client pluggable via dynaload and/or multi-method.
 (defn build-martian
   [bot-auth-token]
   (let [tg-bot-api-spec (read-tg-bot-api-spec)]
@@ -153,5 +198,7 @@
       (get-tg-bot-api-url bot-auth-token)
       (build-handlers tg-bot-api-spec)
       {:produces         ["application/json"]
-       :consumes         ["application/json"]
-       :coercion-matcher stc/json-coercion-matcher})))
+       :coercion-matcher stc/json-coercion-matcher
+       :interceptors     (into m/default-interceptors
+                               [mi/default-encode-body
+                                mi/default-coerce-response])})))
