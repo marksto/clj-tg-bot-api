@@ -8,18 +8,12 @@
             [martian.encoding :as encoding]
             [martian.interceptors :as mi]
             [schema.core :as s]
-            [schema-tools.coerce :as stc])
+            [schema-tools.coerce :as stc]
+
+            [marksto.clj-tg-bot-api.impl.utils :as utils])
   (:import (java.io File InputStream)
            (java.net URI URL)
            (java.nio.file Path)))
-
-;;; Utils
-
-(defn index-by
-  ([key-fn coll]
-   (index-by {} key-fn coll))
-  ([init-map key-fn coll]
-   (reduce #(assoc %1 (key-fn %2) %2) init-map coll)))
 
 ;;; Bot API
 
@@ -85,7 +79,7 @@
     (cond
       (some? fields)
       (-> {}
-          (index-by (comp keyword :name) fields)
+          (utils/index-by (comp keyword :name) fields)
           (update-vals (comp type->schema :type)))
 
       (some? subtypes)
@@ -187,7 +181,7 @@
                 (constantly (encode-request encoders)))
 
 (defn build-handlers [tg-bot-api-spec]
-  (binding [*id->api-type* (index-by :id (:types tg-bot-api-spec))]
+  (binding [*id->api-type* (utils/index-by :id (:types tg-bot-api-spec))]
     (mapv api-method->handler (:methods tg-bot-api-spec))))
 
 ;; TODO: Make an actual HTTP client pluggable via dynaload and/or multi-method.

@@ -1,4 +1,5 @@
 (ns marksto.clj-tg-bot-api.impl.utils
+  "A set of necessary general-purpose utilities"
   (:require [clojure.repl :refer [demunge]]
             [clojure.string :as str])
   (:import (clojure.lang IDeref)
@@ -9,13 +10,24 @@
 (defn map-keys
   ([vf coll]
    (map-keys {} vf coll))
-  ([m vf coll]
+  ([init-map vf coll]
    (if (seq coll)
      (->> coll
           (reduce #(assoc! %1 %2 (vf %2))
-                  (transient m))
+                  (transient init-map))
           (persistent!))
-     m)))
+     init-map)))
+
+(defn index-by
+  ([key-fn coll]
+   (index-by {} key-fn coll))
+  ([init-map kf coll]
+   (if (seq coll)
+     (->> coll
+          (reduce #(assoc! %1 (kf %2) %2)
+                  (transient init-map))
+          (persistent!))
+     init-map)))
 
 (defn interleave*
   ([]
@@ -99,13 +111,7 @@
                               (last $))]
     (str/replace-first full-name #".+/" "")))
 
-;; exceptions
-
-(defn clear-stack-trace
-  [t]
-  (Throwable/.setStackTrace t (into-array StackTraceElement [])))
-
-;; derefable
+;; references
 
 (defn derefable?
   [obj]
@@ -116,6 +122,12 @@
   (if (derefable? val)
     (deref val)
     val))
+
+;; exceptions
+
+(defn clear-stack-trace
+  [t]
+  (Throwable/.setStackTrace t (into-array StackTraceElement [])))
 
 ;; runtime
 
