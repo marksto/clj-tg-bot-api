@@ -1,7 +1,7 @@
 (ns marksto.clj-tg-bot-api.client.core
   (:require [marksto.clj-tg-bot-api.client.impl :as impl]))
 
-(defn call-bot-api!
+(defn make-request!
   "Makes a request to the Telegram Bot API on behalf of the `tg-bot-api-client`.
 
    It makes a request in a synchronous blocking way, therefore it is up to the
@@ -40,7 +40,7 @@
   {:arglists '([tg-bot-api-client method-fn & method-args]
                [tg-bot-api-client call-opts method-fn & method-args])}
   [tg-bot-api-client & args]
-  (impl/call-bot-api! tg-bot-api-client args))
+  (impl/make-request! tg-bot-api-client args))
 
 ;;
 

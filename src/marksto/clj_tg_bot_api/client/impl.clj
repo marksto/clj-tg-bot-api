@@ -266,21 +266,7 @@
 ;; TODO: Add an auto-retry strategy for Telegram Bot API response 'parameters' with 'migrate_to_chat_id'.
 ;; TODO: Add an auto-retry strategy for Telegram Bot API response 'parameters' with 'retry_after'.
 
-(defn- make-request!
-  [tg-bot-api-client call-opts method-fn method-args]
-  (let [callbacks {:on-success (or (:on-success call-opts)
-                                   get-result)
-                   :on-failure (or (:on-failure call-opts)
-                                   log-failure-reason-and-throw)
-                   :on-error   (or (:on-error call-opts)
-                                   log-error-and-rethrow)}
-        api-resp (with-rate-limiter:call-bot-api-method!
-                   tg-bot-api-client method-fn method-args)]
-    (log/debugf "Telegram Bot API returned: %s" api-resp)
-    (when (some? api-resp)
-      (handle-response method-fn method-args api-resp callbacks))))
-
-(defn call-bot-api!
+(defn make-request!
   [tg-bot-api-client args]
   (let [[call-opts method-fn & method-args] (if (map? (first args))
                                               args
@@ -288,7 +274,17 @@
     (when (nil? method-fn)
       (throw (ex-info "The `call-bot-api!` was called without `method-fn`"
                       {:args args})))
-    (make-request! tg-bot-api-client call-opts method-fn method-args)))
+    (let [callbacks {:on-success (or (:on-success call-opts)
+                                     get-result)
+                     :on-failure (or (:on-failure call-opts)
+                                     log-failure-reason-and-throw)
+                     :on-error   (or (:on-error call-opts)
+                                     log-error-and-rethrow)}
+          api-resp (with-rate-limiter:call-bot-api-method!
+                     tg-bot-api-client method-fn method-args)]
+      (log/debugf "Telegram Bot API returned: %s" api-resp)
+      (when (some? api-resp)
+        (handle-response method-fn method-args api-resp callbacks)))))
 
 
 
