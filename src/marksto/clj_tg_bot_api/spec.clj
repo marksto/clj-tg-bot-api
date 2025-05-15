@@ -142,10 +142,6 @@
 
 ;;; Martian
 
-;; TODO: Change to an exposed Martian option after the PR #221 is merged.
-(alter-var-root #'martian.schema/coercion-matchers
-                (constantly stc/json-coercion-matcher))
-
 (defn build-handlers [tg-bot-api-spec]
   (binding [*id->api-type* (index-by :id (:types tg-bot-api-spec))]
     (mapv api-method->handler (:methods tg-bot-api-spec))))
@@ -156,5 +152,6 @@
     (m/bootstrap
       (get-tg-bot-api-url bot-auth-token)
       (build-handlers tg-bot-api-spec)
-      {:produces ["application/json"]
-       :consumes ["application/json"]})))
+      {:produces         ["application/json"]
+       :consumes         ["application/json"]
+       :coercion-matcher stc/json-coercion-matcher})))
