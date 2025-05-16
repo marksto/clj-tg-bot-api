@@ -135,7 +135,8 @@
            :summary    description
            :consumes   (if uploads-file?
                          ["multipart/form-data"]
-                         ["application/json"])}
+                         ["application/json"])
+           :produces   ["application/json"]}
           (when params-schema
             (if use-http-get?
               {:query-schema params-schema}
@@ -210,6 +211,5 @@
     (martian-bootstrap-fn
       tg-bot-api-root-url
       (build-handlers @read-tg-bot-api-spec)
-      (cond-> {:produces         ["application/json"]
-               :coercion-matcher stc/json-coercion-matcher}
+      (cond-> {:coercion-matcher stc/json-coercion-matcher}
               is-offline? (assoc :interceptors (offline-interceptors))))))
