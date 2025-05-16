@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.set :as set]
             [clojure.string :as str]
+            [clojure.tools.logging :as log]
             [jsonista.core :as json]
             [martian.core :as m]
             [martian.encoders :as me]
@@ -176,14 +177,39 @@
   (binding [*id->api-type* (utils/index-by :id (:types tg-bot-api-spec))]
     (mapv api-method->handler (:methods tg-bot-api-spec))))
 
-;; TODO: Make an actual HTTP client pluggable via dynaload and/or multi-method.
+(def offline-bootstrap-fn m/bootstrap)
+
+(def martian-bootstrap-fn
+  ;; NB: Sorted by descending popularity in the global Clojure community.
+  (or (utils/requiring-resolve* 'martian.http-kit/bootstrap)
+      (utils/requiring-resolve* 'martian.clj-http/bootstrap)
+      (utils/requiring-resolve* 'martian.hato/bootstrap)
+      (utils/requiring-resolve* 'martian.babashka.http-client/bootstrap)
+      (utils/requiring-resolve* 'martian.clj-http-lite/bootstrap)
+      offline-bootstrap-fn))
+
+(defn- offline-interceptors []
+  (conj m/default-interceptors
+        mi/default-encode-body
+        mi/default-coerce-response))
+
 (defn build-martian
   [tg-bot-api-root-url]
-  (m/bootstrap
-    tg-bot-api-root-url
-    (build-handlers @read-tg-bot-api-spec)
-    {:produces         ["application/json"]
-     :coercion-matcher stc/json-coercion-matcher
-     :interceptors     (into m/default-interceptors
-                             [mi/default-encode-body
-                              mi/default-coerce-response])}))
+  (let [is-offline? (= offline-bootstrap-fn martian-bootstrap-fn)]
+    (when is-offline?
+      (log/warn (str "WARNING! You are in offline mode, meaning there is no "
+                     "supported HTTP client available for sending requests. "
+                     "Please, add any Martian library for JVM/Babashka HTTP "
+                     "client to the classpath. For supported, check out the "
+                     "https://github.com/oliyh/martian page.")))
+    (when (= "#'martian.clj-http-lite/bootstrap" (str martian-bootstrap-fn))
+      (log/warn (str "WARNING! You have picked up `clj-http-lite` which has "
+                     "no support for 'multipart/form-data' requests used to "
+                     "upload files, therefore this Telegram Bot API feature "
+                     "won't be available for your bot.")))
+    (martian-bootstrap-fn
+      tg-bot-api-root-url
+      (build-handlers @read-tg-bot-api-spec)
+      (cond-> {:produces         ["application/json"]
+               :coercion-matcher stc/json-coercion-matcher}
+              is-offline? (assoc :interceptors (offline-interceptors))))))

@@ -137,3 +137,11 @@
               (and (= "clojure.main$repl" (StackTraceElement/.getClassName ste))
                    (= "doInvoke" (StackTraceElement/.getMethodName ste))))
             (Thread/.getStackTrace (Thread/currentThread)))))
+
+;; dynaload
+
+(defn requiring-resolve*
+  [sym]
+  (try
+    (requiring-resolve sym)
+    (catch Exception _ nil)))
