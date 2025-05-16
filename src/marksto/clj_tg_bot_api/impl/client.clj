@@ -214,19 +214,7 @@
 
 ;;
 
-;; TODO: Get rid of the `tg-bot-api:chat-id-fns` hack and the `best-guess-chat-id` fn.
-(def ^:private tg-bot-api:chat-id-fns
-  #{})
-
-(defn- best-guess-chat-id
-  [method params]
-  (let [[farg & rest] params]
-    (if (and (map? farg) (empty? rest))
-      (:chat_id farg)
-      (when (contains? tg-bot-api:chat-id-fns method)
-        farg))))
-
-(defn- call-bot-api-method!
+(defn- call-tg-bot-api-method!
   [client method params]
   ;; TODO: Double-check with all popular clients and re-implement if necessary.
   ;; NB: Expects an HTTP client library to return a map with the `:error` key
@@ -234,24 +222,22 @@
   ;;     300-303, or 307) or in any of other exceptional situations (e.g. when
   ;;     the lib is unable to retrieve the response body).
   (try
-    (let [response (if (nil? params)
-                     (m/response-for client method)
-                     (m/response-for client method params))]
-      (:body response))
+    (if (nil? params)
+      (m/response-for client method)
+      (m/response-for client method params))
     (catch Throwable client-code-ex
       ;; NB: An `error` is processed by the `handle-response` function.
       {:error client-code-ex})))
 
-;; TODO: Move `in-test?` into a separate place (probably, a test-specific ns).
-(defn- with-rate-limiter:call-bot-api-method!
-  [{:keys [bot-id in-test?] :as client} method params]
-  (if in-test?
-    (call-bot-api-method! client method params)
-    (dh/with-rate-limiter {:ratelimiter (get-rate-limiter! bot-id)}
-      (if-some [chat-id (best-guess-chat-id method params)]
-        (dh/with-rate-limiter {:ratelimiter (get-rate-limiter! bot-id chat-id)}
-          (call-bot-api-method! client method params))
-        (call-bot-api-method! client method params)))))
+(defmacro with-rate-limiter
+  [bot-id in-test? chat-id form]
+  `(if ~in-test?
+     ~form
+     (dh/with-rate-limiter (get-rate-limiter! ~bot-id)
+       (if (some? ~chat-id)
+         (dh/with-rate-limiter (get-rate-limiter! ~bot-id ~chat-id)
+           ~form)
+         ~form))))
 
 ;;
 
@@ -284,7 +270,7 @@
 ;; TODO: Add an auto-retry strategy for Telegram Bot API response 'parameters' with 'retry_after'.
 
 (defn make-request!
-  [client args]
+  [{:keys [bot-id in-test?] :as client} args]
   (let [[call-opts method params] (if (map? (first args)) args (cons nil args))]
     (have! keyword? method)
     (let [callbacks {:on-success (or (:on-success call-opts)
@@ -293,10 +279,12 @@
                                      log-failure-reason-and-throw)
                      :on-error   (or (:on-error call-opts)
                                      log-error-and-rethrow)}
-          tg-resp (with-rate-limiter:call-bot-api-method! client method params)]
-      (log/debugf "Telegram Bot API returned: %s" tg-resp)
-      (when (some? tg-resp)
-        (handle-response method params tg-resp callbacks)))))
+          chat-id (or (get params :chat-id) (get params :chat_id))
+          {:keys [body]} (with-rate-limiter bot-id in-test? chat-id
+                           (call-tg-bot-api-method! client method params))]
+      (log/debugf "Telegram Bot API returned: %s" body)
+      (when (some? body)
+        (handle-response method params body callbacks)))))
 
 ;;
 

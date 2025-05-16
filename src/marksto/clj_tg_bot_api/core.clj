@@ -6,6 +6,7 @@
 
 ;;; Bot API client
 
+;; TODO: Document `in-test?` feature. Probably, impl it in a test-specific ns.
 (defn ->client
   "Instantiates a Telegram Bot API client for a particular bot using the given
    `client-opts`."
