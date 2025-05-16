@@ -182,7 +182,7 @@
 
 (def martian-bootstrap-fn
   ;; NB: Sorted by descending popularity in the global Clojure community.
-  (or (utils/requiring-resolve* 'martian.http-kit/bootstrap)
+  (or (utils/requiring-resolve* 'martian.httpkit/bootstrap)
       (utils/requiring-resolve* 'martian.clj-http/bootstrap)
       (utils/requiring-resolve* 'martian.hato/bootstrap)
       (utils/requiring-resolve* 'martian.babashka.http-client/bootstrap)

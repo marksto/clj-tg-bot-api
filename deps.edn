@@ -23,8 +23,17 @@
                  criterium/criterium      {:mvn/version "0.4.6"}
                  io.aviso/pretty          {:mvn/version "1.4.4"}}}
 
+  :http/http-kit
+  {:extra-deps {com.github.oliyh/martian-httpkit {:mvn/version "0.1.31"}}}
+
   :http/clj-http
   {:extra-deps {com.github.oliyh/martian-clj-http {:mvn/version "0.1.31"}}}
+
+  :http/hato
+  {:extra-deps {com.github.oliyh/martian-hato {:mvn/version "0.1.31"}}}
+
+  :http/bb-http
+  {:extra-deps {com.github.oliyh/martian-babashka-http-client {:mvn/version "0.1.31"}}}
 
   :test
   {:extra-paths ["test"]

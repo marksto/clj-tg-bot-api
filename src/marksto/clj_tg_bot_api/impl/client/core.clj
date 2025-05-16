@@ -190,8 +190,9 @@
                      :on-error   (or (:on-error call-opts)
                                      log-error-and-rethrow)}
           chat-id (or (get params :chat-id) (get params :chat_id))
-          {:keys [body]} (rl/with-rate-limiter bot-id in-test? chat-id
-                           (call-tg-bot-api-method! client method params))]
+          tg-resp (rl/with-rate-limiter bot-id in-test? chat-id
+                    (call-tg-bot-api-method! client method params))
+          {:keys [body]} (utils/force-ref tg-resp)]
       (log/debugf "Telegram Bot API returned: %s" body)
       (when (some? body)
         (handle-response method params body callbacks)))))
