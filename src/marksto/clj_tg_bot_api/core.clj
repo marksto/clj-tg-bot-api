@@ -74,7 +74,7 @@
    See https://core.telegram.org/bots/api#making-requests-when-getting-updates"
   {:arglists '([client method params?])}
   ([client method]
-   (impl/build-immediate-response client method {}))
+   (impl/build-immediate-response client method))
   ([client method params]
    (impl/build-immediate-response client method params)))
 

@@ -1,8 +1,11 @@
 (ns marksto.clj-tg-bot-api.impl.client
-  (:require [clojure.string :as str]
+  (:require [camel-snake-kebab.core :as csk]
+            [clojure.string :as str]
             [clojure.tools.logging :as log]
             [diehard.core :as dh]
             [diehard.rate-limiter :as dh.rl]
+            [martian.core :as m]
+            [taoensso.truss :refer [have!]]
 
             [marksto.clj-tg-bot-api.impl.api.spec :as api-spec]
             [marksto.clj-tg-bot-api.impl.utils :as utils]
@@ -300,8 +303,18 @@
 
 ;;
 
-;; TODO: Call a Bot API method fn w/o actually making an HTTP request.
-;;       Inject a `:method <method-name>` entry into the returned map.
 (defn build-immediate-response
-  [client method params]
-  (assoc params :method method))
+  ([client method]
+   (build-immediate-response client method {}))
+  ([client method params]
+   (have! keyword? method)
+   (let [request (-> client
+                     (m/request-for method params)
+                     (select-keys [:body :multipart :headers])
+                     (assoc :status 200))
+         method' (csk/->camelCaseString method)]
+     ;; NB: Special handling of multipart requests so to not pollute the params
+     ;;     schema of each and every method in the API spec with this `method`.
+     (if (contains? request :multipart)
+       (update request :multipart conj {:name "method" :content method'})
+       (update request :body assoc :method method')))))
