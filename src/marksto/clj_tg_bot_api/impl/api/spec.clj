@@ -15,18 +15,10 @@
            (java.net URI URL)
            (java.nio.file Path)))
 
-(defn read-tg-bot-api-spec []
-  (json/read-value
-    (slurp (io/resource "tg-bot-api-spec.json"))
-    (json/object-mapper {:decode-key-fn true})))
-
-;;; URL
-
-(def global-server-url "https://api.telegram.org/bot")
-
-(defn get-api-root-url
-  [{:keys [server-url bot-auth-token] :as _client-opts}]
-  (str (or server-url global-server-url) bot-auth-token))
+(def read-tg-bot-api-spec
+  (delay (json/read-value
+           (slurp (io/resource "tg-bot-api-spec.json"))
+           (json/object-mapper {:decode-key-fn true}))))
 
 ;;; Types
 
@@ -186,13 +178,12 @@
 
 ;; TODO: Make an actual HTTP client pluggable via dynaload and/or multi-method.
 (defn build-martian
-  [client-opts]
-  (let [tg-bot-api-spec (read-tg-bot-api-spec)]
-    (m/bootstrap
-      (get-api-root-url client-opts)
-      (build-handlers tg-bot-api-spec)
-      {:produces         ["application/json"]
-       :coercion-matcher stc/json-coercion-matcher
-       :interceptors     (into m/default-interceptors
-                               [mi/default-encode-body
-                                mi/default-coerce-response])})))
+  [tg-bot-api-root-url]
+  (m/bootstrap
+    tg-bot-api-root-url
+    (build-handlers @read-tg-bot-api-spec)
+    {:produces         ["application/json"]
+     :coercion-matcher stc/json-coercion-matcher
+     :interceptors     (into m/default-interceptors
+                             [mi/default-encode-body
+                              mi/default-coerce-response])}))

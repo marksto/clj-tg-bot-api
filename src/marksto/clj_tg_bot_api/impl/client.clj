@@ -4,8 +4,21 @@
             [diehard.core :as dh]
             [diehard.rate-limiter :as dh.rl]
 
+            [marksto.clj-tg-bot-api.impl.api.spec :as api-spec]
             [marksto.clj-tg-bot-api.impl.utils :as utils]
             [marksto.clj-tg-bot-api.impl.utils.response :as response]))
+
+;; Bot API client instantiation
+
+(def global-server-url "https://api.telegram.org/bot")
+
+(defn get-api-root-url-for-bot
+  [server-url bot-auth-token]
+  (str (or server-url global-server-url) bot-auth-token))
+
+(defn ->client
+  [{:keys [bot-auth-token server-url] :as _client-opts}]
+  (api-spec/build-martian (get-api-root-url-for-bot server-url bot-auth-token)))
 
 
 ;; operations on response 'result'

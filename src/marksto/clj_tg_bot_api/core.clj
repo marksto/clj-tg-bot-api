@@ -4,6 +4,15 @@
    and any errors (exception)."
   (:require [marksto.clj-tg-bot-api.impl.client :as impl]))
 
+(defn ->client
+  "Instantiates a Telegram Bot API client for a particular bot using the given
+   `client-opts`."
+  {:arglists '([{:keys [bot-auth-token server-url] :as client-opts}])}
+  [client-opts]
+  (impl/->client client-opts))
+
+;;
+
 (defn make-request!
   "Makes a request to the Telegram Bot API on behalf of the `tg-bot-api-client`.
 
