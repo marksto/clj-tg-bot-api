@@ -56,8 +56,8 @@
 
 (def failure-msg "Unsuccessful Telegram Bot API request")
 
-(defn- format-msg [base-msg method-name params]
-  (format "%s (method='%s' args=%s)" base-msg method-name params))
+(defn- format-msg [base-msg method params]
+  (format "%s (method='%s' args=%s)" base-msg method params))
 
 (defn log-failure-reason
   ([method params failed-tg-resp]
@@ -74,8 +74,8 @@
                              (str/join ", "))
          base-msg' (cond-> (utils/apply-if-fn base-msg)
                            (seq error-text) (str ": " error-text))
-         method-name (utils/fn-name method)]
-     (log/log log-level (format-msg base-msg' method-name params)))))
+         method' (csk/->camelCaseString method)]
+     (log/log log-level (format-msg base-msg' method' params)))))
 
 (defn throw-for-failure
   ([method params failed-tg-resp]
@@ -111,8 +111,8 @@
    (log-error error-msg method params ex))
   ([base-msg method params ex]
    (let [base-msg' (utils/apply-if-fn base-msg)
-         method-name (utils/fn-name method)]
-     (log/log :error ex (format-msg base-msg' method-name params)))))
+         method' (csk/->camelCaseString method)]
+     (log/log :error ex (format-msg base-msg' method' params)))))
 
 ;; NB: For async requests, this strategy is of little use, since the provided
 ;;     callback will be processed on different threads and any exception will

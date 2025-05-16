@@ -102,15 +102,6 @@
     (fn-or-val)
     fn-or-val))
 
-(defn fn-name
-  [fn]
-  (when-some [full-name (as-> (str fn) $
-                              (demunge $)
-                              (or (re-find #"(.+)--\d+@" $)
-                                  (re-find #"(.+)@" $))
-                              (last $))]
-    (str/replace-first full-name #".+/" "")))
-
 ;; references
 
 (defn derefable?
