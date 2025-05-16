@@ -283,31 +283,10 @@
       (when (some? api-resp)
         (handle-response method-fn method-args api-resp callbacks)))))
 
-
-
-;; IMMEDIATE RESPONSE
+;;
 
 ;; TODO: Call a Bot API method fn w/o actually making an HTTP request.
 ;;       Inject a `:method <method-name>` entry into the returned map.
 (defn build-immediate-response
-  "Builds an immediate response, i.e. a reply payload for an incoming update.
-
-   From the Telegram Bot API docs: \"If you're using webhooks, you can perform
-   a request to the Bot API while sending an answer to the webhook ... Specify
-   the method to be invoked in the 'method' parameter of the request.\".
-
-   Example:
-   ```
-   {:method              \"sendMessage\",
-    :chat_id             chat-id,
-    :reply_to_message_id msg-id,
-    :text                \"An ordinary reply message text.\"}
-   ```
-
-   This technique helps to reduce the number of requests to the Bot API server
-   and, as a consequence, helps us to stay under the limits on server requests
-   and sometimes improves the responsiveness of the bot's UI on the client.
-
-   See https://core.telegram.org/bots/api#making-requests-when-getting-updates"
-  [method-name response-content]
-  (merge {:method method-name} response-content))
+  [tg-bot-api-client method-name method-args]
+  (merge {:method method-name} method-args))

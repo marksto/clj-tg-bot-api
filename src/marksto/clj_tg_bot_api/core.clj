@@ -45,6 +45,24 @@
   [tg-bot-api-client & args]
   (impl/make-request! tg-bot-api-client args))
 
+(defn build-immediate-response
+  "Builds an immediate response, a payload for making a request to the Bot API
+   while responding to an incoming update received via the webhook.
+
+   From the Telegram Bot API documentation:
+   If you're using *webhooks*, you can perform a request to the Bot API while
+   sending an answer to the webhook. <...> Specify the _method_ to be invoked
+   in the method parameter of the request. It's not possible to know that such
+   a request was successful or get its result.
+
+   This technique helps to reduce the number of requests to the Bot API server
+   and, as a consequence, helps us to stay under the limits on server requests
+   and sometimes improves the responsiveness of the bot's UI on the client.
+
+   See https://core.telegram.org/bots/api#making-requests-when-getting-updates"
+  [tg-bot-api-client method-name & {:as method-args}]
+  (impl/build-immediate-response tg-bot-api-client method-name method-args)
+
 ;;
 
 (defn get-result
