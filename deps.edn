@@ -12,12 +12,16 @@
 
  :aliases
  {:dev
-  {:extra-paths ["bb" "build.clj"]
+  {:extra-paths ["bb" "build.clj" "dev"]
    :extra-deps  {;; Repeat built-in libs for in-REPL development
                  babashka/fs              {:mvn/version "0.5.24"}
                  cheshire/cheshire        {:mvn/version "6.0.0"}
                  org.babashka/http-client {:mvn/version "0.4.22"}
-                 org.clj-commons/hickory  {:mvn/version "0.7.7"}}}
+                 org.clj-commons/hickory  {:mvn/version "0.7.7"}
+
+                 ;; Development tools
+                 criterium/criterium      {:mvn/version "0.4.6"}
+                 io.aviso/pretty          {:mvn/version "1.4.4"}}}
 
   :test
   {:extra-paths ["test"]
