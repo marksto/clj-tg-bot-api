@@ -2,6 +2,7 @@
   (:require [camel-snake-kebab.core :as csk]
             [clojure.string :as str]
             [clojure.tools.logging :as log]
+            [jsonista.core :as json]
             [martian.core :as m]
             [taoensso.truss :refer [have!]]
 
@@ -80,10 +81,8 @@
   ([method params failed-tg-resp]
    (throw-for-failure failure-msg method params failed-tg-resp))
   ([base-msg method params failed-tg-resp]
-   (let [ex-msg (utils/apply-if-fn base-msg)
-         ;; NB: Exclude an HTTP client-set `:error`, since it's of little use.
-         response (dissoc failed-tg-resp :error)]
-     (throw (ex-info ex-msg {:response response
+   (let [ex-msg (utils/apply-if-fn base-msg)]
+     (throw (ex-info ex-msg {:response failed-tg-resp
                              :method   method
                              :params   params})))))
 
@@ -106,6 +105,7 @@
 
 (def error-msg "Error while making a Telegram Bot API request")
 
+;; TODO: Strip of "Could not coerce value to schema" exceptions from `:trace`.
 (defn log-error
   ([method params ex]
    (log-error error-msg method params ex))
@@ -136,11 +136,6 @@
 
 (defn- call-tg-bot-api-method!
   [client method params]
-  ;; TODO: Double-check with all popular clients and re-implement if necessary.
-  ;; NB: Expects an HTTP client library to return a map with the `:error` key
-  ;;     in case if request was unsuccessful (status codes other than 200-207,
-  ;;     300-303, or 307) or in any of other exceptional situations (e.g. when
-  ;;     the lib is unable to retrieve the response body).
   (try
     (if (nil? params)
       (m/response-for client method)
@@ -148,6 +143,31 @@
     (catch Throwable client-code-ex
       ;; NB: An `error` is processed by the `handle-response` function.
       {:error client-code-ex})))
+
+;;
+
+;; TODO: Add an auto-retry strategy for Telegram Bot API response 'parameters' with 'migrate_to_chat_id'.
+;; TODO: Add an auto-retry strategy for Telegram Bot API response 'parameters' with 'retry_after'.
+
+(def error-response-body-mapper (json/object-mapper {:decode-key-fn true}))
+
+;; TODO: Double-check with all popular clients and re-implement if necessary.
+(defn- prepare-response
+  [{:keys [body error] :as _call-result}]
+  ;; NB: Expects an HTTP client library to return a map with the `:error` key
+  ;;     in case if request was unsuccessful (status codes other than 200-207,
+  ;;     300-303, or 307) or in any of other exceptional situations (e.g. when
+  ;;     an HTTP connection cannot be established).
+  (if (some? error)
+    (if-some [body (some-> (ex-data error)
+                           :body
+                           (json/read-value error-response-body-mapper))]
+      ;; Failure - unsuccessful request (in terms of the Telegram Bot API)
+      body
+      ;; Error - in any other exceptional situation (incl. client-code-ex)
+      {:error error})
+    ;; Successful request
+    body))
 
 ;;
 
@@ -176,9 +196,6 @@
 
 ;;
 
-;; TODO: Add an auto-retry strategy for Telegram Bot API response 'parameters' with 'migrate_to_chat_id'.
-;; TODO: Add an auto-retry strategy for Telegram Bot API response 'parameters' with 'retry_after'.
-
 (defn make-request!
   [{:keys [bot-id in-test?] :as client} args]
   (let [[call-opts method params] (if (map? (first args)) args (cons nil args))]
@@ -190,12 +207,13 @@
                      :on-error   (or (:on-error call-opts)
                                      log-error-and-rethrow)}
           chat-id (or (get params :chat-id) (get params :chat_id))
-          tg-resp (rl/with-rate-limiter bot-id in-test? chat-id
-                    (call-tg-bot-api-method! client method params))
-          {:keys [body]} (utils/force-ref tg-resp)]
-      (log/debugf "Telegram Bot API returned: %s" body)
-      (when (some? body)
-        (handle-response method params body callbacks)))))
+          tg-resp (-> (rl/with-rate-limiter bot-id in-test? chat-id
+                        (call-tg-bot-api-method! client method params))
+                      (utils/force-ref)
+                      (prepare-response))]
+      (log/debugf "Telegram Bot API returned: %s" tg-resp)
+      (when (some? tg-resp)
+        (handle-response method params tg-resp callbacks)))))
 
 ;;
 
@@ -222,8 +240,14 @@
                          :bot-token (System/getenv "BOT_AUTH_TOKEN")}))
   (dissoc client :handlers)
 
+  ;; 1. Successful request
   (make-request! client '(:get-me))
-  (make-request! client '(:get-me {}))
+  ;; 2. Client code exception (params coercion)
+  (make-request! client '(:send-audio {:chat-id 1}))
+  ;; 3. Failure - Unsuccessful request (400 Bad Request)
+  (make-request! client '(:get-chat {:chat-id 1}))
+  ;; 4. Error - Network connection (drop internet access)
+  (make-request! client '(:get-me))
 
   (build-immediate-response client :get-me)
   (build-immediate-response client :get-me {})
