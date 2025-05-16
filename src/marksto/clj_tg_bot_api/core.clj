@@ -2,7 +2,7 @@
   "Provides a convenient wrapper (a client library) around the Telegram Bot API
    adding handy callback fns (operations) handling responses (success, failure)
    and any errors (exception)."
-  (:require [marksto.clj-tg-bot-api.impl.client :as impl]))
+  (:require [marksto.clj-tg-bot-api.impl.client.core :as client]))
 
 ;;; Bot API client
 
@@ -12,7 +12,7 @@
    `client-opts`."
   {:arglists '([{:keys [bot-id bot-auth-token server-url] :as client-opts}])}
   [client-opts]
-  (impl/->client client-opts))
+  (client/->client client-opts))
 
 ;;; Making Requests
 
@@ -53,7 +53,7 @@
    See https://core.telegram.org/bots/api#making-requests"
   {:arglists '([client call-opts? method params?])}
   [client & args]
-  (impl/make-request! client args))
+  (client/make-request! client args))
 
 (defn build-immediate-response
   "Builds an immediate response — for making a request to the Telegram Bot API
@@ -74,9 +74,9 @@
    See https://core.telegram.org/bots/api#making-requests-when-getting-updates"
   {:arglists '([client method params?])}
   ([client method]
-   (impl/build-immediate-response client method))
+   (client/build-immediate-response client method))
   ([client method params]
-   (impl/build-immediate-response client method params)))
+   (client/build-immediate-response client method params)))
 
 ;;; On-Success Callbacks
 
@@ -84,15 +84,15 @@
   "Returns a successful response, otherwise a given `default-val` or `nil`.
    To be used as an `:on-success` callback fn."
   ([tg-resp]
-   (impl/get-result tg-resp))
+   (client/get-result tg-resp))
   ([tg-resp default-val]
-   (impl/get-result tg-resp default-val)))
+   (client/get-result tg-resp default-val)))
 
 (defn assert-result
   "Checks that a response is successful and equals to the `expected` value.
    To be used as an `:on-success` callback fn."
   [expected tg-resp]
-  (impl/assert-result expected tg-resp))
+  (client/assert-result expected tg-resp))
 
 ;;; On-Failure Callbacks
 
@@ -100,19 +100,19 @@
   "For an unsuccessful Telegram Bot API request, returns the response error.
    To be used as an `:on-failure` callback fn."
   [method params failed-tg-resp]
-  (impl/get-error method params failed-tg-resp))
+  (client/get-error method params failed-tg-resp))
 
 (defn log-failure-reason
   "For an unsuccessful Telegram Bot API request, logs the response error.
    To be used as an `:on-failure` callback fn."
   ([method params failed-tg-resp]
-   (impl/log-failure-reason
+   (client/log-failure-reason
      method params failed-tg-resp))
   ([base-msg method params failed-tg-resp]
-   (impl/log-failure-reason
+   (client/log-failure-reason
      base-msg method params failed-tg-resp))
   ([log-level base-msg method params failed-tg-resp]
-   (impl/log-failure-reason
+   (client/log-failure-reason
      log-level base-msg method params failed-tg-resp)))
 
 (defn log-failure-reason-and-throw
@@ -120,13 +120,13 @@
    throws an exception w/ relevant data (`:response`, `:method`, `:params`).
    To be used as an `:on-failure` callback fn."
   ([method params failed-tg-resp]
-   (impl/log-failure-reason-and-throw
+   (client/log-failure-reason-and-throw
      method params failed-tg-resp))
   ([base-msg method params failed-tg-resp]
-   (impl/log-failure-reason-and-throw
+   (client/log-failure-reason-and-throw
      base-msg method params failed-tg-resp))
   ([log-level base-msg method params failed-tg-resp]
-   (impl/log-failure-reason-and-throw
+   (client/log-failure-reason-and-throw
      log-level base-msg method params failed-tg-resp)))
 
 (defn throw-for-failure
@@ -134,9 +134,9 @@
    with relevant data (`:response`, `:method`, `:params`), without logging.
    To be used as an `:on-failure` callback fn."
   ([method params failed-tg-resp]
-   (impl/throw-for-failure method params failed-tg-resp))
+   (client/throw-for-failure method params failed-tg-resp))
   ([base-msg method params failed-tg-resp]
-   (impl/throw-for-failure base-msg method params failed-tg-resp)))
+   (client/throw-for-failure base-msg method params failed-tg-resp)))
 
 ;;; On-Error Callbacks
 
@@ -145,9 +145,9 @@
    logs the corresponding exception `ex`.
    To be used as an `:on-error` callback fn."
   ([method params ex]
-   (impl/log-error method params ex))
+   (client/log-error method params ex))
   ([base-msg method params ex]
-   (impl/log-error base-msg method params ex)))
+   (client/log-error base-msg method params ex)))
 
 (defn log-error-and-rethrow
   "For in case there was an error while making a Telegram Bot API request,
@@ -156,9 +156,9 @@
    throws the latter one.
    To be used as an `:on-error` callback fn."
   ([method params ex]
-   (impl/log-error-and-rethrow method params ex))
+   (client/log-error-and-rethrow method params ex))
   ([base-msg method params ex]
-   (impl/log-error-and-rethrow base-msg method params ex)))
+   (client/log-error-and-rethrow base-msg method params ex)))
 
 (defn rethrow-error
   "For in case there was an error while making a Telegram Bot API request,
@@ -167,4 +167,4 @@
    logging.
    To be used as an `:on-error` callback fn."
   [method params ex]
-  (impl/rethrow-error method params ex))
+  (client/rethrow-error method params ex))

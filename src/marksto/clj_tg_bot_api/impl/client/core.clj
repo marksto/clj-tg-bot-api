@@ -1,4 +1,4 @@
-(ns marksto.clj-tg-bot-api.impl.client
+(ns marksto.clj-tg-bot-api.impl.client.core
   (:require [camel-snake-kebab.core :as csk]
             [clojure.string :as str]
             [clojure.tools.logging :as log]
