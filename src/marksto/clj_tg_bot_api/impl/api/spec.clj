@@ -15,18 +15,18 @@
            (java.net URI URL)
            (java.nio.file Path)))
 
-;;; Bot API
-
-;; TODO: Don't forget to provide an option to switch to a "local".
-(def global-tg-bot-api-url "https://api.telegram.org/bot")
-
-(defn get-tg-bot-api-url [bot-auth-token]
-  (str global-tg-bot-api-url bot-auth-token))
-
 (defn read-tg-bot-api-spec []
   (json/read-value
     (slurp (io/resource "tg-bot-api-spec.json"))
     (json/object-mapper {:decode-key-fn true})))
+
+;;; URL
+
+(def global-server-url "https://api.telegram.org/bot")
+
+(defn get-api-root-url
+  [{:keys [server-url bot-auth-token] :as _client-opts}]
+  (str (or server-url global-server-url) bot-auth-token))
 
 ;;; Types
 
@@ -186,10 +186,10 @@
 
 ;; TODO: Make an actual HTTP client pluggable via dynaload and/or multi-method.
 (defn build-martian
-  [bot-auth-token]
+  [client-opts]
   (let [tg-bot-api-spec (read-tg-bot-api-spec)]
     (m/bootstrap
-      (get-tg-bot-api-url bot-auth-token)
+      (get-api-root-url client-opts)
       (build-handlers tg-bot-api-spec)
       {:produces         ["application/json"]
        :coercion-matcher stc/json-coercion-matcher
