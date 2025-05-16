@@ -15,13 +15,14 @@
 (def global-server-url "https://api.telegram.org/bot")
 
 (defn get-api-root-url-for-bot
-  [server-url bot-auth-token]
-  (str (or server-url global-server-url) bot-auth-token))
+  [server-url bot-token]
+  (str (or server-url global-server-url) bot-token))
 
 ;; TODO: Hide behind a custom `:type` to prevent secrets (token) from leaking.
 (defn ->client
-  [{:keys [bot-id bot-auth-token server-url] :as _client-opts}]
-  (-> (get-api-root-url-for-bot server-url bot-auth-token)
+  [{:keys [bot-id bot-token server-url] :as _client-opts}]
+  (have! some? bot-id bot-token)
+  (-> (get-api-root-url-for-bot server-url bot-token)
       (api-spec/build-martian)
       (assoc :bot-id bot-id)))
 
@@ -216,8 +217,8 @@
 ;;
 
 (comment
-  (def client (->client {:bot-id         1
-                         :bot-auth-token (System/getenv "BOT_AUTH_TOKEN")}))
+  (def client (->client {:bot-id    1
+                         :bot-token (System/getenv "BOT_AUTH_TOKEN")}))
   (dissoc client :handlers)
 
   (make-request! client '(:get-me))

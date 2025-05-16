@@ -6,11 +6,12 @@
 
 ;;; Bot API client
 
+;; TODO: Document `bot-id` feature.
 ;; TODO: Document `in-test?` feature. Probably, impl it in a test-specific ns.
 (defn ->client
   "Instantiates a Telegram Bot API client for a particular bot using the given
    `client-opts`."
-  {:arglists '([{:keys [bot-id bot-auth-token server-url] :as client-opts}])}
+  {:arglists '([{:keys [bot-id bot-token server-url] :as client-opts}])}
   [client-opts]
   (client/->client client-opts))
 
