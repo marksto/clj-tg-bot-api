@@ -8,7 +8,7 @@
             [marksto.clj-tg-bot-api.impl.utils :as utils]
             [marksto.clj-tg-bot-api.impl.utils.response :as response]))
 
-;; Bot API client instantiation
+;;; Bot API client
 
 (def global-server-url "https://api.telegram.org/bot")
 
@@ -17,11 +17,13 @@
   (str (or server-url global-server-url) bot-auth-token))
 
 (defn ->client
-  [{:keys [bot-auth-token server-url] :as _client-opts}]
-  (api-spec/build-martian (get-api-root-url-for-bot server-url bot-auth-token)))
+  [{:keys [bot-id bot-auth-token server-url] :as _client-opts}]
+  (-> (get-api-root-url-for-bot server-url bot-auth-token)
+      (api-spec/build-martian)
+      (assoc :bot-id bot-id)))
 
 
-;; operations on response 'result'
+;;; Operations on response 'result'
 
 (defn get-result
   ([tg-resp]
@@ -40,26 +42,26 @@
     tg-resp-result))
 
 
-;; operations on response 'error'
+;;; Operations on response 'error'
 
 (defn get-error
-  [method-fn method-args failed-tg-resp]
+  [method params failed-tg-resp]
   (let [resp-error (response/get-response-error failed-tg-resp)]
-    (assoc resp-error :method-fn method-fn :method-args method-args)))
+    (assoc resp-error :method method :params params)))
 
 (def failure-msg "Unsuccessful Telegram Bot API request")
 
-(defn- format-msg [base-msg method-name method-args]
-  (format "%s (method='%s' args=%s)" base-msg method-name method-args))
+(defn- format-msg [base-msg method-name params]
+  (format "%s (method='%s' args=%s)" base-msg method-name params))
 
 (defn log-failure-reason
-  ([method-fn method-args failed-tg-resp]
+  ([method params failed-tg-resp]
    (log-failure-reason :error failure-msg
-                       method-fn method-args failed-tg-resp))
-  ([base-msg method-fn method-args failed-tg-resp]
+                       method params failed-tg-resp))
+  ([base-msg method params failed-tg-resp]
    (log-failure-reason :error base-msg
-                       method-fn method-args failed-tg-resp))
-  ([log-level base-msg method-fn method-args failed-tg-resp]
+                       method params failed-tg-resp))
+  ([log-level base-msg method params failed-tg-resp]
    (let [resp-error (response/get-response-error failed-tg-resp)
          error-text (some->> (seq resp-error)
                              (map (fn [[k v]] (str (name k) "=\"" v "\"")))
@@ -67,66 +69,66 @@
                              (str/join ", "))
          base-msg' (cond-> (utils/apply-if-fn base-msg)
                            (seq error-text) (str ": " error-text))
-         method-name (utils/fn-name method-fn)]
-     (log/log log-level (format-msg base-msg' method-name method-args)))))
+         method-name (utils/fn-name method)]
+     (log/log log-level (format-msg base-msg' method-name params)))))
 
 (defn throw-for-failure
-  ([method-fn method-args failed-tg-resp]
-   (throw-for-failure failure-msg method-fn method-args failed-tg-resp))
-  ([base-msg method-fn method-args failed-tg-resp]
+  ([method params failed-tg-resp]
+   (throw-for-failure failure-msg method params failed-tg-resp))
+  ([base-msg method params failed-tg-resp]
    (let [ex-msg (utils/apply-if-fn base-msg)
+         ;; NB: Exclude an HTTP client-set `:error`, since it's of little use.
          response (dissoc failed-tg-resp :error)]
-     (throw (ex-info ex-msg {:response    response
-                             :method-fn   method-fn
-                             :method-args method-args})))))
+     (throw (ex-info ex-msg {:response response
+                             :method   method
+                             :params   params})))))
 
 ;; NB: For async requests, this strategy is of little use, since the provided
 ;;     callback will be processed on different threads and any exception will
 ;;     be redirected to the `UncaughtExceptionHandler` which will simply log.
 (defn log-failure-reason-and-throw
-  ([method-fn method-args failed-tg-resp]
-   (log-failure-reason method-fn method-args failed-tg-resp)
-   (throw-for-failure method-fn method-args failed-tg-resp))
-  ([base-msg method-fn method-args failed-tg-resp]
-   (log-failure-reason base-msg method-fn method-args failed-tg-resp)
-   (throw-for-failure base-msg method-fn method-args failed-tg-resp))
-  ([log-level base-msg method-fn method-args failed-tg-resp]
-   (log-failure-reason log-level base-msg method-fn method-args failed-tg-resp)
-   (throw-for-failure base-msg method-fn method-args failed-tg-resp)))
+  ([method params failed-tg-resp]
+   (log-failure-reason method params failed-tg-resp)
+   (throw-for-failure method params failed-tg-resp))
+  ([base-msg method params failed-tg-resp]
+   (log-failure-reason base-msg method params failed-tg-resp)
+   (throw-for-failure base-msg method params failed-tg-resp))
+  ([log-level base-msg method params failed-tg-resp]
+   (log-failure-reason log-level base-msg method params failed-tg-resp)
+   (throw-for-failure base-msg method params failed-tg-resp)))
 
 
-;; operations on arbitrary errors (e.g. network)
+;;; Operations on arbitrary errors (e.g. network)
 
 (def error-msg "Error while making a Telegram Bot API request")
 
 (defn log-error
-  ([method-fn method-args ex]
-   (log-error error-msg method-fn method-args ex))
-  ([base-msg method-fn method-args ex]
+  ([method params ex]
+   (log-error error-msg method params ex))
+  ([base-msg method params ex]
    (let [base-msg' (utils/apply-if-fn base-msg)
-         method-name (utils/fn-name method-fn)]
-     (log/log :error ex (format-msg base-msg' method-name method-args)))))
+         method-name (utils/fn-name method)]
+     (log/log :error ex (format-msg base-msg' method-name params)))))
 
 ;; NB: For async requests, this strategy is of little use, since the provided
 ;;     callback will be processed on different threads and any exception will
 ;;     be redirected to the `UncaughtExceptionHandler` which will simply log.
 (defn rethrow-error
-  [method-fn method-args ex]
-  (throw (ex-info error-msg {:method-fn   method-fn
-                             :method-args method-args} ex)))
+  [method params ex]
+  (throw (ex-info error-msg {:method method :params params} ex)))
 
 (defn log-error-and-rethrow
-  ([method-fn method-args ex]
-   (log-error method-fn method-args ex)
+  ([method params ex]
+   (log-error method params ex)
    (when-not (utils/in-repl?) (utils/clear-stack-trace ex))
-   (rethrow-error method-fn method-args ex))
-  ([base-msg method-fn method-args ex]
-   (log-error base-msg method-fn method-args ex)
+   (rethrow-error method params ex))
+  ([base-msg method params ex]
+   (log-error base-msg method params ex)
    (when-not (utils/in-repl?) (utils/clear-stack-trace ex))
-   (rethrow-error method-fn method-args ex)))
+   (rethrow-error method params ex)))
 
 
-;; making the Telegram Bot API calls
+;;; Making Requests
 
 ;; NB: The Bots FAQ on the official Telegram website lists the following limits
 ;;     on server requests.
@@ -213,48 +215,49 @@
   #{})
 
 (defn- best-guess-chat-id
-  [method-fn method-args]
-  (let [[farg & rest] method-args]
+  [method params]
+  (let [[farg & rest] params]
     (if (and (map? farg) (empty? rest))
       (:chat_id farg)
-      (when (contains? tg-bot-api:chat-id-fns method-fn)
+      (when (contains? tg-bot-api:chat-id-fns method)
         farg))))
 
 (defn- call-bot-api-method!
-  [tg-bot-api-client method-fn method-args]
+  [client method params]
   ;; TODO: Double-check with all popular clients and re-implement if necessary.
   ;; NB: Expects an HTTP client library to return a map with the `:error` key
   ;;     in case if request was unsuccessful (status codes other than 200-207,
   ;;     300-303, or 307) or in any of other exceptional situations (e.g. when
   ;;     the lib is unable to retrieve the response body).
   (try
-    (if (seq method-args)
-      (apply method-fn tg-bot-api-client method-args)
-      (method-fn tg-bot-api-client))
+    (if (seq params)
+      (apply method client params)
+      (method client))
     (catch Throwable client-code-ex
       (log/log :error client-code-ex "An error in the client code")
       ;; NB: An `error` is processed by the `handle-response-sync`.
       {:error client-code-ex})))
 
+;; TODO: Move `in-test?` into a separate place (probably, a test-specific ns).
 (defn- with-rate-limiter:call-bot-api-method!
-  [{:keys [bot-id in-test?] :as tg-bot-api-client} method-fn method-args]
+  [{:keys [bot-id in-test?] :as client} method params]
   (if in-test?
-    (call-bot-api-method! tg-bot-api-client method-fn method-args)
+    (call-bot-api-method! client method params)
     (dh/with-rate-limiter {:ratelimiter (get-rate-limiter! bot-id)}
-      (if-some [chat-id (best-guess-chat-id method-fn method-args)]
+      (if-some [chat-id (best-guess-chat-id method params)]
         (dh/with-rate-limiter {:ratelimiter (get-rate-limiter! bot-id chat-id)}
-          (call-bot-api-method! tg-bot-api-client method-fn method-args))
-        (call-bot-api-method! tg-bot-api-client method-fn method-args)))))
+          (call-bot-api-method! client method params))
+        (call-bot-api-method! client method params)))))
 
 ;;
 
 (defn- call-ignorable-callback
-  [callback-fn method-fn method-args arg-val]
+  [callback-fn method params arg-val]
   (when (and (some? callback-fn) (not= :ignore callback-fn))
-    (callback-fn method-fn method-args arg-val)))
+    (callback-fn method params arg-val)))
 
 (defn- handle-response
-  [method-fn method-args api-resp
+  [method params api-resp
    {:keys [on-success on-failure on-error] :as _callbacks}]
   ;; NB: The order of checks here is crucial. First, we handle valid responses,
   ;;     including unsuccessful ones (also contain `:error` key). Only then we
@@ -263,10 +266,10 @@
     (response/valid-response? api-resp)
     (if (response/successful-response? api-resp)
       (when (some? on-success) (on-success api-resp))
-      (call-ignorable-callback on-failure method-fn method-args api-resp))
+      (call-ignorable-callback on-failure method params api-resp))
     ;;
     (contains? api-resp :error)
-    (call-ignorable-callback on-error method-fn method-args (:error api-resp))
+    (call-ignorable-callback on-error method params (:error api-resp))
     ;;
     :else
     (throw (IllegalStateException. "Malformed Telegram Bot API response"))))
@@ -277,13 +280,12 @@
 ;; TODO: Add an auto-retry strategy for Telegram Bot API response 'parameters' with 'retry_after'.
 
 (defn make-request!
-  [tg-bot-api-client args]
-  (let [[call-opts method-fn & method-args] (if (map? (first args))
-                                              args
-                                              (conj #_list args nil))]
-    (when (nil? method-fn)
-      (throw (ex-info "The `call-bot-api!` was called without `method-fn`"
-                      {:args args})))
+  [client args]
+  (let [[call-opts method params] (if (map? (first args)) args (cons nil args))]
+
+    (when (nil? method)
+      (throw
+        (ex-info "The `make-request!` called without `method`" {:args args})))
     (let [callbacks {:on-success (or (:on-success call-opts)
                                      get-result)
                      :on-failure (or (:on-failure call-opts)
@@ -291,15 +293,15 @@
                      :on-error   (or (:on-error call-opts)
                                      log-error-and-rethrow)}
           api-resp (with-rate-limiter:call-bot-api-method!
-                     tg-bot-api-client method-fn method-args)]
+                     client method params)]
       (log/debugf "Telegram Bot API returned: %s" api-resp)
       (when (some? api-resp)
-        (handle-response method-fn method-args api-resp callbacks)))))
+        (handle-response method params api-resp callbacks)))))
 
 ;;
 
 ;; TODO: Call a Bot API method fn w/o actually making an HTTP request.
 ;;       Inject a `:method <method-name>` entry into the returned map.
 (defn build-immediate-response
-  [tg-bot-api-client method-name method-args]
-  (merge {:method method-name} method-args))
+  [client method params]
+  (assoc params :method method))
