@@ -40,11 +40,10 @@
    In case of a successful request, if not overridden, returns the `on-success`
    callback result.
 
-   In other cases, when `on-failure`/`on-error` gets called, if not overridden,
-   the result of this fn is undefined due to an exception being thrown.
-
-   Any exception in the client code (i.e. those not coming from an HTTP client)
-   is re-thrown as is.
+   In other cases, when `on-failure`/`on-error` gets called, incl. exceptions
+   in the client code (e.g. params schema coercion errors), if not overridden
+   by custom callbacks, the result of this fn is undefined due to an exception
+   being thrown.
 
    It makes a request in a synchronous blocking way, therefore it is up to the
    caller to take care of making the call async/non-blocking, for instance, by

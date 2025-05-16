@@ -273,7 +273,8 @@
 
   (build-message-options
     {:reply-markup (build-reply-markup :force-reply {:selective true})})
-  )
+
+  :end/comment)
 
 
 ; /sendChatAction

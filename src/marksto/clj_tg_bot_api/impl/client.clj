@@ -19,6 +19,7 @@
   [server-url bot-auth-token]
   (str (or server-url global-server-url) bot-auth-token))
 
+;; TODO: Hide behind a custom `:type` to prevent secrets (token) from leaking.
 (defn ->client
   [{:keys [bot-id bot-auth-token server-url] :as _client-opts}]
   (-> (get-api-root-url-for-bot server-url bot-auth-token)
@@ -233,12 +234,12 @@
   ;;     300-303, or 307) or in any of other exceptional situations (e.g. when
   ;;     the lib is unable to retrieve the response body).
   (try
-    (if (seq params)
-      (apply method client params)
-      (method client))
+    (let [response (if (nil? params)
+                     (m/response-for client method)
+                     (m/response-for client method params))]
+      (:body response))
     (catch Throwable client-code-ex
-      (log/log :error client-code-ex "An error in the client code")
-      ;; NB: An `error` is processed by the `handle-response-sync`.
+      ;; NB: An `error` is processed by the `handle-response` function.
       {:error client-code-ex})))
 
 ;; TODO: Move `in-test?` into a separate place (probably, a test-specific ns).
@@ -260,19 +261,19 @@
     (callback-fn method params arg-val)))
 
 (defn- handle-response
-  [method params api-resp
-   {:keys [on-success on-failure on-error] :as _callbacks}]
+  [method params tg-resp {:keys [on-success on-failure on-error] :as _callbacks}]
   ;; NB: The order of checks here is crucial. First, we handle valid responses,
   ;;     including unsuccessful ones (also contain `:error` key). Only then we
-  ;;     handle other `:error`-containing results, i.e. HTTP client exceptions.
+  ;;     handle other `:error`-containing tg-resp, e.g. HTTP, response parsing
+  ;;     and client code exceptions.
   (cond
-    (response/valid-response? api-resp)
-    (if (response/successful-response? api-resp)
-      (when (some? on-success) (on-success api-resp))
-      (call-ignorable-callback on-failure method params api-resp))
+    (response/valid-response? tg-resp)
+    (if (response/successful-response? tg-resp)
+      (when (some? on-success) (on-success tg-resp))
+      (call-ignorable-callback on-failure method params tg-resp))
     ;;
-    (contains? api-resp :error)
-    (call-ignorable-callback on-error method params (:error api-resp))
+    (contains? tg-resp :error)
+    (call-ignorable-callback on-error method params (:error tg-resp))
     ;;
     :else
     (throw (IllegalStateException. "Malformed Telegram Bot API response"))))
@@ -285,21 +286,17 @@
 (defn make-request!
   [client args]
   (let [[call-opts method params] (if (map? (first args)) args (cons nil args))]
-
-    (when (nil? method)
-      (throw
-        (ex-info "The `make-request!` called without `method`" {:args args})))
+    (have! keyword? method)
     (let [callbacks {:on-success (or (:on-success call-opts)
                                      get-result)
                      :on-failure (or (:on-failure call-opts)
                                      log-failure-reason-and-throw)
                      :on-error   (or (:on-error call-opts)
                                      log-error-and-rethrow)}
-          api-resp (with-rate-limiter:call-bot-api-method!
-                     client method params)]
-      (log/debugf "Telegram Bot API returned: %s" api-resp)
-      (when (some? api-resp)
-        (handle-response method params api-resp callbacks)))))
+          tg-resp (with-rate-limiter:call-bot-api-method! client method params)]
+      (log/debugf "Telegram Bot API returned: %s" tg-resp)
+      (when (some? tg-resp)
+        (handle-response method params tg-resp callbacks)))))
 
 ;;
 
@@ -318,3 +315,19 @@
      (if (contains? request :multipart)
        (update request :multipart conj {:name "method" :content method'})
        (update request :body assoc :method method')))))
+
+;;
+
+(comment
+  (def client (->client {:bot-id         1
+                         :bot-auth-token (System/getenv "BOT_AUTH_TOKEN")}))
+  (dissoc client :handlers)
+
+  (make-request! client '(:get-me))
+  (make-request! client '(:get-me {}))
+
+  (build-immediate-response client :get-me)
+  (build-immediate-response client :get-me {})
+  (build-immediate-response client :send-audio {:chat-id 1 :audio "<audio>"})
+
+  :end/comment)
