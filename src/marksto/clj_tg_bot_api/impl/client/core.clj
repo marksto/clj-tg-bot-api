@@ -105,7 +105,18 @@
 
 (def error-msg "Error while making a Telegram Bot API request")
 
-;; TODO: Strip of "Could not coerce value to schema" exceptions from `:trace`.
+(defn prepare-error
+  [{ex :error :as _tg-resp}]
+  ;; NB: Always unpack a noisy Martian container Interceptor Exception.
+  (let [cause (ex-cause ex)
+        cause-data (ex-data cause)]
+    (or (when (= :schema-tools.coerce/error (:type cause-data))
+          ;; NB: Clean up all noise from params schema coercion errors.
+          (doto (ex-info (ex-message cause)
+                         (select-keys cause-data [#_:schema :value :error]))
+            (utils/clear-stack-trace)))
+        cause)))
+
 (defn log-error
   ([method params ex]
    (log-error error-msg method params ex))
@@ -119,16 +130,15 @@
 ;;     be redirected to the `UncaughtExceptionHandler` which will simply log.
 (defn rethrow-error
   [method params ex]
-  (throw (ex-info error-msg {:method method :params params} ex)))
+  (throw
+    (ex-info error-msg {:method method :params params} ex)))
 
 (defn log-error-and-rethrow
   ([method params ex]
    (log-error method params ex)
-   (when-not (utils/in-repl?) (utils/clear-stack-trace ex))
    (rethrow-error method params ex))
   ([base-msg method params ex]
    (log-error base-msg method params ex)
-   (when-not (utils/in-repl?) (utils/clear-stack-trace ex))
    (rethrow-error method params ex)))
 
 
@@ -141,7 +151,8 @@
       (m/response-for client method)
       (m/response-for client method params))
     (catch Throwable client-code-ex
-      ;; NB: An `error` is processed by the `handle-response` function.
+      ;; NB: To make all Martian-supported HTTP clients compatible. An `error`
+      ;;     is processed downstream by `prepare-response` & `handle-response`.
       {:error client-code-ex})))
 
 ;;
@@ -190,7 +201,8 @@
       (call-ignorable-callback on-failure method params tg-resp))
     ;;
     (contains? tg-resp :error)
-    (call-ignorable-callback on-error method params (:error tg-resp))
+    (let [ex (prepare-error tg-resp)]
+      (call-ignorable-callback on-error method params ex))
     ;;
     :else
     (throw (IllegalStateException. "Malformed Telegram Bot API response"))))
@@ -243,10 +255,10 @@
 
   ;; 1. Successful request
   (make-request! client '(:get-me))
-  ;; 2. Client code exception (params coercion)
-  (make-request! client '(:send-audio {:chat-id 1}))
-  ;; 3. Failure - Unsuccessful request (400 Bad Request)
+  ;; 2. Failure - Unsuccessful request (400 Bad Request)
   (make-request! client '(:get-chat {:chat-id 1}))
+  ;; 3. Error - Client code exception (params coercion)
+  (make-request! client '(:send-audio {:chat-id 1}))
   ;; 4. Error - Network connection (drop internet access)
   (make-request! client '(:get-me))
 

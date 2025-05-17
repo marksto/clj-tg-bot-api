@@ -1,7 +1,6 @@
 (ns marksto.clj-tg-bot-api.impl.utils
   "A set of necessary general-purpose utilities"
-  (:require [clojure.repl :refer [demunge]]
-            [clojure.string :as str])
+  (:require [clojure.string :as str])
   (:import (clojure.lang IDeref)
            (java.util.regex Matcher Pattern)))
 
