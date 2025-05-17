@@ -6,7 +6,7 @@
             [martian.core :as m]
             [taoensso.truss :refer [have!]]
 
-            [marksto.clj-tg-bot-api.impl.api.spec :as api-spec]
+            [marksto.clj-tg-bot-api.impl.api.martian :as api-martian]
             [marksto.clj-tg-bot-api.impl.client.rate-limiter :as rl]
             [marksto.clj-tg-bot-api.impl.utils :as utils]
             [marksto.clj-tg-bot-api.impl.utils.response :as response]))
@@ -24,7 +24,7 @@
   [{:keys [bot-id bot-token server-url] :as _client-opts}]
   (have! some? bot-id bot-token)
   (-> (get-api-root-url-for-bot server-url bot-token)
-      (api-spec/build-martian)
+      (api-martian/build-martian)
       (assoc :bot-id bot-id)))
 
 

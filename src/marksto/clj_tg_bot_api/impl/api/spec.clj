@@ -1,25 +1,13 @@
 (ns marksto.clj-tg-bot-api.impl.api.spec
   (:require [clojure.java.io :as io]
-            [clojure.set :as set]
             [clojure.string :as str]
-            [clojure.tools.logging :as log]
             [jsonista.core :as json]
-            [martian.core :as m]
-            [martian.encoders :as me]
-            [martian.encoding :as encoding]
-            [martian.interceptors :as mi]
             [schema.core :as s]
-            [schema-tools.coerce :as stc]
 
             [marksto.clj-tg-bot-api.impl.utils :as utils])
   (:import (java.io File InputStream)
            (java.net URI URL)
            (java.nio.file Path)))
-
-(def read-tg-bot-api-spec
-  (delay (json/read-value
-           (slurp (io/resource "tg-bot-api-spec.json"))
-           (json/object-mapper {:decode-key-fn true}))))
 
 ;;; Types
 
@@ -28,8 +16,8 @@
 (def basic-type? #(not (str/starts-with? % api-type-prefix)))
 
 (def input-file?
-  ;; NB: Omitting a String case that is usually handled by HTTP clients,
-  ;;     because the String has special semantics in the Bot API:
+  ;; NB: Omitting case for String that is usually handled by HTTP clients,
+  ;;     because the String has special semantics in the Telegram Bot API:
   ;;     https://core.telegram.org/bots/api#sending-files
   #(or (instance? File %)
        (instance? URL %)
@@ -130,93 +118,14 @@
   (or (= "type/input-file" type)
       (contains? (set (flatten type)) "type/input-file")))
 
-(defn api-method->handler
-  [{:keys [id name description params]}]
-  (let [params-schema (when params
-                        (into {} (map api-method-param->param-schema params)))
-        uploads-file? (some api-method-param-of-input-type? params)
-        use-http-get? (and (not uploads-file?) (str/starts-with? name "get"))]
-    (conj {:route-name (keyword (subs id (count api-method-prefix)))
-           :path-parts [(str "/" name)]
-           :method     (if use-http-get? :get :post)
-           :summary    description
-           :consumes   (if uploads-file?
-                         ["multipart/form-data"]
-                         ["application/json"])
-           :produces   ["application/json"]}
-          (when params-schema
-            (if use-http-get?
-              {:query-schema params-schema}
-              {:body-schema {:body params-schema}})))))
+;;; Parsing
 
-;;; Martian
+(def *tg-bot-api-spec
+  (delay (json/read-value
+           (slurp (io/resource "tg-bot-api-spec.json"))
+           (json/object-mapper {:decode-key-fn true}))))
 
-;; NB: W/o this function produces a request map of a wrong shape.
-;; {:body {:multipart [{:name "chat_id", :content 1} ...]}, ...}
-;; TODO: Fix/improve this upstream, in the `martian` codebase?
-(defn encode-request [encoders]
-  {:name    ::encode-request
-   :encodes (keys encoders)
-   :enter   (fn [{:keys [request handler] :as ctx}]
-              (let [has-body? (get-in ctx [:request :body])
-                    content-type (and has-body?
-                                      (not (get-in request [:headers "Content-Type"]))
-                                      (encoding/choose-content-type encoders (:consumes handler)))
-                    multipart? (= "multipart/form-data" content-type)
-                    {:keys [encode]} (encoding/find-encoder encoders content-type)]
-                (cond-> ctx
-                        has-body? (update-in [:request :body] encode)
-                        ;; NB: Luckily, all target HTTP clients — clj-http (but not lite), http-kit,
-                        ;;     hato, and even babashka/http-client — all support the same syntax.
-                        multipart? (update :request set/rename-keys {:body :multipart})
-                        content-type (assoc-in [:request :headers "Content-Type"] content-type))))})
-
-(defn multipart-encode [body]
-  (mapv (fn [[k v]] {:name (name k) :content v}) body))
-
-(def encoders (assoc (me/default-encoders)
-                "multipart/form-data" {:encode multipart-encode
-                                       :as     :multipart}))
-
-(alter-var-root #'mi/default-encode-body
-                (constantly (encode-request encoders)))
-
-(defn build-handlers [tg-bot-api-spec]
-  (binding [*id->api-type* (utils/index-by :id (:types tg-bot-api-spec))]
-    (mapv api-method->handler (:methods tg-bot-api-spec))))
-
-(def offline-bootstrap-fn m/bootstrap)
-
-(def martian-bootstrap-fn
-  ;; NB: Sorted by descending popularity in the global Clojure community.
-  (or (utils/requiring-resolve* 'martian.httpkit/bootstrap)
-      (utils/requiring-resolve* 'martian.clj-http/bootstrap)
-      (utils/requiring-resolve* 'martian.hato/bootstrap)
-      (utils/requiring-resolve* 'martian.babashka.http-client/bootstrap)
-      (utils/requiring-resolve* 'martian.clj-http-lite/bootstrap)
-      offline-bootstrap-fn))
-
-(defn- offline-interceptors []
-  (conj m/default-interceptors
-        mi/default-encode-body
-        mi/default-coerce-response))
-
-(defn build-martian
-  [tg-bot-api-root-url]
-  (let [is-offline? (= offline-bootstrap-fn martian-bootstrap-fn)]
-    (when is-offline?
-      (log/warn (str "WARNING! You are in offline mode, meaning there is no "
-                     "supported HTTP client available for sending requests. "
-                     "Please, add any Martian library for JVM/Babashka HTTP "
-                     "client to the classpath. For supported, check out the "
-                     "https://github.com/oliyh/martian page.")))
-    (when (= "#'martian.clj-http-lite/bootstrap" (str martian-bootstrap-fn))
-      (log/warn (str "WARNING! You have picked up `clj-http-lite` which has "
-                     "no support for 'multipart/form-data' requests used to "
-                     "upload files, therefore this Telegram Bot API feature "
-                     "won't be available for your bot.")))
-    (martian-bootstrap-fn
-      tg-bot-api-root-url
-      (build-handlers @read-tg-bot-api-spec)
-      (cond-> {:coercion-matcher stc/json-coercion-matcher}
-              is-offline? (assoc :interceptors (offline-interceptors))))))
+(defn parse! []
+  (let [{:keys [types methods]} @*tg-bot-api-spec]
+    (binding [*id->api-type* (utils/index-by :id types)]
+      methods)))
