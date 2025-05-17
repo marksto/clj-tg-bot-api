@@ -146,12 +146,13 @@
 
 ;;
 
-;; TODO: Add an auto-retry strategy for Telegram Bot API response 'parameters' with 'migrate_to_chat_id'.
-;; TODO: Add an auto-retry strategy for Telegram Bot API response 'parameters' with 'retry_after'.
+;; TODO: Add an auto-retry strategy for Telegram Bot API response 'parameters':
+;;       - with 'migrate_to_chat_id'
+;;       - with 'retry_after'
 
-(def error-response-body-mapper (json/object-mapper {:decode-key-fn true}))
+(def error-response-body-mapper
+  (json/object-mapper {:decode-key-fn true}))
 
-;; TODO: Double-check with all popular clients and re-implement if necessary.
 (defn- prepare-response
   [{:keys [body error] :as _call-result}]
   ;; NB: Expects an HTTP client library to return a map with the `:error` key
