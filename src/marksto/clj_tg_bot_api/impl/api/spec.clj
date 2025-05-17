@@ -1,6 +1,7 @@
 (ns marksto.clj-tg-bot-api.impl.api.spec
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
+            [clojure.tools.logging :as log]
             [jsonista.core :as json]
             [schema.core :as s]
 
@@ -134,12 +135,27 @@
 
 ;;; Parsing
 
-(def *tg-bot-api-spec
-  (delay (json/read-value
-           (slurp (io/resource "tg-bot-api-spec.json"))
-           (json/object-mapper {:decode-key-fn true}))))
+(defn read-raw-spec!
+  [file-name]
+  (try
+    (json/read-value
+      (slurp (io/resource file-name))
+      (json/object-mapper {:decode-key-fn true}))
+    (catch Exception e
+      (log/errorf e "Failed to read spec file '%s'" file-name))))
 
-(defn parse! []
-  (let [{:keys [types methods]} @*tg-bot-api-spec]
-    (binding [*id->api-type* (utils/index-by :id types)]
-      (mapv parse:api-method methods))))
+(defn parse-tg-bot-api-spec!
+  [file-name]
+  (when-some [raw-spec (read-raw-spec! file-name)]
+    (try
+      (let [{:keys [types methods]} raw-spec]
+        (binding [*id->api-type* (utils/index-by :id types)]
+          (mapv parse:api-method methods)))
+      (catch Exception e
+        (log/errorf e "Failed to parse spec file '%s'" file-name)))))
+
+(def *tg-bot-api-spec
+  (delay (parse-tg-bot-api-spec! "tg-bot-api-spec.json")))
+
+(defn get-tg-bot-api-spec []
+  @*tg-bot-api-spec)

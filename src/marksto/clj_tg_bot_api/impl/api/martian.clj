@@ -64,7 +64,8 @@
               {:body-schema {:body params-schema}})))))
 
 (defn build-handlers []
-  (mapv api-method->handler (api-spec/parse!)))
+  (let [tg-bot-api-spec (api-spec/get-tg-bot-api-spec)]
+    (mapv api-method->handler tg-bot-api-spec)))
 
 (def offline-bootstrap-fn m/bootstrap)
 
