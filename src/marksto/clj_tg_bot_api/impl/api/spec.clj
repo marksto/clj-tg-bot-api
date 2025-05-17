@@ -118,6 +118,20 @@
   (or (= "type/input-file" type)
       (contains? (set (flatten type)) "type/input-file")))
 
+(defn api-method-params->params-schema
+  [params]
+  (into {} (map api-method-param->param-schema params)))
+
+(defn parse:api-method
+  [{:keys [params] :as api-method}]
+  (cond-> api-method
+
+          (some? params)
+          (assoc :params-schema (api-method-params->params-schema params))
+
+          (some api-method-param-of-input-type? params)
+          (assoc :uploads-file? true)))
+
 ;;; Parsing
 
 (def *tg-bot-api-spec
@@ -128,4 +142,4 @@
 (defn parse! []
   (let [{:keys [types methods]} @*tg-bot-api-spec]
     (binding [*id->api-type* (utils/index-by :id types)]
-      methods)))
+      (mapv parse:api-method methods))))

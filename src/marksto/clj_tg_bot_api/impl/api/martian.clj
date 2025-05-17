@@ -47,11 +47,9 @@
 ;;; Martian Builder
 
 (defn api-method->handler
-  [{:keys [id name description params]}]
-  (let [params-schema (when params
-                        (into {} (map api-spec/api-method-param->param-schema params)))
-        uploads-file? (some api-spec/api-method-param-of-input-type? params)
-        use-http-get? (and (not uploads-file?) (str/starts-with? name "get"))]
+  [{:keys [id name description _params
+           params-schema uploads-file?]}]
+  (let [use-http-get? (and (not uploads-file?) (str/starts-with? name "get"))]
     (conj {:route-name (keyword (subs id (count api-spec/api-method-prefix)))
            :path-parts [(str "/" name)]
            :method     (if use-http-get? :get :post)
