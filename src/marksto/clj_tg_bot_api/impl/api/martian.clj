@@ -65,7 +65,7 @@
 
 (defn build-handlers []
   (let [tg-bot-api-spec (api-spec/get-tg-bot-api-spec)]
-    (mapv api-method->handler tg-bot-api-spec)))
+    (mapv api-method->handler (:methods tg-bot-api-spec))))
 
 (def offline-bootstrap-fn m/bootstrap)
 

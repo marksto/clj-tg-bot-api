@@ -53,11 +53,19 @@
 
 (def ^:dynamic *id->api-type* nil)
 
+(def ^:dynamic *id->api-method-param-type* nil)
+
+(defn- get-api-type
+  [^String api-type-id]
+  (let [api-type (get *id->api-type* api-type-id)]
+    (swap! *id->api-method-param-type* assoc api-type-id api-type)
+    api-type))
+
 (declare type->schema)
 
 (defn api-type->schema
-  [^String type]
-  (let [{:keys [fields subtypes name]} (get *id->api-type* type)]
+  [^String api-type-id]
+  (let [{:keys [fields subtypes name]} (get-api-type api-type-id)]
     (cond
       (some? fields)
       (-> {}
@@ -104,6 +112,10 @@
 ;;       - "0-2048 characters after entities parsing"
 ;;       - "0-200 characters with at most 2 line feeds after entities parsing"
 
+(defn parse:api-type
+  [{api-type-id :id :as api-type}]
+  (assoc api-type :schema (memo:api-type->schema api-type-id)))
+
 ;;; Methods
 
 (def api-method-prefix "method/")
@@ -149,8 +161,13 @@
   (when-some [raw-spec (read-raw-spec! file-name)]
     (try
       (let [{:keys [types methods]} raw-spec]
-        (binding [*id->api-type* (utils/index-by :id types)]
-          (mapv parse:api-method methods)))
+        (binding [*id->api-type* (utils/index-by :id types)
+                  *id->api-method-param-type* (atom {})]
+          (let [parsed-methods (mapv parse:api-method methods)
+                used-types (mapv parse:api-type
+                                 (vals @*id->api-method-param-type*))]
+            {:methods    parsed-methods
+             :used-types used-types})))
       (catch Exception e
         (log/errorf e "Failed to parse spec file '%s'" file-name)))))
 
