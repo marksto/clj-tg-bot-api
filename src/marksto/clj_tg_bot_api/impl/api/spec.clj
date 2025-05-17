@@ -63,6 +63,9 @@
 
 (declare type->schema)
 
+;; TODO: Re-impl `s/either` (`schema.core.Either`) schemas. It doesn't coerce!
+;;       Maybe use `schema-tools.core/schema-value` for sub-schemas retrieval.
+
 (defn api-type->schema
   [^String api-type-id]
   (let [{:keys [fields subtypes name]} (get-api-type api-type-id)]
