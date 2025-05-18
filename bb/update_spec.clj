@@ -193,12 +193,18 @@
   [{:keys [description] :as field}]
   (let [optional? (-> (s/select s/first-child description)
                       (first)
-                      (has-text? "Optional"))]
-    (-> field
-        (update :name (comp keyword first :content))
-        (update :type parse-data-type)
-        (assoc :required (not optional?))
-        (update :description (comp render-html:nodes :content)))))
+                      (has-text? "Optional"))
+        desc-cont (:content description)
+        is-value? (and (= 2 (count desc-cont))
+                       (string? (first desc-cont))
+                       (str/ends-with? (first desc-cont) "must be ")
+                       (= :em (:tag (second desc-cont))))]
+    (cond-> (-> field
+                (update :name (comp keyword first :content))
+                (update :type parse-data-type)
+                (assoc :required (not optional?))
+                (update :description (comp render-html:nodes :content)))
+            is-value? (assoc :value (text (second desc-cont))))))
 
 (defn get-api-type-field
   [col-names single-row-nodes]
@@ -223,8 +229,6 @@
 
 (defn prepare-api-method-param
   [param]
-  (when (= "reply_markup" (:name param))
-    (def param param))
   (-> param
       (update :name (comp keyword first :content))
       (update :type parse-data-type)

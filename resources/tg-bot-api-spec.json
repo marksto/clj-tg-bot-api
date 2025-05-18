@@ -4638,7 +4638,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Scope type, must be <em>default</em>",
-      "required" : true
+      "required" : true,
+      "value" : "default"
     } ]
   }, {
     "id" : "type/bot-command-scope-all-private-chats",
@@ -4649,7 +4650,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Scope type, must be <em>all_private_chats</em>",
-      "required" : true
+      "required" : true,
+      "value" : "all_private_chats"
     } ]
   }, {
     "id" : "type/bot-command-scope-all-group-chats",
@@ -4660,7 +4662,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Scope type, must be <em>all_group_chats</em>",
-      "required" : true
+      "required" : true,
+      "value" : "all_group_chats"
     } ]
   }, {
     "id" : "type/bot-command-scope-all-chat-administrators",
@@ -4671,7 +4674,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Scope type, must be <em>all_chat_administrators</em>",
-      "required" : true
+      "required" : true,
+      "value" : "all_chat_administrators"
     } ]
   }, {
     "id" : "type/bot-command-scope-chat",
@@ -4682,7 +4686,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Scope type, must be <em>chat</em>",
-      "required" : true
+      "required" : true,
+      "value" : "chat"
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
@@ -4698,7 +4703,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Scope type, must be <em>chat_administrators</em>",
-      "required" : true
+      "required" : true,
+      "value" : "chat_administrators"
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
@@ -4714,7 +4720,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Scope type, must be <em>chat_member</em>",
-      "required" : true
+      "required" : true,
+      "value" : "chat_member"
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
@@ -4775,7 +4782,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the button, must be <em>commands</em>",
-      "required" : true
+      "required" : true,
+      "value" : "commands"
     } ]
   }, {
     "id" : "type/menu-button-web-app",
@@ -4786,7 +4794,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the button, must be <em>web_app</em>",
-      "required" : true
+      "required" : true,
+      "value" : "web_app"
     }, {
       "name" : "text",
       "type" : "String",
@@ -4807,7 +4816,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the button, must be <em>default</em>",
-      "required" : true
+      "required" : true,
+      "value" : "default"
     } ]
   }, {
     "id" : "type/chat-boost-source",
@@ -5121,7 +5131,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>photo</em>",
-      "required" : true
+      "required" : true,
+      "value" : "photo"
     }, {
       "name" : "media",
       "type" : "String",
@@ -5162,7 +5173,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>video</em>",
-      "required" : true
+      "required" : true,
+      "value" : "video"
     }, {
       "name" : "media",
       "type" : "String",
@@ -5238,7 +5250,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>animation</em>",
-      "required" : true
+      "required" : true,
+      "value" : "animation"
     }, {
       "name" : "media",
       "type" : "String",
@@ -5299,7 +5312,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>audio</em>",
-      "required" : true
+      "required" : true,
+      "value" : "audio"
     }, {
       "name" : "media",
       "type" : "String",
@@ -5350,7 +5364,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>document</em>",
-      "required" : true
+      "required" : true,
+      "value" : "document"
     }, {
       "name" : "media",
       "type" : "String",
@@ -5402,7 +5417,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the media, must be <em>photo</em>",
-      "required" : true
+      "required" : true,
+      "value" : "photo"
     }, {
       "name" : "media",
       "type" : "String",
@@ -5418,7 +5434,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the media, must be <em>video</em>",
-      "required" : true
+      "required" : true,
+      "value" : "video"
     }, {
       "name" : "media",
       "type" : "String",
@@ -5475,7 +5492,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the profile photo, must be <em>static</em>",
-      "required" : true
+      "required" : true,
+      "value" : "static"
     }, {
       "name" : "photo",
       "type" : "String",
@@ -5491,7 +5509,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the profile photo, must be <em>animated</em>",
-      "required" : true
+      "required" : true,
+      "value" : "animated"
     }, {
       "name" : "animation",
       "type" : "String",
@@ -5518,7 +5537,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the content, must be <em>photo</em>",
-      "required" : true
+      "required" : true,
+      "value" : "photo"
     }, {
       "name" : "photo",
       "type" : "String",
@@ -5534,7 +5554,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the content, must be <em>video</em>",
-      "required" : true
+      "required" : true,
+      "value" : "video"
     }, {
       "name" : "video",
       "type" : "String",
@@ -5798,7 +5819,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>article</em>",
-      "required" : true
+      "required" : true,
+      "value" : "article"
     }, {
       "name" : "id",
       "type" : "String",
@@ -5854,7 +5876,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>photo</em>",
-      "required" : true
+      "required" : true,
+      "value" : "photo"
     }, {
       "name" : "id",
       "type" : "String",
@@ -5930,7 +5953,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>gif</em>",
-      "required" : true
+      "required" : true,
+      "value" : "gif"
     }, {
       "name" : "id",
       "type" : "String",
@@ -6011,7 +6035,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>mpeg4_gif</em>",
-      "required" : true
+      "required" : true,
+      "value" : "mpeg4_gif"
     }, {
       "name" : "id",
       "type" : "String",
@@ -6092,7 +6117,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>video</em>",
-      "required" : true
+      "required" : true,
+      "value" : "video"
     }, {
       "name" : "id",
       "type" : "String",
@@ -6178,7 +6204,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>audio</em>",
-      "required" : true
+      "required" : true,
+      "value" : "audio"
     }, {
       "name" : "id",
       "type" : "String",
@@ -6239,7 +6266,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>voice</em>",
-      "required" : true
+      "required" : true,
+      "value" : "voice"
     }, {
       "name" : "id",
       "type" : "String",
@@ -6295,7 +6323,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>document</em>",
-      "required" : true
+      "required" : true,
+      "value" : "document"
     }, {
       "name" : "id",
       "type" : "String",
@@ -6371,7 +6400,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>location</em>",
-      "required" : true
+      "required" : true,
+      "value" : "location"
     }, {
       "name" : "id",
       "type" : "String",
@@ -6447,7 +6477,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>venue</em>",
-      "required" : true
+      "required" : true,
+      "value" : "venue"
     }, {
       "name" : "id",
       "type" : "String",
@@ -6528,7 +6559,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>contact</em>",
-      "required" : true
+      "required" : true,
+      "value" : "contact"
     }, {
       "name" : "id",
       "type" : "String",
@@ -6589,7 +6621,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>game</em>",
-      "required" : true
+      "required" : true,
+      "value" : "game"
     }, {
       "name" : "id",
       "type" : "String",
@@ -6615,7 +6648,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>photo</em>",
-      "required" : true
+      "required" : true,
+      "value" : "photo"
     }, {
       "name" : "id",
       "type" : "String",
@@ -6676,7 +6710,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>gif</em>",
-      "required" : true
+      "required" : true,
+      "value" : "gif"
     }, {
       "name" : "id",
       "type" : "String",
@@ -6732,7 +6767,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>mpeg4_gif</em>",
-      "required" : true
+      "required" : true,
+      "value" : "mpeg4_gif"
     }, {
       "name" : "id",
       "type" : "String",
@@ -6788,7 +6824,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>sticker</em>",
-      "required" : true
+      "required" : true,
+      "value" : "sticker"
     }, {
       "name" : "id",
       "type" : "String",
@@ -6819,7 +6856,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>document</em>",
-      "required" : true
+      "required" : true,
+      "value" : "document"
     }, {
       "name" : "id",
       "type" : "String",
@@ -6875,7 +6913,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>video</em>",
-      "required" : true
+      "required" : true,
+      "value" : "video"
     }, {
       "name" : "id",
       "type" : "String",
@@ -6936,7 +6975,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>voice</em>",
-      "required" : true
+      "required" : true,
+      "value" : "voice"
     }, {
       "name" : "id",
       "type" : "String",
@@ -6987,7 +7027,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the result, must be <em>audio</em>",
-      "required" : true
+      "required" : true,
+      "value" : "audio"
     }, {
       "name" : "id",
       "type" : "String",
@@ -8048,7 +8089,8 @@
       "name" : "source",
       "type" : "String",
       "description" : "Error source, must be <em>data</em>",
-      "required" : true
+      "required" : true,
+      "value" : "data"
     }, {
       "name" : "type",
       "type" : "String",
@@ -8079,7 +8121,8 @@
       "name" : "source",
       "type" : "String",
       "description" : "Error source, must be <em>front_side</em>",
-      "required" : true
+      "required" : true,
+      "value" : "front_side"
     }, {
       "name" : "type",
       "type" : "String",
@@ -8105,7 +8148,8 @@
       "name" : "source",
       "type" : "String",
       "description" : "Error source, must be <em>reverse_side</em>",
-      "required" : true
+      "required" : true,
+      "value" : "reverse_side"
     }, {
       "name" : "type",
       "type" : "String",
@@ -8131,7 +8175,8 @@
       "name" : "source",
       "type" : "String",
       "description" : "Error source, must be <em>selfie</em>",
-      "required" : true
+      "required" : true,
+      "value" : "selfie"
     }, {
       "name" : "type",
       "type" : "String",
@@ -8157,7 +8202,8 @@
       "name" : "source",
       "type" : "String",
       "description" : "Error source, must be <em>file</em>",
-      "required" : true
+      "required" : true,
+      "value" : "file"
     }, {
       "name" : "type",
       "type" : "String",
@@ -8183,7 +8229,8 @@
       "name" : "source",
       "type" : "String",
       "description" : "Error source, must be <em>files</em>",
-      "required" : true
+      "required" : true,
+      "value" : "files"
     }, {
       "name" : "type",
       "type" : "String",
@@ -8209,7 +8256,8 @@
       "name" : "source",
       "type" : "String",
       "description" : "Error source, must be <em>translation_file</em>",
-      "required" : true
+      "required" : true,
+      "value" : "translation_file"
     }, {
       "name" : "type",
       "type" : "String",
@@ -8235,7 +8283,8 @@
       "name" : "source",
       "type" : "String",
       "description" : "Error source, must be <em>translation_files</em>",
-      "required" : true
+      "required" : true,
+      "value" : "translation_files"
     }, {
       "name" : "type",
       "type" : "String",
@@ -8261,7 +8310,8 @@
       "name" : "source",
       "type" : "String",
       "description" : "Error source, must be <em>unspecified</em>",
-      "required" : true
+      "required" : true,
+      "value" : "unspecified"
     }, {
       "name" : "type",
       "type" : "String",
