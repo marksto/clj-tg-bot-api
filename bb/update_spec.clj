@@ -189,22 +189,21 @@
     "Required" :required
     "Description" :description))
 
+(def type-dependant-field-re
+  #".+(?:(must be)|(always)) [\"“]?([a-z0-9_]+)[\"”]?$")
+
 (defn prepare-api-type-field
   [{:keys [description] :as field}]
   (let [optional? (-> (s/select s/first-child description)
                       (first)
                       (has-text? "Optional"))
-        desc-cont (:content description)
-        is-value? (and (= 2 (count desc-cont))
-                       (string? (first desc-cont))
-                       (str/ends-with? (first desc-cont) "must be ")
-                       (= :em (:tag (second desc-cont))))]
+        tdf-value (last (re-find type-dependant-field-re (text description)))]
     (cond-> (-> field
                 (update :name (comp keyword first :content))
                 (update :type parse-data-type)
                 (assoc :required (not optional?))
                 (update :description (comp render-html:nodes :content)))
-            is-value? (assoc :value (text (second desc-cont))))))
+            (some? tdf-value) (assoc :value tdf-value))))
 
 (defn get-api-type-field
   [col-names single-row-nodes]

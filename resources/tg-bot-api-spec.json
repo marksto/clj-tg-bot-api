@@ -1257,7 +1257,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the message origin, always “user”",
-      "required" : true
+      "required" : true,
+      "value" : "user"
     }, {
       "name" : "date",
       "type" : "Integer",
@@ -1278,7 +1279,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the message origin, always “hidden_user”",
-      "required" : true
+      "required" : true,
+      "value" : "hidden_user"
     }, {
       "name" : "date",
       "type" : "Integer",
@@ -1299,7 +1301,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the message origin, always “chat”",
-      "required" : true
+      "required" : true,
+      "value" : "chat"
     }, {
       "name" : "date",
       "type" : "Integer",
@@ -1325,7 +1328,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the message origin, always “channel”",
-      "required" : true
+      "required" : true,
+      "value" : "channel"
     }, {
       "name" : "date",
       "type" : "Integer",
@@ -1691,7 +1695,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the paid media, always “preview”",
-      "required" : true
+      "required" : true,
+      "value" : "preview"
     }, {
       "name" : "width",
       "type" : "Integer",
@@ -1717,7 +1722,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the paid media, always “photo”",
-      "required" : true
+      "required" : true,
+      "value" : "photo"
     }, {
       "name" : "photo",
       "type" : [ "array", "type/photo-size" ],
@@ -1733,7 +1739,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the paid media, always “video”",
-      "required" : true
+      "required" : true,
+      "value" : "video"
     }, {
       "name" : "video",
       "type" : "type/video",
@@ -2082,7 +2089,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the background fill, always “solid”",
-      "required" : true
+      "required" : true,
+      "value" : "solid"
     }, {
       "name" : "color",
       "type" : "Integer",
@@ -2098,7 +2106,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the background fill, always “gradient”",
-      "required" : true
+      "required" : true,
+      "value" : "gradient"
     }, {
       "name" : "top_color",
       "type" : "Integer",
@@ -2124,7 +2133,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the background fill, always “freeform_gradient”",
-      "required" : true
+      "required" : true,
+      "value" : "freeform_gradient"
     }, {
       "name" : "colors",
       "type" : [ "array", "Integer" ],
@@ -2146,7 +2156,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the background, always “fill”",
-      "required" : true
+      "required" : true,
+      "value" : "fill"
     }, {
       "name" : "fill",
       "type" : "type/background-fill",
@@ -2167,7 +2178,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the background, always “wallpaper”",
-      "required" : true
+      "required" : true,
+      "value" : "wallpaper"
     }, {
       "name" : "document",
       "type" : "type/document",
@@ -2198,7 +2210,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the background, always “pattern”",
-      "required" : true
+      "required" : true,
+      "value" : "pattern"
     }, {
       "name" : "document",
       "type" : "type/document",
@@ -2234,7 +2247,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the background, always “chat_theme”",
-      "required" : true
+      "required" : true,
+      "value" : "chat_theme"
     }, {
       "name" : "theme_name",
       "type" : "String",
@@ -3335,7 +3349,8 @@
       "name" : "status",
       "type" : "String",
       "description" : "The member's status in the chat, always “creator”",
-      "required" : true
+      "required" : true,
+      "value" : "creator"
     }, {
       "name" : "user",
       "type" : "type/user",
@@ -3361,7 +3376,8 @@
       "name" : "status",
       "type" : "String",
       "description" : "The member's status in the chat, always “administrator”",
-      "required" : true
+      "required" : true,
+      "value" : "administrator"
     }, {
       "name" : "user",
       "type" : "type/user",
@@ -3462,7 +3478,8 @@
       "name" : "status",
       "type" : "String",
       "description" : "The member's status in the chat, always “member”",
-      "required" : true
+      "required" : true,
+      "value" : "member"
     }, {
       "name" : "user",
       "type" : "type/user",
@@ -3483,7 +3500,8 @@
       "name" : "status",
       "type" : "String",
       "description" : "The member's status in the chat, always “restricted”",
-      "required" : true
+      "required" : true,
+      "value" : "restricted"
     }, {
       "name" : "user",
       "type" : "type/user",
@@ -3579,7 +3597,8 @@
       "name" : "status",
       "type" : "String",
       "description" : "The member's status in the chat, always “left”",
-      "required" : true
+      "required" : true,
+      "value" : "left"
     }, {
       "name" : "user",
       "type" : "type/user",
@@ -3595,7 +3614,8 @@
       "name" : "status",
       "type" : "String",
       "description" : "The member's status in the chat, always “kicked”",
-      "required" : true
+      "required" : true,
+      "value" : "kicked"
     }, {
       "name" : "user",
       "type" : "type/user",
@@ -3886,7 +3906,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the area, always “location”",
-      "required" : true
+      "required" : true,
+      "value" : "location"
     }, {
       "name" : "latitude",
       "type" : "Float",
@@ -3912,7 +3933,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the area, always “suggested_reaction”",
-      "required" : true
+      "required" : true,
+      "value" : "suggested_reaction"
     }, {
       "name" : "reaction_type",
       "type" : "type/reaction-type",
@@ -3938,7 +3960,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the area, always “link”",
-      "required" : true
+      "required" : true,
+      "value" : "link"
     }, {
       "name" : "url",
       "type" : "String",
@@ -3954,7 +3977,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the area, always “weather”",
-      "required" : true
+      "required" : true,
+      "value" : "weather"
     }, {
       "name" : "temperature",
       "type" : "Float",
@@ -3980,7 +4004,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the area, always “unique_gift”",
-      "required" : true
+      "required" : true,
+      "value" : "unique_gift"
     }, {
       "name" : "name",
       "type" : "String",
@@ -4034,7 +4059,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the reaction, always “emoji”",
-      "required" : true
+      "required" : true,
+      "value" : "emoji"
     }, {
       "name" : "emoji",
       "type" : "String",
@@ -4050,7 +4076,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the reaction, always “custom_emoji”",
-      "required" : true
+      "required" : true,
+      "value" : "custom_emoji"
     }, {
       "name" : "custom_emoji_id",
       "type" : "String",
@@ -4066,7 +4093,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the reaction, always “paid”",
-      "required" : true
+      "required" : true,
+      "value" : "paid"
     } ]
   }, {
     "id" : "type/reaction-count",
@@ -4436,7 +4464,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the gift, always “regular”",
-      "required" : true
+      "required" : true,
+      "value" : "regular"
     }, {
       "name" : "gift",
       "type" : "type/gift",
@@ -4507,7 +4536,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the gift, always “unique”",
-      "required" : true
+      "required" : true,
+      "value" : "unique"
     }, {
       "name" : "gift",
       "type" : "type/unique-gift",
@@ -4834,7 +4864,8 @@
       "name" : "source",
       "type" : "String",
       "description" : "Source of the boost, always “premium”",
-      "required" : true
+      "required" : true,
+      "value" : "premium"
     }, {
       "name" : "user",
       "type" : "type/user",
@@ -4850,7 +4881,8 @@
       "name" : "source",
       "type" : "String",
       "description" : "Source of the boost, always “gift_code”",
-      "required" : true
+      "required" : true,
+      "value" : "gift_code"
     }, {
       "name" : "user",
       "type" : "type/user",
@@ -4866,7 +4898,8 @@
       "name" : "source",
       "type" : "String",
       "description" : "Source of the boost, always “giveaway”",
-      "required" : true
+      "required" : true,
+      "value" : "giveaway"
     }, {
       "name" : "giveaway_message_id",
       "type" : "Integer",
@@ -7685,7 +7718,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the state, always “pending”",
-      "required" : true
+      "required" : true,
+      "value" : "pending"
     } ]
   }, {
     "id" : "type/revenue-withdrawal-state-succeeded",
@@ -7696,7 +7730,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the state, always “succeeded”",
-      "required" : true
+      "required" : true,
+      "value" : "succeeded"
     }, {
       "name" : "date",
       "type" : "Integer",
@@ -7717,7 +7752,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the state, always “failed”",
-      "required" : true
+      "required" : true,
+      "value" : "failed"
     } ]
   }, {
     "id" : "type/affiliate-info",
@@ -7765,7 +7801,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the transaction partner, always “user”",
-      "required" : true
+      "required" : true,
+      "value" : "user"
     }, {
       "name" : "transaction_type",
       "type" : "String",
@@ -7821,7 +7858,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the transaction partner, always “chat”",
-      "required" : true
+      "required" : true,
+      "value" : "chat"
     }, {
       "name" : "chat",
       "type" : "type/chat",
@@ -7842,7 +7880,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the transaction partner, always “affiliate_program”",
-      "required" : true
+      "required" : true,
+      "value" : "affiliate_program"
     }, {
       "name" : "sponsor_user",
       "type" : "type/user",
@@ -7863,7 +7902,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the transaction partner, always “fragment”",
-      "required" : true
+      "required" : true,
+      "value" : "fragment"
     }, {
       "name" : "withdrawal_state",
       "type" : "type/revenue-withdrawal-state",
@@ -7879,7 +7919,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the transaction partner, always “telegram_ads”",
-      "required" : true
+      "required" : true,
+      "value" : "telegram_ads"
     } ]
   }, {
     "id" : "type/transaction-partner-telegram-api",
@@ -7890,7 +7931,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the transaction partner, always “telegram_api”",
-      "required" : true
+      "required" : true,
+      "value" : "telegram_api"
     }, {
       "name" : "request_count",
       "type" : "Integer",
@@ -7906,7 +7948,8 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the transaction partner, always “other”",
-      "required" : true
+      "required" : true,
+      "value" : "other"
     } ]
   }, {
     "id" : "type/star-transaction",
