@@ -1,5 +1,6 @@
 (ns marksto.clj-tg-bot-api.impl.api.spec
-  (:require [clojure.java.io :as io]
+  (:require [camel-snake-kebab.core :as csk]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.tools.logging :as log]
             [jsonista.core :as json]
@@ -66,19 +67,42 @@
 ;; TODO: Re-impl `s/either` (`schema.core.Either`) schemas. It doesn't coerce!
 ;;       Maybe use `schema-tools.core/schema-value` for sub-schemas retrieval.
 
+(def ->field-name
+  (comp keyword :name))
+
+(defn ->type-pred
+  [type-dependant-field subtype]
+  (let [field-name (->field-name type-dependant-field)]
+    (fn [obj]
+      (= (some :value (:fields subtype))
+         (or (get obj field-name)
+             (get obj (csk/->kebab-case field-name)))))))
+
+(defn api-supertype->schema
+  [name api-subtype-ids]
+  (let [subtype-schemas (map type->schema api-subtype-ids)
+        subtypes (map get-api-type api-subtype-ids)]
+    (if-some [type-dependant-field (some #(when (contains? % :value) %)
+                                         (:fields (first subtypes)))]
+      (apply s/conditional
+             (interleave (map #(->type-pred type-dependant-field %) subtypes)
+                         subtype-schemas))
+      (s/named (apply s/either subtype-schemas) name))))
+
 (defn api-type->schema
   [^String api-type-id]
   (let [{:keys [fields subtypes name]} (get-api-type api-type-id)]
     (cond
       (some? fields)
       (-> {}
-          (utils/index-by (comp keyword :name) fields)
+          (utils/index-by ->field-name fields)
           (update-vals (comp type->schema :type)))
 
       (some? subtypes)
-      (apply s/either (map type->schema subtypes))
+      (api-supertype->schema name subtypes)
 
-      (= "InputFile" name) InputFile :else s/Any)))
+      :else
+      (if (= "InputFile" name) InputFile s/Any))))
 
 (def memo:api-type->schema (memoize api-type->schema))
 
@@ -179,3 +203,60 @@
 
 (defn get-tg-bot-api-spec []
   @*tg-bot-api-spec)
+
+;;
+
+(comment
+  (do (defn get-required-fields
+        [type]
+        (filter :required (:fields type)))
+
+      (defn fields-eq
+        [field-1 field-2]
+        (= (select-keys field-1 [:name :type])
+           (select-keys field-2 [:name :type])))
+
+      (defn select-common-fields
+        [[first-sub & rest-sub :as _subtypes]]
+        (for [field (get-required-fields first-sub)
+              :let [eq-field? #(fields-eq field %)]
+              :when (every? #(some eq-field? %)
+                            (map get-required-fields rest-sub))]
+          field))
+
+      (defn set-distinct-fields
+        [subtype common-fields]
+        (let [distinct-fields (for [field (get-required-fields subtype)
+                                    :let [eq-field? #(fields-eq field %)]
+                                    :when (not (some eq-field? common-fields))]
+                                field)]
+          (assoc subtype :distinct-fields distinct-fields)))
+
+      (defn set-subtype-fields
+        [subtypes common-fields]
+        (mapv #(set-distinct-fields % common-fields) subtypes))
+
+      (defn select-type-dependant-field
+        [subtypes]
+        (let [first-fields (map (comp first :fields) subtypes)]
+          (when (and (every? :required first-fields)
+                     (apply = (map (juxt :name :type) first-fields)))
+            (mapv #(assoc %1 :type-field %2) subtypes first-fields)))))
+
+  (let [used-types (:used-types (get-tg-bot-api-spec))
+        supertypes (filter :subtypes used-types)
+        id->api-type (utils/index-by :id used-types)]
+    (->> supertypes
+         (map #(update % :subtypes (partial mapv id->api-type)))
+         #_(take 1)
+         (map (fn [{:keys [subtypes] :as supertype}]
+                (let [common-fields (select-common-fields subtypes)]
+                  (-> supertype
+                      (assoc :common-fields common-fields)
+                      (update :subtypes select-type-dependant-field)
+                      (update :subtypes #(set-subtype-fields % common-fields))))))
+         (filter (fn [{:keys [common-fields] :as supertype}]
+                   ((some-fn empty? #(< 1 (count %))) common-fields)))
+         #_(first)))
+
+  :end/comment)
