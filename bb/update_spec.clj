@@ -1,16 +1,18 @@
 #!/usr/bin/env bb
-(require
-  '[babashka.fs :as fs]
-  '[babashka.http-client :as http]
-  '[camel-snake-kebab.core :as csk]
-  '[hickory.core :as h]
-  '[hickory.render :as r]
-  '[hickory.select :as s]
-  '[cheshire.core :as json]
-  '[clojure.pprint :as pp]
-  '[clojure.string :as str]
-  '[clojure.tools.logging :as log]
-  '[clojure.walk :as walk])
+
+(ns update-spec
+  (:require
+    [babashka.fs :as fs]
+    [babashka.http-client :as http]
+    [camel-snake-kebab.core :as csk]
+    [hickory.core :as h]
+    [hickory.render :as r]
+    [hickory.select :as s]
+    [cheshire.core :as json]
+    [clojure.pprint :as pp]
+    [clojure.string :as str]
+    [clojure.tools.logging :as log]
+    [clojure.walk :as walk]))
 
 ;;; Utils
 
