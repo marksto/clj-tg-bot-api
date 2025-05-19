@@ -181,6 +181,23 @@
 
 ;;;; Parsing > API Element > API Type
 
+;; TODO: Parse additional conversion marker for JSON-serialized fields values.
+;;       - String — "JSON-serialized data"
+;;       - Array of String — "A JSON-serialized list"
+;;       - Array of Integer — "A JSON-serialized list"
+;;       - Array of MessageEntity — "A JSON-serialized list"
+;;       - Array of InputPaidMedia — "A JSON-serialized array"
+;;       - ChatAdministratorRights — "A JSON-serialized object"
+;;       - InlineKeyboardMarkup or ... — "A JSON-serialized object"
+;;       - Array of InputMediaAudio, ... — "A JSON-serialized array"
+
+;; TODO: Parse additional String type constraints:
+;;       - "1-64 characters", "1-4096 characters", "0-1024 characters"
+;;       - "up to 64 characters", "(up to 256 characters)"
+;;       - "0-16 characters, emoji are not allowed"
+;;       - "0-2048 characters after entities parsing"
+;;       - "0-200 characters with at most 2 line feeds after entities parsing"
+
 (defn col-name->attr-key
   [col-name]
   (case col-name

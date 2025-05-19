@@ -180,13 +180,6 @@
             "array" [(type->schema inner-type)]
             "or" (or-schema (map type->schema inner-type)))))))
 
-;; TODO: Parse additional String type constraints:
-;;       - "1-64 characters", "1-4096 characters", "0-1024 characters"
-;;       - "up to 64 characters", "(up to 256 characters)"
-;;       - "0-16 characters, emoji are not allowed"
-;;       - "0-2048 characters after entities parsing"
-;;       - "0-200 characters with at most 2 line feeds after entities parsing"
-
 (defn parse:api-type
   [{api-type-id :id :as api-type}]
   (assoc api-type :schema (memo:api-type->schema api-type-id)))
