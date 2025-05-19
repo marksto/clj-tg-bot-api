@@ -80,8 +80,7 @@
 ;; TODO: Re-impl `s/either` (`schema.core.Either`) schemas. It doesn't coerce!
 ;;       Maybe use `schema-tools.core/schema-value` for sub-schemas retrieval.
 
-(def ->field-name
-  (comp keyword :name))
+(def ->field-name (comp keyword :name))
 
 (defn ->type-pred
   [type-dependant-field subtype]
@@ -91,7 +90,7 @@
          (or (get obj field-name)
              (get obj (csk/->kebab-case field-name)))))))
 
-(defn api-supertype->schema
+(defn api-type:supertype->schema
   [name api-subtype-ids]
   (let [subtype-schemas (map type->schema api-subtype-ids)
         subtypes (map get-api-type api-subtype-ids)
@@ -105,18 +104,24 @@
         (or-schema subtype-schemas))
       name)))
 
+(defn api-type:concrete->schema
+  [name fields]
+  (-> {}
+      (utils/index-by ->field-name fields)
+      (utils/update-kvs (fn [field-name {:keys [required type] :as _v}]
+                          [(cond-> field-name (not required) (s/optional-key))
+                           (type->schema type)]))
+      (s/named name)))
+
 (defn api-type->schema
   [^String api-type-id]
   (let [{:keys [fields subtypes name]} (get-api-type api-type-id)]
     (cond
       (some? fields)
-      (-> {}
-          (utils/index-by ->field-name fields)
-          (update-vals (comp type->schema :type))
-          (s/named name))
+      (api-type:concrete->schema name fields)
 
       (some? subtypes)
-      (api-supertype->schema name subtypes)
+      (api-type:supertype->schema name subtypes)
 
       :else
       (if (= "InputFile" name) InputFile s/Any))))
@@ -224,7 +229,11 @@
 ;;
 
 (comment
-  (do (defn get-required-fields
+  (do (def used-types (:used-types (get-tg-bot-api-spec)))
+      (def supertypes (filter :subtypes used-types))
+      (def id->api-type (utils/index-by :id used-types))
+
+      (defn get-required-fields
         [type]
         (filter :required (:fields type)))
 
@@ -256,24 +265,28 @@
       (defn select-type-dependant-field
         [subtypes]
         (let [first-fields (map (comp first :fields) subtypes)]
-          (when (and (every? :required first-fields)
-                     (apply = (map (juxt :name :type) first-fields)))
-            (mapv #(assoc %1 :type-field %2) subtypes first-fields)))))
+          (if (and (every? :required first-fields)
+                   (apply = (map (juxt :name :type) first-fields)))
+            (mapv #(assoc %1 :type-field %2) subtypes first-fields)
+            subtypes)))
 
-  (let [used-types (:used-types (get-tg-bot-api-spec))
-        supertypes (filter :subtypes used-types)
-        id->api-type (utils/index-by :id used-types)]
-    (->> supertypes
-         (map #(update % :subtypes (partial mapv id->api-type)))
-         #_(take 1)
-         (map (fn [{:keys [subtypes] :as supertype}]
-                (let [common-fields (select-common-fields subtypes)]
-                  (-> supertype
-                      (assoc :common-fields common-fields)
-                      (update :subtypes select-type-dependant-field)
-                      (update :subtypes #(set-subtype-fields % common-fields))))))
-         (filter (fn [{:keys [common-fields] :as supertype}]
-                   ((some-fn empty? #(< 1 (count %))) common-fields)))
-         #_(first)))
+      (defn set-supertype-fields
+        [{subtype-ids :subtypes :as supertype}]
+        (let [subtypes (mapv id->api-type subtype-ids)
+              common-fields (select-common-fields subtypes)]
+          (-> supertype
+              (assoc :common-fields common-fields)
+              (assoc :subtypes subtypes)
+              (update :subtypes select-type-dependant-field)
+              (update :subtypes #(set-subtype-fields % common-fields)))))
+
+      :end/do)
+
+  (->> supertypes
+       #_(take 1)
+       (map set-supertype-fields)
+       (filter (fn [{:keys [common-fields] :as supertype}]
+                 ((some-fn empty? #(< 1 (count %))) common-fields)))
+       #_(first))
 
   :end/comment)

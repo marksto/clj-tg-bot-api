@@ -28,6 +28,17 @@
           (persistent!))
      init-map)))
 
+(defn update-kvs
+  [m fkv]
+  (if (nil? m)
+    {}
+    (->> m
+         (reduce-kv (fn [m k v]
+                      (let [[k' v'] (fkv k v)]
+                        (assoc! m k' v')))
+                    (transient {}))
+         (persistent!))))
+
 (defn interleave*
   ([]
    '())
