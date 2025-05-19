@@ -52,6 +52,19 @@
     "Float" Floating
     s/Any))
 
+;; NB: At the moment is as simple as this.
+(def api-type-schema? map?)
+
+(defn or-schema
+  [schemas]
+  ;; NB: Based on the `s/cond-pre` docstring, it is only suitable for schemas
+  ;;     with mutually exclusive preconditions (e.g. `s/Int` and `s/Str`) and
+  ;;     it won't work on map schemas, which is what all API types are. Thus,
+  ;;     we need to make sure there's a max of 1 map schema for `s/cond-pre`.
+  (if (< 1 (count (filter api-type-schema? schemas)))
+    (apply s/either schemas)
+    (apply s/cond-pre schemas)))
+
 (def ^:dynamic *id->api-type* nil)
 
 (def ^:dynamic *id->api-method-param-type* nil)
@@ -81,13 +94,16 @@
 (defn api-supertype->schema
   [name api-subtype-ids]
   (let [subtype-schemas (map type->schema api-subtype-ids)
-        subtypes (map get-api-type api-subtype-ids)]
-    (if-some [type-dependant-field (some #(when (contains? % :value) %)
-                                         (:fields (first subtypes)))]
-      (apply s/conditional
-             (interleave (map #(->type-pred type-dependant-field %) subtypes)
-                         subtype-schemas))
-      (s/named (apply s/either subtype-schemas) name))))
+        subtypes (map get-api-type api-subtype-ids)
+        type-dependant-field (some #(when (contains? % :value) %)
+                                   (:fields (first subtypes)))]
+    (s/named
+      (if (some? type-dependant-field)
+        (apply s/conditional
+               (interleave (map #(->type-pred type-dependant-field %) subtypes)
+                           subtype-schemas))
+        (or-schema subtype-schemas))
+      name)))
 
 (defn api-type->schema
   [^String api-type-id]
@@ -96,7 +112,8 @@
       (some? fields)
       (-> {}
           (utils/index-by ->field-name fields)
-          (update-vals (comp type->schema :type)))
+          (update-vals (comp type->schema :type))
+          (s/named name))
 
       (some? subtypes)
       (api-supertype->schema name subtypes)
@@ -130,7 +147,7 @@
         (let [[container-type inner-type] type]
           (case container-type
             "array" [(type->schema inner-type)]
-            "or" (apply s/either (map type->schema inner-type)))))))
+            "or" (or-schema (map type->schema inner-type)))))))
 
 ;; TODO: Parse additional String type constraints:
 ;;       - "1-64 characters", "1-4096 characters", "0-1024 characters"
