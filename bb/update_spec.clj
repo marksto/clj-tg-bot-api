@@ -181,16 +181,6 @@
 
 ;;;; Parsing > API Element > API Type
 
-;; TODO: Parse additional conversion marker for JSON-serialized fields values.
-;;       - String — "JSON-serialized data"
-;;       - Array of String — "A JSON-serialized list"
-;;       - Array of Integer — "A JSON-serialized list"
-;;       - Array of MessageEntity — "A JSON-serialized list"
-;;       - Array of InputPaidMedia — "A JSON-serialized array"
-;;       - ChatAdministratorRights — "A JSON-serialized object"
-;;       - InlineKeyboardMarkup or ... — "A JSON-serialized object"
-;;       - Array of InputMediaAudio, ... — "A JSON-serialized array"
-
 ;; TODO: Parse additional String type constraints:
 ;;       - "1-64 characters", "1-4096 characters", "0-1024 characters"
 ;;       - "up to 64 characters", "(up to 256 characters)"
@@ -214,13 +204,16 @@
   (let [optional? (-> (s/select s/first-child description)
                       (first)
                       (has-text? "Optional"))
-        tdf-value (last (re-find type-dependant-field-re (text description)))]
+        desc-text (text description)
+        json-ser? (str/includes? desc-text "JSON-serialized")
+        tdf-value (last (re-find type-dependant-field-re desc-text))]
     (cond-> (-> field
                 (update :name (comp keyword first :content))
                 (update :type parse-data-type)
                 (assoc :required (not optional?))
                 (update :description (comp render-html:nodes :content)))
-            (some? tdf-value) (assoc :value tdf-value))))
+            json-ser? (assoc :json-serialized json-ser?)
+            tdf-value (assoc :value tdf-value))))
 
 (defn get-api-type-field
   [col-names single-row-nodes]
@@ -244,12 +237,15 @@
 ;;;; Parsing > API Element > API Method
 
 (defn prepare-api-method-param
-  [param]
-  (-> param
-      (update :name (comp keyword first :content))
-      (update :type parse-data-type)
-      (update :required #(has-text? % "Yes"))
-      (update :description (comp render-html:nodes :content))))
+  [{:keys [description] :as param}]
+  (let [desc-text (text description)
+        json-ser? (str/includes? desc-text "JSON-serialized")]
+    (cond-> (-> param
+                (update :name (comp keyword first :content))
+                (update :type parse-data-type)
+                (update :required #(has-text? % "Yes"))
+                (update :description (comp render-html:nodes :content)))
+            json-ser? (assoc :json-serialized json-ser?))))
 
 (defn get-api-method-param
   [col-names single-row-nodes]
