@@ -6,6 +6,8 @@
 
 ;; collections
 
+(def keyset (comp set keys))
+
 (defn map-keys
   ([vf coll]
    (map-keys {} vf coll))
@@ -38,6 +40,14 @@
                         (assoc! m k' v')))
                     (transient {}))
          (persistent!))))
+
+(defn filter-keys
+  [m pred]
+  (some->> m
+           (reduce-kv (fn [m k v]
+                        (if (pred k) (assoc! m k v) m))
+                      (transient {}))
+           (persistent!)))
 
 (defn interleave*
   ([]

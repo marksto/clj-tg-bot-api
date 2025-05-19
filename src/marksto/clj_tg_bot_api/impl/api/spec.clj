@@ -1,6 +1,7 @@
 (ns marksto.clj-tg-bot-api.impl.api.spec
   (:require [camel-snake-kebab.core :as csk]
             [clojure.java.io :as io]
+            [clojure.set :as set]
             [clojure.string :as str]
             [clojure.tools.logging :as log]
             [jsonista.core :as json]
@@ -9,7 +10,8 @@
             [marksto.clj-tg-bot-api.impl.utils :as utils])
   (:import (java.io File InputStream)
            (java.net URI URL)
-           (java.nio.file Path)))
+           (java.nio.file Path)
+           (schema.core NamedSchema)))
 
 ;;; Types
 
@@ -55,15 +57,42 @@
 ;; NB: At the moment is as simple as this.
 (def api-type-schema? map?)
 
+(defn get-required-keys
+  [map-schema]
+  (-> (if (instance? NamedSchema map-schema)
+        (:schema map-schema) ; unwrap named
+        map-schema)
+      (utils/filter-keys keyword?)
+      (utils/keyset)))
+
+(defn ->map-shape-pred
+  [required-keys]
+  (fn [obj]
+    (and (map? obj)
+         (set/subset? required-keys (utils/keyset obj)))))
+
 (defn or-schema
-  [schemas]
-  ;; NB: Based on the `s/cond-pre` docstring, it is only suitable for schemas
-  ;;     with mutually exclusive preconditions (e.g. `s/Int` and `s/Str`) and
-  ;;     it won't work on map schemas, which is what all API types are. Thus,
-  ;;     we need to make sure there's a max of 1 map schema for `s/cond-pre`.
-  (if (< 1 (count (filter api-type-schema? schemas)))
-    (apply s/either schemas)
-    (apply s/cond-pre schemas)))
+  ([schemas]
+   (or-schema schemas nil))
+  ([schemas error-symbol]
+   ;; NB: Based on the `s/cond-pre` docstring, it is only suitable for schemas
+   ;;     with mutually exclusive preconditions (e.g. `s/Int` and `s/Str`) and
+   ;;     it won't work on map schemas, which is what all API types are. Thus,
+   ;;     we need to make sure there's a max of 1 map schema for `s/cond-pre`.
+   (if (< 1 (count (filter api-type-schema? schemas)))
+     ;; NB: For map schemas we have no other good options than to take the map
+     ;;     shape (a set of required keys) and check for conformance with it.
+     ;;     We also have to sort these map schemas properly in order to avoid
+     ;;     (coercion) issues in case the shape of one of them fully contains
+     ;;     the shape of the other.
+     (let [pred+schemas (->> schemas
+                             (map #(vector (get-required-keys %) %))
+                             (sort-by (comp count first) >)
+                             (map (fn [[req-keys schema]]
+                                    [(->map-shape-pred req-keys) schema])))]
+       (apply s/conditional (cond-> (vec (flatten pred+schemas))
+                                    error-symbol (conj error-symbol))))
+     (apply s/cond-pre schemas))))
 
 (def ^:dynamic *id->api-type* nil)
 
@@ -76,9 +105,6 @@
     api-type))
 
 (declare type->schema)
-
-;; TODO: Re-impl `s/either` (`schema.core.Either`) schemas. It doesn't coerce!
-;;       Maybe use `schema-tools.core/schema-value` for sub-schemas retrieval.
 
 (def ->field-name (comp keyword :name))
 
@@ -101,7 +127,7 @@
         (apply s/conditional
                (interleave (map #(->type-pred type-dependant-field %) subtypes)
                            subtype-schemas))
-        (or-schema subtype-schemas))
+        (or-schema subtype-schemas 'subtype?))
       name)))
 
 (defn api-type:concrete->schema
@@ -229,64 +255,45 @@
 ;;
 
 (comment
-  (do (def used-types (:used-types (get-tg-bot-api-spec)))
-      (def supertypes (filter :subtypes used-types))
-      (def id->api-type (utils/index-by :id used-types))
+  (def used-types (:used-types (get-tg-bot-api-spec)))
 
-      (defn get-required-fields
-        [type]
-        (filter :required (:fields type)))
+  (def input-message-content
+    (some #(when (= "InputMessageContent" (:name %)) %) used-types))
 
-      (defn fields-eq
-        [field-1 field-2]
-        (= (select-keys field-1 [:name :type])
-           (select-keys field-2 [:name :type])))
+  (def input-message-content-validator
+    (s/validator (:schema input-message-content)))
 
-      (defn select-common-fields
-        [[first-sub & rest-sub :as _subtypes]]
-        (for [field (get-required-fields first-sub)
-              :let [eq-field? #(fields-eq field %)]
-              :when (every? #(some eq-field? %)
-                            (map get-required-fields rest-sub))]
-          field))
-
-      (defn set-distinct-fields
-        [subtype common-fields]
-        (let [distinct-fields (for [field (get-required-fields subtype)
-                                    :let [eq-field? #(fields-eq field %)]
-                                    :when (not (some eq-field? common-fields))]
-                                field)]
-          (assoc subtype :distinct-fields distinct-fields)))
-
-      (defn set-subtype-fields
-        [subtypes common-fields]
-        (mapv #(set-distinct-fields % common-fields) subtypes))
-
-      (defn select-type-dependant-field
-        [subtypes]
-        (let [first-fields (map (comp first :fields) subtypes)]
-          (if (and (every? :required first-fields)
-                   (apply = (map (juxt :name :type) first-fields)))
-            (mapv #(assoc %1 :type-field %2) subtypes first-fields)
-            subtypes)))
-
-      (defn set-supertype-fields
-        [{subtype-ids :subtypes :as supertype}]
-        (let [subtypes (mapv id->api-type subtype-ids)
-              common-fields (select-common-fields subtypes)]
-          (-> supertype
-              (assoc :common-fields common-fields)
-              (assoc :subtypes subtypes)
-              (update :subtypes select-type-dependant-field)
-              (update :subtypes #(set-subtype-fields % common-fields)))))
-
-      :end/do)
-
-  (->> supertypes
-       #_(take 1)
-       (map set-supertype-fields)
-       (filter (fn [{:keys [common-fields] :as supertype}]
-                 ((some-fn empty? #(< 1 (count %))) common-fields)))
-       #_(first))
+  (input-message-content-validator {}) ; invalid
+  ;; InputTextMessageContent
+  (input-message-content-validator {:parse_mode "MarkdownV2"}) ; invalid
+  (input-message-content-validator {:message_text "Hello there!"})
+  ;; InputLocationMessageContent
+  (input-message-content-validator {:latitude 68.960343}) ; invalid
+  (input-message-content-validator {:latitude  68.960343
+                                    :longitude 33.083448})
+  ;; InputVenueMessageContent
+  (input-message-content-validator {:latitude  68.966992
+                                    :longitude 33.099318
+                                    :title     "Cinema"}) ; invalid
+  (input-message-content-validator {:latitude  68.966992
+                                    :longitude 33.099318
+                                    :title     "Cinema"
+                                    :address   "Murmansk, Polyarnye Zori St., 51"})
+  ;; InputContactMessageContent
+  (input-message-content-validator {:first_name "Saint Martin"}) ; invalid
+  (input-message-content-validator {:phone_number "+590691286858"
+                                    :first_name   "Saint Martin"})
+  ;; InputInvoiceMessageContent
+  (input-message-content-validator {:title "Tofu XF"}) ; invalid
+  (input-message-content-validator {:title       "Tofu XF"
+                                    :description "Extra firm tofu"
+                                    :payload     "prod-T0003"
+                                    :currency    "XTR"}) ; invalid
+  (input-message-content-validator {:title       "Tofu XF"
+                                    :description "Extra firm tofu"
+                                    :payload     "prod-T0003"
+                                    :currency    "XTR"
+                                    :prices      [{:label "price" :amount 1000}]
+                                    #_#_:prices ["{\"label\":\"price\",\"amount\":1000}"]})
 
   :end/comment)
