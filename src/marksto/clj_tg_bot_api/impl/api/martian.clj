@@ -51,15 +51,6 @@
               (assoc-in ctx [:request :body :method] (get-url-path handler))
               ctx))})
 
-;;
-
-(defonce original-default-interceptors m/default-interceptors)
-
-(alter-var-root #'m/default-interceptors
-                (constantly (conj original-default-interceptors
-                                  inject-method-param-interceptor
-                                  json-serialize-params-interceptor)))
-
 ;;; Martian Patch
 
 ;; NB: W/o this function produces a request map of a wrong shape.
@@ -129,27 +120,40 @@
       (utils/requiring-resolve* 'martian.clj-http-lite/bootstrap)
       offline-bootstrap-fn))
 
-(defn- offline-interceptors []
-  (conj m/default-interceptors
-        mi/default-encode-body
-        mi/default-coerce-response))
+(def offline-interceptors
+  (delay (conj m/default-interceptors
+               mi/default-encode-body
+               mi/default-coerce-response)))
+
+(def martian-default-interceptors
+  ;; NB: Sorted by descending popularity in the global Clojure community.
+  (or (utils/requiring-resolve* 'martian.httpkit/default-interceptors)
+      (utils/requiring-resolve* 'martian.clj-http/default-interceptors)
+      (utils/requiring-resolve* 'martian.hato/default-interceptors)
+      (utils/requiring-resolve* 'martian.babashka.http-client/default-interceptors)
+      (utils/requiring-resolve* 'martian.clj-http-lite/default-interceptors)
+      offline-interceptors))
 
 (defn build-martian
   [tg-bot-api-root-url]
-  (let [is-offline? (= offline-bootstrap-fn martian-bootstrap-fn)]
-    (when is-offline?
-      (log/warn (str "WARNING! You are in offline mode, meaning there is no "
-                     "supported HTTP client available for sending requests. "
-                     "Please, add any Martian library for JVM/Babashka HTTP "
-                     "client to the classpath. For supported, check out the "
-                     "https://github.com/oliyh/martian page.")))
-    (when (= "#'martian.clj-http-lite/bootstrap" (str martian-bootstrap-fn))
-      (log/warn (str "WARNING! You have picked up `clj-http-lite` which has "
-                     "no support for 'multipart/form-data' requests used to "
-                     "upload files, therefore this Telegram Bot API feature "
-                     "won't be available for your bot.")))
+  (when (= offline-bootstrap-fn martian-bootstrap-fn)
+    (log/warn (str "WARNING! You are in offline mode, meaning there is no "
+                   "supported HTTP client available for sending requests. "
+                   "Please, add any Martian library for JVM/Babashka HTTP "
+                   "client to the classpath. For supported, check out the "
+                   "https://github.com/oliyh/martian page.")))
+  (when (= "#'martian.clj-http-lite/bootstrap" (str martian-bootstrap-fn))
+    (log/warn (str "WARNING! You have picked up `clj-http-lite` which has "
+                   "no support for 'multipart/form-data' requests used to "
+                   "upload files, therefore this Telegram Bot API feature "
+                   "won't be available for your bot.")))
+  (let [[default-ints other-ints] (split-at (count m/default-interceptors)
+                                            @martian-default-interceptors)]
     (martian-bootstrap-fn
       tg-bot-api-root-url
       (build-handlers)
-      (cond-> {:coercion-matcher stc/json-coercion-matcher}
-              is-offline? (assoc :interceptors (offline-interceptors))))))
+      {:coercion-matcher stc/json-coercion-matcher
+       :interceptors     (concat default-ints
+                                 [inject-method-param-interceptor
+                                  json-serialize-params-interceptor]
+                                 other-ints)})))
