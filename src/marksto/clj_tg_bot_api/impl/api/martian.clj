@@ -39,10 +39,25 @@
               (update-in ctx [:request :body] #(json-serialize-params % paths))
               ctx))})
 
+;;
+
+(defn- get-url-path [handler]
+  (subs (first (:path-parts handler)) 1))
+
+(def inject-method-param-interceptor
+  {:name  ::inject-method-param-interceptor
+   :enter (fn [{:keys [tripod.context/queue handler] :as ctx}]
+            (if (some #(= ::mi/request-only-handler (:name %)) queue)
+              (assoc-in ctx [:request :body :method] (get-url-path handler))
+              ctx))})
+
+;;
+
 (defonce original-default-interceptors m/default-interceptors)
 
 (alter-var-root #'m/default-interceptors
                 (constantly (conj original-default-interceptors
+                                  inject-method-param-interceptor
                                   json-serialize-params-interceptor)))
 
 ;;; Martian Patch

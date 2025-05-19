@@ -235,16 +235,12 @@
    (build-immediate-response client method {}))
   ([client method params]
    (have! keyword? method)
-   (let [request (-> client
-                     (m/request-for method params)
-                     (select-keys [:body :multipart :headers])
-                     (assoc :status 200))
-         method' (csk/->camelCaseString method)]
-     ;; NB: Special handling of multipart requests so to not pollute the params
-     ;;     schema of each and every method in the API spec with this `method`.
-     (if (contains? request :multipart)
-       (update request :multipart conj {:name "method" :content method'})
-       (update request :body assoc :method method')))))
+   (let [method' (csk/->camelCaseString method)
+         params' (assoc params :method method')]
+     (-> client
+         (m/request-for method params')
+         (select-keys [:body :multipart :headers])
+         (assoc :status 200)))))
 
 ;;
 
