@@ -5,6 +5,7 @@
             [clojure.string :as str]
             [clojure.tools.logging :as log]
             [jsonista.core :as json]
+            [martian.schema-tools :as mct]
             [schema.core :as s]
 
             [marksto.clj-tg-bot-api.impl.utils :as utils])
@@ -12,6 +13,20 @@
            (java.net URI URL)
            (java.nio.file Path)
            (schema.core NamedSchema)))
+
+(defn get-json-serialized-paths
+  [api-element]
+  (let [*json-serialized-paths (atom [])]
+    (mct/prewalk-with-path
+      (fn [path form]
+        (when (and (map? form) (:json-serialized form))
+          (->> (keyword (:name form))
+               (conj path)
+               (swap! *json-serialized-paths conj)))
+        form)
+      []
+      api-element)
+    @*json-serialized-paths))
 
 ;;; Types
 
@@ -181,8 +196,13 @@
             "or" (or-schema (map type->schema inner-type)))))))
 
 (defn parse:api-type
-  [{api-type-id :id :as api-type}]
-  (assoc api-type :schema (memo:api-type->schema api-type-id)))
+  [{api-type-id :id fields :fields :as api-type}]
+  (let [schema (memo:api-type->schema api-type-id)
+        json-serialized-paths (get-json-serialized-paths fields)]
+    (cond-> (assoc api-type :schema schema)
+
+            (seq json-serialized-paths)
+            (assoc :json-serialized-paths json-serialized-paths))))
 
 ;;; Methods
 
@@ -205,13 +225,17 @@
 
 (defn parse:api-method
   [{:keys [params] :as api-method}]
-  (cond-> api-method
+  (let [json-serialized-paths (get-json-serialized-paths params)]
+    (cond-> api-method
 
-          (some? params)
-          (assoc :params-schema (api-method-params->params-schema params))
+            (some? params)
+            (assoc :params-schema (api-method-params->params-schema params))
 
-          (some api-method-param-of-input-type? params)
-          (assoc :uploads-file? true)))
+            (some api-method-param-of-input-type? params)
+            (assoc :uploads-file? true)
+
+            (seq json-serialized-paths)
+            (assoc :json-serialized-paths json-serialized-paths))))
 
 ;;; Parsing
 

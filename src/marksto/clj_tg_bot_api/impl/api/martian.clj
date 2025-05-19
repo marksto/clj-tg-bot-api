@@ -1,7 +1,9 @@
 (ns marksto.clj-tg-bot-api.impl.api.martian
-  (:require [clojure.set :as set]
+  (:require [camel-snake-kebab.core :as csk]
+            [clojure.set :as set]
             [clojure.string :as str]
             [clojure.tools.logging :as log]
+            [jsonista.core :as json]
             [martian.core :as m]
             [martian.encoders :as me]
             [martian.encoding :as encoding]
@@ -10,6 +12,38 @@
 
             [marksto.clj-tg-bot-api.impl.api.spec :as api-spec]
             [marksto.clj-tg-bot-api.impl.utils :as utils]))
+
+;;; Martian Interceptors
+
+(def params-mapper
+  (json/object-mapper {:encode-key-fn csk/->snake_case_string}))
+
+(defn- json-serialize-param
+  [param]
+  (if (vector? param)
+    (mapv #(json/write-value-as-string % params-mapper) param)
+    (json/write-value-as-string param params-mapper)))
+
+(defn- json-serialize-params
+  [params paths]
+  (reduce
+    (fn [params path]
+      (utils/update-in* params path json-serialize-param))
+    params
+    paths))
+
+(def json-serialize-params-interceptor
+  {:name  ::json-serialize-params
+   :enter (fn [{:keys [handler] :as ctx}]
+            (if-some [paths (:json-serialized-paths handler)]
+              (update-in ctx [:request :body] #(json-serialize-params % paths))
+              ctx))})
+
+(defonce original-default-interceptors m/default-interceptors)
+
+(alter-var-root #'m/default-interceptors
+                (constantly (conj original-default-interceptors
+                                  json-serialize-params-interceptor)))
 
 ;;; Martian Patch
 
@@ -48,7 +82,7 @@
 
 (defn api-method->handler
   [{:keys [id name description _params
-           params-schema uploads-file?]}]
+           params-schema uploads-file? json-serialized-paths]}]
   (let [use-http-get? (and (not uploads-file?) (str/starts-with? name "get"))]
     (conj {:route-name (keyword (subs id (count api-spec/api-method-prefix)))
            :path-parts [(str "/" name)]
@@ -61,7 +95,9 @@
           (when params-schema
             (if use-http-get?
               {:query-schema params-schema}
-              {:body-schema {:body params-schema}})))))
+              {:body-schema {:body params-schema}}))
+          (when json-serialized-paths
+            {:json-serialized-paths json-serialized-paths}))))
 
 (defn build-handlers []
   (let [tg-bot-api-spec (api-spec/get-tg-bot-api-spec)]

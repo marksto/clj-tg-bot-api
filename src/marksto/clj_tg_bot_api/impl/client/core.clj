@@ -262,8 +262,21 @@
   ;; 4. Error - Network connection (drop internet access)
   (make-request! client '(:get-me))
 
+  ;; 1. no params methods
   (build-immediate-response client :get-me)
   (build-immediate-response client :get-me {})
-  (build-immediate-response client :send-audio {:chat-id 1 :audio "<audio>"})
+  ;; 2. multipart request
+  (build-immediate-response client :send-audio {:chat-id 1
+                                                :audio   "<audio>"})
+  ;; 3. JSON-serializable
+  (build-immediate-response
+    client
+    :create-invoice-link
+    {:title                 "Tofu XF"
+     :description           "Extra firm tofu"
+     :payload               "prod-T0003"
+     :currency              "XTR"
+     :prices                [{:label "price" :amount 1000}]
+     :suggested-tip-amounts []})
 
   :end/comment)
