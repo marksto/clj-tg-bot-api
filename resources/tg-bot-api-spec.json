@@ -1236,7 +1236,7 @@
       "type" : [ "array", "type/message-entity" ],
       "description" : "<em>Optional</em>. A JSON-serialized list of special entities that appear in the quote. It can be specified instead of <em>quote_parse_mode</em>.",
       "required" : false,
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "quote_position",
       "type" : "Integer",
@@ -1836,7 +1836,7 @@
       "type" : [ "array", "type/message-entity" ],
       "description" : "<em>Optional</em>. A JSON-serialized list of special entities that appear in the poll option text. It can be specified instead of <em>text_parse_mode</em>",
       "required" : false,
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "type/poll-answer",
@@ -2865,13 +2865,13 @@
       "type" : "type/chat-administrator-rights",
       "description" : "<em>Optional</em>. A JSON-serialized object listing the required administrator rights of the user in the chat. The rights must be a superset of <em>bot_administrator_rights</em>. If not specified, no additional restrictions are applied.",
       "required" : false,
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "bot_administrator_rights",
       "type" : "type/chat-administrator-rights",
       "description" : "<em>Optional</em>. A JSON-serialized object listing the required administrator rights of the bot in the chat. The rights must be a subset of <em>user_administrator_rights</em>. If not specified, no additional restrictions are applied.",
       "required" : false,
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "bot_is_member",
       "type" : "Boolean",
@@ -7277,7 +7277,7 @@
       "type" : [ "array", "type/labeled-price" ],
       "description" : "Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.). Must contain exactly one item for payments in <a href=\"https://t.me/BotNews/90\">Telegram Stars</a>.",
       "required" : true,
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "max_tip_amount",
       "type" : "Integer",
@@ -7288,13 +7288,13 @@
       "type" : [ "array", "Integer" ],
       "description" : "<em>Optional</em>. A JSON-serialized array of suggested amounts of tip in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed <em>max_tip_amount</em>.",
       "required" : false,
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "provider_data",
       "type" : "String",
       "description" : "<em>Optional</em>. A JSON-serialized object for data about the invoice, which will be shared with the payment provider. A detailed description of the required fields should be provided by the payment provider.",
       "required" : false,
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "photo_url",
       "type" : "String",
@@ -8113,7 +8113,7 @@
       "type" : "String",
       "description" : "Base64-encoded encrypted JSON-serialized data with unique user's payload, data hashes and secrets required for <a href=\"#encryptedpassportelement\">EncryptedPassportElement</a> decryption and authentication",
       "required" : true,
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "hash",
       "type" : "String",
@@ -8468,7 +8468,7 @@
       "type" : [ "array", "String" ],
       "required" : false,
       "description" : "A JSON-serialized list of the update types you want your bot to receive. For example, specify <code>[&quot;message&quot;, &quot;edited_channel_post&quot;, &quot;callback_query&quot;]</code> to only receive updates of these types. See <a href=\"#update\">Update</a> for a complete list of available update types. Specify an empty list to receive all update types except <em>chat_member</em>, <em>message_reaction</em>, and <em>message_reaction_count</em> (default). If not specified, the previous setting will be used.<br><br>Please note that this parameter doesn't affect updates created before the call to getUpdates, so unwanted updates may be received for a short period of time.",
-      "json-serialized" : true
+      "json_serialized" : true
     } ],
     "notes" : "<blockquote><p><strong>Notes</strong><br><strong>1.</strong> This method will not work if an outgoing webhook is set up.<br><strong>2.</strong> In order to avoid getting duplicate updates, recalculate <em>offset</em> after each server response.</p></blockquote>"
   }, {
@@ -8501,7 +8501,7 @@
       "type" : [ "array", "String" ],
       "required" : false,
       "description" : "A JSON-serialized list of the update types you want your bot to receive. For example, specify <code>[&quot;message&quot;, &quot;edited_channel_post&quot;, &quot;callback_query&quot;]</code> to only receive updates of these types. See <a href=\"#update\">Update</a> for a complete list of available update types. Specify an empty list to receive all update types except <em>chat_member</em>, <em>message_reaction</em>, and <em>message_reaction_count</em> (default). If not specified, the previous setting will be used.<br>Please note that this parameter doesn't affect updates created before the call to the setWebhook, so unwanted updates may be received for a short period of time.",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "drop_pending_updates",
       "type" : "Boolean",
@@ -8580,7 +8580,7 @@
       "type" : [ "array", "type/message-entity" ],
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in message text, which can be specified instead of <em>parse_mode</em>",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "link_preview_options",
       "type" : "type/link-preview-options",
@@ -8616,7 +8616,7 @@
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
       "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/forward-message",
@@ -8684,7 +8684,7 @@
       "type" : [ "array", "Integer" ],
       "required" : true,
       "description" : "A JSON-serialized list of 1-100 identifiers of messages in the chat <em>from_chat_id</em> to forward. The identifiers must be specified in a strictly increasing order.",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "disable_notification",
       "type" : "Boolean",
@@ -8741,7 +8741,7 @@
       "type" : [ "array", "type/message-entity" ],
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in the new caption, which can be specified instead of <em>parse_mode</em>",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "show_caption_above_media",
       "type" : "Boolean",
@@ -8772,7 +8772,7 @@
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
       "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/copy-messages",
@@ -8799,7 +8799,7 @@
       "type" : [ "array", "Integer" ],
       "required" : true,
       "description" : "A JSON-serialized list of 1-100 identifiers of messages in the chat <em>from_chat_id</em> to copy. The identifiers must be specified in a strictly increasing order.",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "disable_notification",
       "type" : "Boolean",
@@ -8856,7 +8856,7 @@
       "type" : [ "array", "type/message-entity" ],
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "show_caption_above_media",
       "type" : "Boolean",
@@ -8897,7 +8897,7 @@
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
       "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/send-audio",
@@ -8939,7 +8939,7 @@
       "type" : [ "array", "type/message-entity" ],
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "duration",
       "type" : "Integer",
@@ -8990,7 +8990,7 @@
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
       "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/send-document",
@@ -9037,7 +9037,7 @@
       "type" : [ "array", "type/message-entity" ],
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "disable_content_type_detection",
       "type" : "Boolean",
@@ -9073,7 +9073,7 @@
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
       "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/send-video",
@@ -9145,7 +9145,7 @@
       "type" : [ "array", "type/message-entity" ],
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "show_caption_above_media",
       "type" : "Boolean",
@@ -9191,7 +9191,7 @@
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
       "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/send-animation",
@@ -9253,7 +9253,7 @@
       "type" : [ "array", "type/message-entity" ],
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "show_caption_above_media",
       "type" : "Boolean",
@@ -9294,7 +9294,7 @@
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
       "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/send-voice",
@@ -9336,7 +9336,7 @@
       "type" : [ "array", "type/message-entity" ],
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "duration",
       "type" : "Integer",
@@ -9372,7 +9372,7 @@
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
       "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/send-video-note",
@@ -9444,7 +9444,7 @@
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
       "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/send-paid-media",
@@ -9471,7 +9471,7 @@
       "type" : [ "array", "type/input-paid-media" ],
       "required" : true,
       "description" : "A JSON-serialized array describing the media to be sent; up to 10 items",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "payload",
       "type" : "String",
@@ -9492,7 +9492,7 @@
       "type" : [ "array", "type/message-entity" ],
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "show_caption_above_media",
       "type" : "Boolean",
@@ -9523,7 +9523,7 @@
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
       "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/send-media-group",
@@ -9550,7 +9550,7 @@
       "type" : [ "array", [ "or", [ "type/input-media-audio", "type/input-media-document", "type/input-media-photo", "type/input-media-video" ] ] ],
       "required" : true,
       "description" : "A JSON-serialized array describing messages to be sent, must include 2-10 items",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "disable_notification",
       "type" : "Boolean",
@@ -9657,7 +9657,7 @@
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
       "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/send-venue",
@@ -9749,7 +9749,7 @@
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
       "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/send-contact",
@@ -9821,7 +9821,7 @@
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
       "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/send-poll",
@@ -9858,13 +9858,13 @@
       "type" : [ "array", "type/message-entity" ],
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in the poll question. It can be specified instead of <em>question_parse_mode</em>",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "options",
       "type" : [ "array", "type/input-poll-option" ],
       "required" : true,
       "description" : "A JSON-serialized list of 2-10 answer options",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "is_anonymous",
       "type" : "Boolean",
@@ -9900,7 +9900,7 @@
       "type" : [ "array", "type/message-entity" ],
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in the poll explanation. It can be specified instead of <em>explanation_parse_mode</em>",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "open_period",
       "type" : "Integer",
@@ -9946,7 +9946,7 @@
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
       "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/send-dice",
@@ -10003,7 +10003,7 @@
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
       "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/send-chat-action",
@@ -10051,7 +10051,7 @@
       "type" : [ "array", "type/reaction-type" ],
       "required" : false,
       "description" : "A JSON-serialized list of reaction types to set on the message. Currently, as non-premium users, bots can set up to one reaction per message. A custom emoji reaction can be used if it is either already present on the message or explicitly allowed by chat administrators. Paid reactions can't be used by bots.",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "is_big",
       "type" : "Boolean",
@@ -10179,7 +10179,7 @@
       "type" : "type/chat-permissions",
       "required" : true,
       "description" : "A JSON-serialized object for new user permissions",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "use_independent_chat_permissions",
       "type" : "Boolean",
@@ -10350,7 +10350,7 @@
       "type" : "type/chat-permissions",
       "required" : true,
       "description" : "A JSON-serialized object for new default chat permissions",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "use_independent_chat_permissions",
       "type" : "Boolean",
@@ -10995,13 +10995,13 @@
       "type" : [ "array", "type/bot-command" ],
       "required" : true,
       "description" : "A JSON-serialized list of bot commands to be set as the list of the bot's commands. At most 100 commands can be specified.",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "scope",
       "type" : "type/bot-command-scope",
       "required" : false,
       "description" : "A JSON-serialized object, describing scope of users for which the commands are relevant. Defaults to <a href=\"#botcommandscopedefault\">BotCommandScopeDefault</a>.",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "language_code",
       "type" : "String",
@@ -11018,7 +11018,7 @@
       "type" : "type/bot-command-scope",
       "required" : false,
       "description" : "A JSON-serialized object, describing scope of users for which the commands are relevant. Defaults to <a href=\"#botcommandscopedefault\">BotCommandScopeDefault</a>.",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "language_code",
       "type" : "String",
@@ -11035,7 +11035,7 @@
       "type" : "type/bot-command-scope",
       "required" : false,
       "description" : "A JSON-serialized object, describing scope of users. Defaults to <a href=\"#botcommandscopedefault\">BotCommandScopeDefault</a>.",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "language_code",
       "type" : "String",
@@ -11138,7 +11138,7 @@
       "type" : "type/menu-button",
       "required" : false,
       "description" : "A JSON-serialized object for the bot's new menu button. Defaults to <a href=\"#menubuttondefault\">MenuButtonDefault</a>",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/get-chat-menu-button",
@@ -11161,7 +11161,7 @@
       "type" : "type/chat-administrator-rights",
       "required" : false,
       "description" : "A JSON-serialized object describing new default administrator rights. If not specified, the default administrator rights will be cleared.",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "for_channels",
       "type" : "Boolean",
@@ -11219,7 +11219,7 @@
       "type" : [ "array", "type/message-entity" ],
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in message text, which can be specified instead of <em>parse_mode</em>",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "link_preview_options",
       "type" : "type/link-preview-options",
@@ -11230,7 +11230,7 @@
       "type" : "type/inline-keyboard-markup",
       "required" : false,
       "description" : "A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>.",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/edit-message-caption",
@@ -11272,7 +11272,7 @@
       "type" : [ "array", "type/message-entity" ],
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "show_caption_above_media",
       "type" : "Boolean",
@@ -11283,7 +11283,7 @@
       "type" : "type/inline-keyboard-markup",
       "required" : false,
       "description" : "A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>.",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/edit-message-media",
@@ -11315,13 +11315,13 @@
       "type" : "type/input-media",
       "required" : true,
       "description" : "A JSON-serialized object for a new media content of the message",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "reply_markup",
       "type" : "type/inline-keyboard-markup",
       "required" : false,
       "description" : "A JSON-serialized object for a new <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>.",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/edit-message-live-location",
@@ -11383,7 +11383,7 @@
       "type" : "type/inline-keyboard-markup",
       "required" : false,
       "description" : "A JSON-serialized object for a new <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>.",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/stop-message-live-location",
@@ -11415,7 +11415,7 @@
       "type" : "type/inline-keyboard-markup",
       "required" : false,
       "description" : "A JSON-serialized object for a new <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>.",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/edit-message-reply-markup",
@@ -11447,7 +11447,7 @@
       "type" : "type/inline-keyboard-markup",
       "required" : false,
       "description" : "A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>.",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/stop-poll",
@@ -11474,7 +11474,7 @@
       "type" : "type/inline-keyboard-markup",
       "required" : false,
       "description" : "A JSON-serialized object for a new message <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>.",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/delete-message",
@@ -11507,7 +11507,7 @@
       "type" : [ "array", "Integer" ],
       "required" : true,
       "description" : "A JSON-serialized list of 1-100 identifiers of messages to delete. See <a href=\"#deletemessage\">deleteMessage</a> for limitations on which messages can be deleted",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/get-available-gifts",
@@ -11554,7 +11554,7 @@
       "type" : [ "array", "type/message-entity" ],
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in the gift text. It can be specified instead of <em>text_parse_mode</em>. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, and “custom_emoji” are ignored.",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/gift-premium-subscription",
@@ -11591,7 +11591,7 @@
       "type" : [ "array", "type/message-entity" ],
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in the gift text. It can be specified instead of <em>text_parse_mode</em>. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, and “custom_emoji” are ignored.",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/verify-user",
@@ -11683,7 +11683,7 @@
       "type" : [ "array", "Integer" ],
       "required" : true,
       "description" : "A JSON-serialized list of 1-100 identifiers of messages to delete. All messages must be from the same chat. See <a href=\"#deletemessage\">deleteMessage</a> for limitations on which messages can be deleted",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/set-business-account-name",
@@ -11977,13 +11977,13 @@
       "type" : [ "array", "type/message-entity" ],
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "areas",
       "type" : [ "array", "type/story-area" ],
       "required" : false,
       "description" : "A JSON-serialized list of clickable areas to be shown on the story",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "post_to_chat_page",
       "type" : "Boolean",
@@ -12030,13 +12030,13 @@
       "type" : [ "array", "type/message-entity" ],
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "areas",
       "type" : [ "array", "type/story-area" ],
       "required" : false,
       "description" : "A JSON-serialized list of clickable areas to be shown on the story",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/delete-story",
@@ -12114,7 +12114,7 @@
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
       "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/get-sticker-set",
@@ -12137,7 +12137,7 @@
       "type" : [ "array", "String" ],
       "required" : true,
       "description" : "A JSON-serialized list of custom emoji identifiers. At most 200 custom emoji identifiers can be specified.",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/upload-sticker-file",
@@ -12185,7 +12185,7 @@
       "type" : [ "array", "type/input-sticker" ],
       "required" : true,
       "description" : "A JSON-serialized list of 1-50 initial stickers to be added to the sticker set",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "sticker_type",
       "type" : "String",
@@ -12217,7 +12217,7 @@
       "type" : "type/input-sticker",
       "required" : true,
       "description" : "A JSON-serialized object with information about the added sticker. If exactly the same sticker had already been added to the set, then the set isn't changed.",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/set-sticker-position-in-set",
@@ -12271,7 +12271,7 @@
       "type" : "type/input-sticker",
       "required" : true,
       "description" : "A JSON-serialized object with information about the added sticker. If exactly the same sticker had already been added to the set, then the set remains unchanged.",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/set-sticker-emoji-list",
@@ -12288,7 +12288,7 @@
       "type" : [ "array", "String" ],
       "required" : true,
       "description" : "A JSON-serialized list of 1-20 emoji associated with the sticker",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/set-sticker-keywords",
@@ -12305,7 +12305,7 @@
       "type" : [ "array", "String" ],
       "required" : false,
       "description" : "A JSON-serialized list of 0-20 search keywords for the sticker with total length of up to 64 characters",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/set-sticker-mask-position",
@@ -12322,7 +12322,7 @@
       "type" : "type/mask-position",
       "required" : false,
       "description" : "A JSON-serialized object with the position where the mask should be placed on faces. Omit the parameter to remove the mask position.",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/set-sticker-set-title",
@@ -12408,7 +12408,7 @@
       "type" : [ "array", "type/inline-query-result" ],
       "required" : true,
       "description" : "A JSON-serialized array of results for the inline query",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "cache_time",
       "type" : "Integer",
@@ -12429,7 +12429,7 @@
       "type" : "type/inline-query-results-button",
       "required" : false,
       "description" : "A JSON-serialized object describing a button to be shown above inline query results",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/answer-web-app-query",
@@ -12446,7 +12446,7 @@
       "type" : "type/inline-query-result",
       "required" : true,
       "description" : "A JSON-serialized object describing the message to be sent",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/save-prepared-inline-message",
@@ -12463,7 +12463,7 @@
       "type" : "type/inline-query-result",
       "required" : true,
       "description" : "A JSON-serialized object describing the message to be sent",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "allow_user_chats",
       "type" : "Boolean",
@@ -12530,7 +12530,7 @@
       "type" : [ "array", "type/labeled-price" ],
       "required" : true,
       "description" : "Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.). Must contain exactly one item for payments in <a href=\"https://t.me/BotNews/90\">Telegram Stars</a>.",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "max_tip_amount",
       "type" : "Integer",
@@ -12541,7 +12541,7 @@
       "type" : [ "array", "Integer" ],
       "required" : false,
       "description" : "A JSON-serialized array of suggested amounts of tips in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed <em>max_tip_amount</em>.",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "start_parameter",
       "type" : "String",
@@ -12552,7 +12552,7 @@
       "type" : "String",
       "required" : false,
       "description" : "JSON-serialized data about the invoice, which will be shared with the payment provider. A detailed description of required fields should be provided by the payment provider.",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "photo_url",
       "type" : "String",
@@ -12638,7 +12638,7 @@
       "type" : "type/inline-keyboard-markup",
       "required" : false,
       "description" : "A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>. If empty, one 'Pay <code>total price</code>' button will be shown. If not empty, the first button must be a Pay button.",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/create-invoice-link",
@@ -12680,7 +12680,7 @@
       "type" : [ "array", "type/labeled-price" ],
       "required" : true,
       "description" : "Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost, delivery tax, bonus, etc.). Must contain exactly one item for payments in <a href=\"https://t.me/BotNews/90\">Telegram Stars</a>.",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "subscription_period",
       "type" : "Integer",
@@ -12696,13 +12696,13 @@
       "type" : [ "array", "Integer" ],
       "required" : false,
       "description" : "A JSON-serialized array of suggested amounts of tips in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed <em>max_tip_amount</em>.",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "provider_data",
       "type" : "String",
       "required" : false,
       "description" : "JSON-serialized data about the invoice, which will be shared with the payment provider. A detailed description of required fields should be provided by the payment provider.",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "photo_url",
       "type" : "String",
@@ -12779,7 +12779,7 @@
       "type" : [ "array", "type/shipping-option" ],
       "required" : false,
       "description" : "Required if <em>ok</em> is <em>True</em>. A JSON-serialized array of available shipping options.",
-      "json-serialized" : true
+      "json_serialized" : true
     }, {
       "name" : "error_message",
       "type" : "String",
@@ -12875,7 +12875,7 @@
       "type" : [ "array", "type/passport-element-error" ],
       "required" : true,
       "description" : "A JSON-serialized array describing the errors",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/send-game",
@@ -12932,7 +12932,7 @@
       "type" : "type/inline-keyboard-markup",
       "required" : false,
       "description" : "A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>. If empty, one 'Play game_title' button will be shown. If not empty, the first button must launch the game.",
-      "json-serialized" : true
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/set-game-score",

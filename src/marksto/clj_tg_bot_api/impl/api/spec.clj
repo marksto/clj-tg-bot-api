@@ -19,7 +19,7 @@
   (let [*json-serialized-paths (atom [])]
     (mct/prewalk-with-path
       (fn [path form]
-        (when (and (map? form) (:json-serialized form))
+        (when (and (map? form) (:json_serialized form))
           (->> (keyword (:name form))
                (conj path)
                (swap! *json-serialized-paths conj)))

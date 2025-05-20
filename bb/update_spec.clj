@@ -212,7 +212,7 @@
                 (update :type parse-data-type)
                 (assoc :required (not optional?))
                 (update :description (comp render-html:nodes :content)))
-            json-ser? (assoc :json-serialized json-ser?)
+            json-ser? (assoc :json_serialized json-ser?)
             tdf-value (assoc :value tdf-value))))
 
 (defn get-api-type-field
@@ -245,7 +245,7 @@
                 (update :type parse-data-type)
                 (update :required #(has-text? % "Yes"))
                 (update :description (comp render-html:nodes :content)))
-            json-ser? (assoc :json-serialized json-ser?))))
+            json-ser? (assoc :json_serialized json-ser?))))
 
 (defn get-api-method-param
   [col-names single-row-nodes]
