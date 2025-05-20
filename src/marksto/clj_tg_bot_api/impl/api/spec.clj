@@ -109,6 +109,20 @@
                                     error-symbol (conj error-symbol))))
      (apply s/cond-pre schemas))))
 
+;; TODO: Impl the `after_entities_parsing`-related logic. Pre-parse the `obj`?
+(defn ->str-const-pred
+  [{:keys [from to after_entities_parsing]}]
+  (fn [obj]
+    (or after_entities_parsing
+        (let [str-length (count obj)]
+          (and (if from (<= from str-length) true)
+               (<= str-length to))))))
+
+(defn constrained-schema
+  [schema constraints]
+  (condp = schema
+    s/Str (s/constrained schema (->str-const-pred constraints))))
+
 (def ^:dynamic *id->api-type* nil)
 
 (def ^:dynamic *id->api-method-param-type* nil)
@@ -119,7 +133,7 @@
     (swap! *id->api-method-param-type* assoc api-type-id api-type)
     api-type))
 
-(declare type->schema)
+(declare type->schema constrained-type->schema)
 
 (def ->field-name (comp keyword :name))
 
@@ -149,9 +163,10 @@
   [name fields]
   (-> {}
       (utils/index-by ->field-name fields)
-      (utils/update-kvs (fn [field-name {:keys [required type] :as _v}]
-                          [(cond-> field-name (not required) (s/optional-key))
-                           (type->schema type)]))
+      (utils/update-kvs
+        (fn [field-name {:keys [required type string_constraints]}]
+          [(cond-> field-name (not required) (s/optional-key))
+           (constrained-type->schema type string_constraints)]))
       (s/named name)))
 
 (defn api-type->schema
@@ -195,6 +210,15 @@
             "array" [(type->schema inner-type)]
             "or" (or-schema (map type->schema inner-type)))))))
 
+(defn constrained-type->schema
+  [type constraints]
+  (let [schema (type->schema type)]
+    (if constraints
+      (if (vector? schema)
+        (mapv #(constrained-schema % constraints) schema)
+        (constrained-schema schema constraints))
+      schema)))
+
 (defn parse:api-type
   [{api-type-id :id fields :fields :as api-type}]
   (let [schema (memo:api-type->schema api-type-id)
@@ -209,9 +233,9 @@
 (def api-method-prefix "method/")
 
 (defn api-method-param->param-schema
-  [{:keys [name type required]}]
+  [{:keys [name type required string_constraints]}]
   (let [param-key (cond-> (keyword name) (not required) (s/optional-key))
-        param-val (type->schema type)]
+        param-val (constrained-type->schema type string_constraints)]
     [param-key param-val]))
 
 (defn api-method-param-of-input-type?
