@@ -223,7 +223,7 @@
                 (update :description (comp render-html:nodes :content)))
             tdf-value (assoc :value tdf-value)
             json-ser? (assoc :json_serialized json-ser?)
-            str-const (assoc :string_constraints str-const))))
+            str-const (assoc-in [:constraints :string] str-const))))
 
 (defn get-api-type-field
   [col-names single-row-nodes]
@@ -258,7 +258,7 @@
                 (update :required #(has-text? % "Yes"))
                 (update :description (comp render-html:nodes :content)))
             json-ser? (assoc :json_serialized json-ser?)
-            str-const (assoc :string_constraints str-const))))
+            str-const (assoc [:constraints :string] str-const))))
 
 (defn get-api-method-param
   [col-names single-row-nodes]

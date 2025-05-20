@@ -110,7 +110,7 @@
      (apply s/cond-pre schemas))))
 
 ;; TODO: Impl the `after_entities_parsing`-related logic. Pre-parse the `obj`?
-(defn ->str-const-pred
+(defn ->string-constraints-pred
   [{:keys [from to after_entities_parsing]}]
   (fn [obj]
     (or after_entities_parsing
@@ -119,9 +119,9 @@
                (<= str-length to))))))
 
 (defn constrained-schema
-  [schema constraints]
+  [schema {:keys [string] :as _constraints}]
   (condp = schema
-    s/Str (s/constrained schema (->str-const-pred constraints))))
+    s/Str (s/constrained schema (->string-constraints-pred string))))
 
 (def ^:dynamic *id->api-type* nil)
 
@@ -164,9 +164,9 @@
   (-> {}
       (utils/index-by ->field-name fields)
       (utils/update-kvs
-        (fn [field-name {:keys [required type string_constraints]}]
+        (fn [field-name {:keys [required type constraints]}]
           [(cond-> field-name (not required) (s/optional-key))
-           (constrained-type->schema type string_constraints)]))
+           (constrained-type->schema type constraints)]))
       (s/named name)))
 
 (defn api-type->schema
@@ -233,9 +233,9 @@
 (def api-method-prefix "method/")
 
 (defn api-method-param->param-schema
-  [{:keys [name type required string_constraints]}]
+  [{:keys [name type required constraints]}]
   (let [param-key (cond-> (keyword name) (not required) (s/optional-key))
-        param-val (constrained-type->schema type string_constraints)]
+        param-val (constrained-type->schema type constraints)]
     [param-key param-val]))
 
 (defn api-method-param-of-input-type?
