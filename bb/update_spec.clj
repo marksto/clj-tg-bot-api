@@ -181,13 +181,6 @@
 
 ;;;; Parsing > API Element > API Type
 
-;; TODO: Parse additional String type constraints:
-;;       - "1-64 characters", "1-4096 characters", "0-1024 characters"
-;;       - "up to 64 characters", "(up to 256 characters)"
-;;       - "0-16 characters, emoji are not allowed"
-;;       - "0-2048 characters after entities parsing"
-;;       - "0-200 characters with at most 2 line feeds after entities parsing"
-
 (defn col-name->attr-key
   [col-name]
   (case col-name
@@ -199,21 +192,38 @@
 (def type-dependant-field-re
   #".+(?:(must be)|(always)) [\"“]?([a-z0-9_]+)[\"”]?$")
 
+;; NB: We do not parse other constraints for strings, such as
+;;     "with at most 2 line feeds" or "emoji are not allowed"
+;;     or "only `A-Z`, `a-z`, `0-9`, `_` and `-` are allowed".
+(def string-constraints-re
+  #"(?:(\d+)-)?(\d+) characters(?:.*(after entities parsing))?")
+
+(defn parse-string-constraints [groups]
+  (let [[from to after-entities-parsing] (next groups)]
+    (merge (when from
+             {:from (parse-long from)})
+           {:to (parse-long to)}
+           (when after-entities-parsing
+             {:after_entities_parsing true}))))
+
 (defn prepare-api-type-field
   [{:keys [description] :as field}]
   (let [optional? (-> (s/select s/first-child description)
                       (first)
                       (has-text? "Optional"))
         desc-text (text description)
+        tdf-value (last (re-find type-dependant-field-re desc-text))
         json-ser? (str/includes? desc-text "JSON-serialized")
-        tdf-value (last (re-find type-dependant-field-re desc-text))]
+        str-const (some-> (re-find string-constraints-re desc-text)
+                          (parse-string-constraints))]
     (cond-> (-> field
                 (update :name (comp keyword first :content))
                 (update :type parse-data-type)
                 (assoc :required (not optional?))
                 (update :description (comp render-html:nodes :content)))
+            tdf-value (assoc :value tdf-value)
             json-ser? (assoc :json_serialized json-ser?)
-            tdf-value (assoc :value tdf-value))))
+            str-const (assoc :string_constraints str-const))))
 
 (defn get-api-type-field
   [col-names single-row-nodes]
@@ -239,13 +249,16 @@
 (defn prepare-api-method-param
   [{:keys [description] :as param}]
   (let [desc-text (text description)
-        json-ser? (str/includes? desc-text "JSON-serialized")]
+        json-ser? (str/includes? desc-text "JSON-serialized")
+        str-const (some-> (re-find string-constraints-re desc-text)
+                          (parse-string-constraints))]
     (cond-> (-> param
                 (update :name (comp keyword first :content))
                 (update :type parse-data-type)
                 (update :required #(has-text? % "Yes"))
                 (update :description (comp render-html:nodes :content)))
-            json-ser? (assoc :json_serialized json-ser?))))
+            json-ser? (assoc :json_serialized json-ser?)
+            str-const (assoc :string_constraints str-const))))
 
 (defn get-api-method-param
   [col-names single-row-nodes]
