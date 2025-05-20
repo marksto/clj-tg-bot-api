@@ -125,12 +125,12 @@
 
 (def ^:dynamic *id->api-type* nil)
 
-(def ^:dynamic *id->api-method-param-type* nil)
+(def ^:dynamic *id->api-method-type* nil)
 
 (defn- get-api-type
   [^String api-type-id]
   (let [api-type (get *id->api-type* api-type-id)]
-    (swap! *id->api-method-param-type* assoc api-type-id api-type)
+    (swap! *id->api-method-type* assoc api-type-id api-type)
     api-type))
 
 (declare type->schema constrained-type->schema)
@@ -263,6 +263,15 @@
 
 ;;; Parsing
 
+(defn parse-raw-spec
+  [{:keys [types methods]}]
+  (binding [*id->api-type* (utils/index-by :id types)
+            *id->api-method-type* (atom {})]
+    (let [parsed-methods (mapv parse:api-method methods)
+          method-types (mapv parse:api-type (vals @*id->api-method-type*))]
+      {:methods      parsed-methods
+       :method-types method-types})))
+
 (defn read-raw-spec!
   [file-name]
   (try
@@ -276,14 +285,7 @@
   [file-name]
   (when-some [raw-spec (read-raw-spec! file-name)]
     (try
-      (let [{:keys [types methods]} raw-spec]
-        (binding [*id->api-type* (utils/index-by :id types)
-                  *id->api-method-param-type* (atom {})]
-          (let [parsed-methods (mapv parse:api-method methods)
-                used-types (mapv parse:api-type
-                                 (vals @*id->api-method-param-type*))]
-            {:methods    parsed-methods
-             :used-types used-types})))
+      (parse-raw-spec raw-spec)
       (catch Exception e
         (log/errorf e "Failed to parse spec file '%s'" file-name)))))
 
@@ -296,10 +298,10 @@
 ;;
 
 (comment
-  (def used-types (:used-types (get-tg-bot-api-spec)))
+  (def method-types (:method-types (get-tg-bot-api-spec)))
 
   (def input-message-content
-    (some #(when (= "InputMessageContent" (:name %)) %) used-types))
+    (some #(when (= "InputMessageContent" (:name %)) %) method-types))
 
   (def input-message-content-validator
     (s/validator (:schema input-message-content)))
