@@ -133,6 +133,7 @@
     (swap! *id->api-method-type* assoc api-type-id api-type)
     api-type))
 
+;; TODO: Re-impl the algorithm without an excessive stack consumption.
 (declare type->schema constrained-type->schema)
 
 (def ->field-name (comp keyword :name))
@@ -265,15 +266,31 @@
             (seq json-serialized-paths)
             (assoc :json-serialized-paths json-serialized-paths))))
 
+;;; Updates
+
+(defn collect-update-types
+  [api-types]
+  (let [update-fields (->> api-types
+                           (some #(when (= "Update" (:name %)) %))
+                           :fields
+                           (remove #(= "update_id" (:name %))))]
+    (mapv (fn [{:keys [name type] :as field}]
+            (cond-> {:name (->field-name field)}
+                    (= "type/message" type) (assoc :message? true)
+                    (str/starts-with? name "edited") (assoc :edited? true)))
+          update-fields)))
+
 ;;; Parsing
 
 (defn parse-raw-spec
   [{:keys [types methods]}]
   (binding [*id->api-type* (utils/index-by :id types)
             *id->api-method-type* (atom {})]
-    (let [parsed-methods (mapv parse:api-method methods)
+    (let [update-types (collect-update-types types)
+          parsed-methods (mapv parse:api-method methods)
           method-types (mapv parse:api-type (vals @*id->api-method-type*))]
-      {:methods      parsed-methods
+      {:update-types update-types
+       :methods      parsed-methods
        :method-types method-types})))
 
 (defn read-raw-spec!
