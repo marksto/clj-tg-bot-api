@@ -161,7 +161,7 @@
 ;;       - with 'migrate_to_chat_id'
 ;;       - with 'retry_after'
 
-(def error-response-body-mapper
+(def response-body-mapper
   (json/object-mapper {:decode-key-fn true}))
 
 (defn- prepare-response
@@ -171,15 +171,13 @@
   ;;     300-303, or 307) or in any of other exceptional situations (e.g. when
   ;;     an HTTP connection cannot be established).
   (if (some? error)
-    (if-some [body (some-> (ex-data error)
-                           :body
-                           (json/read-value error-response-body-mapper))]
+    (if-some [body (:body (ex-data error))]
       ;; Failure - unsuccessful request (in terms of the Telegram Bot API)
-      body
+      (json/read-value body response-body-mapper)
       ;; Error - in any other exceptional situation (incl. client-code-ex)
       {:error error})
     ;; Successful request
-    body))
+    (json/read-value body response-body-mapper)))
 
 ;;
 
@@ -224,7 +222,7 @@
                         (call-tg-bot-api-method! client method params))
                       (utils/force-ref)
                       (prepare-response))]
-      (log/debugf "Telegram Bot API returned: %s" tg-resp)
+      (log/debugf "Telegram Bot API returned: %s" (pr-str tg-resp))
       (when (some? tg-resp)
         (handle-response method params tg-resp callbacks)))))
 
