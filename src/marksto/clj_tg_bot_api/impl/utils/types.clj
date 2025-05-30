@@ -5,7 +5,7 @@
 
             [marksto.clj-tg-bot-api.impl.utils.md-v2 :as md-v2]))
 
-; Date/Time
+;;; Date/Time
 
 (defn ms->tg-dt
   (^long []
@@ -13,10 +13,11 @@
   (^long [^long dt-ms]
    (quot dt-ms 1000)))
 
-(defn tg-dt->ms ^long [tg-dt]
+(defn tg-dt->ms
+  ^long [tg-dt]
   (unchecked-multiply tg-dt 1000))
 
-; User
+;;; User
 
 (defn is-bot?
   [{is-bot :is_bot :as _user}]
@@ -24,11 +25,16 @@
 
 (def mention-types #{:by-name :by-full-name :by-username})
 
+;; TODO: Re-impl by avoiding escaping here + maybe move this out completely?
 (defn get-user-mention-text
   ([user]
-   ;; NB: This is the default option since the User always have a 'first_name' and an 'id'.
+   ;; NB: The default since a User always has a 'first_name' and an 'id'.
    (get-user-mention-text user :by-name))
-  ([{user-id :id first-name :first_name ?last-name :last_name ?username :username :as user}
+  ([{user-id    :id
+     first-name :first_name
+     ?last-name :last_name
+     ?username  :username
+     :as        user}
     mention-type]
    (have! [:in mention-types] mention-type)
    (md-v2/escape
@@ -41,7 +47,7 @@
                       (str "@" ?username)
                       (get-user-mention-text user))))))
 
-; Chat Type
+;;; Chat Type
 
 (def raw-chat-types
   #{"private"
@@ -67,15 +73,13 @@
   [chat-type]
   (= "channel" chat-type))
 
-; Message
+;;; Message
 
 (defn is-reply-to?
-  [{{original-msg-id :message_id :as original-msg} :reply_to_message
-    :as                                            _message}
-   msg-id]
+  [{original-msg :reply_to_message :as _message} msg-id]
   (and (some? msg-id)
        (some? original-msg)
-       (= msg-id original-msg-id)))
+       (= msg-id (:message_id original-msg))))
 
 (defn message-text-includes?
   [{text :text :as _message} substr]
@@ -83,7 +87,7 @@
        (some? text)
        (str/includes? text substr)))
 
-; Message Entity
+;;; Message Entity
 
 (defn get-bot-commands
   [{:keys [entities] :as _message}]
@@ -97,7 +101,7 @@
       (str/split #"@")
       (first)))
 
-; Chat Member
+;;; Chat Member
 
 (def active-chat-member-statuses
   #{"member" "administrator" "creator" "restricted"})
@@ -106,16 +110,16 @@
   #{"left" "kicked"})
 
 (defn has-joined?
-  [{{old-status :status :as _old-chat-member} :old_chat_member
-    {new-status :status :as _new-chat-member} :new_chat_member
-    :as                                       _chat-member-updated}]
+  [{{old-status :status} :old_chat_member
+    {new-status :status} :new_chat_member
+    :as                  _chat-member-updated}]
   (and (contains? inactive-chat-member-statuses old-status)
        (contains? active-chat-member-statuses new-status)))
 
 (defn has-left?
-  [{{old-status :status :as _old-chat-member} :old_chat_member
-    {new-status :status :as _new-chat-member} :new_chat_member
-    :as                                       _chat-member-updated}]
+  [{{old-status :status} :old_chat_member
+    {new-status :status} :new_chat_member
+    :as                  _chat-member-updated}]
   (and (contains? active-chat-member-statuses old-status)
        (contains? inactive-chat-member-statuses new-status)))
 
@@ -140,10 +144,9 @@
   (and (is-administrator? old-chat-member)
        (not (is-administrator? new-chat-member))))
 
-; Bot Commands
+;;; Bot Commands
 
-(def command-text-re
-  #"[a-z0-9_]{1,32}")
+(def command-text-re #"[a-z0-9_]{1,32}")
 
 (def global-command:start "start")
 (def global-command:help "help")

@@ -5,9 +5,9 @@
             [marksto.clj-tg-bot-api.impl.utils.methods :as methods]
             [marksto.clj-tg-bot-api.impl.utils.response :as response]))
 
-;; AUXILIARY CHECKS & UTILS
+;;;; AUXILIARY CHECKS & UTILS
 
-; Date/Time
+;;; Date/Time
 
 (defn ms->tg-dt
   "Gets the current date-time in or converts a given `dt-ms` (date-time millis)
@@ -22,7 +22,7 @@
   ^long [tg-dt]
   (types/tg-dt->ms tg-dt))
 
-; User
+;;; User
 
 (defn is-bot?
   "Checks if a given `user` is a bot."
@@ -48,7 +48,7 @@
   ([user mention-type]
    (types/get-user-mention-text user mention-type)))
 
-; Chat Type
+;;; Chat Type
 
 (def raw-chat-types
   types/raw-chat-types)
@@ -69,7 +69,7 @@
   [chat-type]
   (types/is-channel? chat-type))
 
-; Message
+;;; Message
 
 (defn is-reply-to?
   {:arglists '([{original-msg :reply_to_message :as message} msg-id])}
@@ -80,7 +80,7 @@
   [message substr]
   (types/message-text-includes? message substr))
 
-; Message Entity
+;;; Message Entity
 
 (defn get-bot-commands
   [message]
@@ -90,7 +90,7 @@
   [message bot-command]
   (types/->bot-command-name message bot-command))
 
-; Chat Member
+;;; Chat Member
 
 (def active-chat-member-statuses
   types/active-chat-member-statuses)
@@ -118,7 +118,7 @@
   [chat-member-updated]
   (types/is-demoted-administrator? chat-member-updated))
 
-; Bot Commands
+;;; Bot Commands
 
 (def command-text-re
   "Text of a command has to be 1-32 characters long and can only contain
@@ -162,7 +162,7 @@
    See https://core.telegram.org/bots/features#command-scopes"
   types/bot-command-scope-types:all)
 
-;; UPDATES
+;;;; UPDATES
 
 (def all-update-types
   "A set of all update types in the latest supported Telegram Bot API version."
@@ -199,7 +199,7 @@
   [mode & {:as opts}]
   (update/build-allowed-update-types mode opts))
 
-; Update Data Accessors
+;;; Update Data Accessors
 
 (defn get-update-id
   "Returns the ID of a given `update`."
@@ -251,7 +251,7 @@
   [update]
   (update/is-update-for-edited? update))
 
-;; BOT API RESPONSES
+;;;; BOT API RESPONSES
 
 (defn valid-response?
   "Checks if `response` is a valid response from the Telegram Bot API.
@@ -317,7 +317,7 @@
   [response]
   (response/retry-request-after-sec response))
 
-;; METHOD PARAMS BUILDERS
+;;;; METHOD PARAMS BUILDERS
 
 (def parse-mode:md2 methods/parse-mode:md2)
 
