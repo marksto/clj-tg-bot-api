@@ -199,16 +199,20 @@
 ;; [:array [:array :some-api-type]]
 
 (defn type->schema [type]
-  (if (string? type)
+  (cond
+    (string? type)
     (if (basic-type? type)
       (basic-type->schema type)
       (memo:api-type->schema type))
-    (do (when-not (vector? type)
-          (throw (ex-info "Unsupported type" {:type type})))
-        (let [[container-type inner-type] type]
-          (case container-type
-            "array" [(type->schema inner-type)]
-            "or" (or-schema (map type->schema inner-type)))))))
+
+    (vector? type)
+    (let [[container-type inner-type] type]
+      (case container-type
+        "array" [(type->schema inner-type)]
+        "or" (or-schema (map type->schema inner-type))))
+
+    :else
+    (throw (ex-info "Unsupported type" {:type type}))))
 
 (defn constrained-type->schema
   [type constraints]
