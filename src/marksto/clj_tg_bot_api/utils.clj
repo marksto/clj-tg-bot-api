@@ -168,6 +168,10 @@
   "A set of all update types in the latest supported Telegram Bot API version."
   update/all-update-types)
 
+(def message-update-types
+  "A set of update types holding a Message, e.g. messages, channel posts, etc."
+  update/message-update-types)
+
 (def edited-update-types
   "A set of update types that represent smth. that has been edited."
   update/edited-update-types)

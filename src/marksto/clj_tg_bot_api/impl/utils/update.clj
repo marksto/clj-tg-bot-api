@@ -2,38 +2,25 @@
   "Telegram Bot API 'Update' type data accessors and utils"
   (:require [flatland.ordered.set :refer [ordered-set]]
 
+            [marksto.clj-tg-bot-api.impl.api.spec :as api-spec]
             [marksto.clj-tg-bot-api.impl.utils.types :as types]))
 
 (def all-update-types
-  (ordered-set
-    :message
-    :edited_message
-    :channel_post
-    :edited_channel_post
-    :business_connection
-    :business_message
-    :edited_business_message
-    :deleted_business_messages
-    :message_reaction
-    :message_reaction_count
-    :inline_query
-    :chosen_inline_result
-    :callback_query
-    :shipping_query
-    :pre_checkout_query
-    :purchased_paid_media
-    :poll
-    :poll_answer
-    :my_chat_member
-    :chat_member
-    :chat_join_request
-    :chat_boost
-    :removed_chat_boost))
+  (->> (:update-types (api-spec/get-tg-bot-api-spec))
+       (map :name)
+       (apply ordered-set)))
+
+(def message-update-types
+  (->> (:update-types (api-spec/get-tg-bot-api-spec))
+       (filter :message?)
+       (map :name)
+       (apply ordered-set)))
 
 (def edited-update-types
-  #{:edited_message
-    :edited_channel_post
-    :edited_business_message})
+  (->> (:update-types (api-spec/get-tg-bot-api-spec))
+       (filter :edited?)
+       (map :name)
+       (apply ordered-set)))
 
 (let [all-type-names (map name all-update-types)
       default-type-names (map name (disj all-update-types
@@ -61,31 +48,21 @@
 (defn get-update-chat
   [update]
   (let [upd-type (get-update-type update)]
-    (case upd-type
-      (:message
-        :edited_message
-        :my_chat_member
-        :chat_member
-        :message_reaction
-        :message_reaction_count
-        :chat_join_request
-        :chat_boost
-        :removed_chat_boost) (-> update upd-type :chat)
-      :callback_query (-> update :callback_query :message :chat)
-      nil)))
+    (or (-> update upd-type :chat)
+        ;; NB: Mainly for `callback_query`.
+        (-> update upd-type :message :chat))))
 
 (defn get-update-message
   [update]
   (let [upd-type (get-update-type update)]
-    (case upd-type
-      :message (:message update)
-      :edited_message (:edited_message update)
-      :callback_query (-> update :callback_query :message)
-      nil)))
+    (if (contains? message-update-types upd-type)
+      (get update upd-type)
+      ;; NB: Mainly for `callback_query`.
+      (-> update upd-type :message))))
 
 (defn get-update-commands
   [update]
-  (when-some [message ((some-fn :message :edited_message) update)]
+  (when-some [message (get-update-message update)]
     (some->> (types/get-bot-commands message)
              (mapv #(types/->bot-command-name message %)))))
 
