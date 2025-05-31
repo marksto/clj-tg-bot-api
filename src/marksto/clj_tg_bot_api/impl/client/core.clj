@@ -21,11 +21,11 @@
 
 ;; TODO: Hide behind a custom `:type` to prevent secrets (token) from leaking.
 (defn ->client
-  [{:keys [bot-id bot-token server-url] :as _client-opts}]
+  [{:keys [bot-id bot-token server-url in-test?] :as _client-opts}]
   (have! some? bot-id bot-token)
   (-> (get-api-root-url-for-bot server-url bot-token)
       (api-martian/build-martian)
-      (assoc :bot-id bot-id)))
+      (assoc :bot-id bot-id :in-test? in-test?)))
 
 
 ;;; Operations on response 'result'
