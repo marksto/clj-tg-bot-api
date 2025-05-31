@@ -177,7 +177,7 @@
       ;; Error - in any other exceptional situation (incl. client-code-ex)
       {:error error})
     ;; Successful request
-    (json/read-value body response-body-mapper)))
+    body))
 
 ;;
 
