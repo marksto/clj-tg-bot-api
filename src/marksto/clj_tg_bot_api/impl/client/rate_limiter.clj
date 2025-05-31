@@ -55,12 +55,15 @@
   (/ (double n) sec))
 
 (defn ->total-rate-limiter []
-  (dh.rl/rate-limiter {:rate (->rate 30 1)}))
+  (dh.rl/rate-limiter {:rate     (->rate 30 1)
+                       :sleep-fn dh.rl/uninterruptible-sleep}))
 
 (defn ->chat-rate-limiter [chat-id]
   (if-let [_is-group? (neg? chat-id)]
-    (dh.rl/rate-limiter {:rate (->rate 20 60)})
-    (dh.rl/rate-limiter {:rate (->rate 1 1)})))
+    (dh.rl/rate-limiter {:rate     (->rate 20 60)
+                         :sleep-fn dh.rl/uninterruptible-sleep})
+    (dh.rl/rate-limiter {:rate     (->rate 1 1)
+                         :sleep-fn dh.rl/uninterruptible-sleep})))
 
 (defn get-rate-limiter!
   ([bot-id]
