@@ -18,8 +18,10 @@
    - `:server-url`  — a Local Bot API Server URL; by default, uses a global one;
                       the provided `:bot-token` value gets appended to this URL;
    - `:limit-rate?` — when `true` (default), will use the built-in rate limiter;
-                      otherwise, will bypass it, which is useful e.g. in tests."
-  {:arglists '([{:keys [bot-id bot-token server-url limit-rate?]
+                      otherwise, will bypass it, which is useful e.g. in tests;
+   - `:response-fn` — a no-arg fn used to dynamically generate Telegram Bot API
+                      server responses, effectively mocking real HTTP requests."
+  {:arglists '([{:keys [bot-id bot-token server-url limit-rate? response-fn]
                  :as   client-opts}])}
   [client-opts]
   (client/->client client-opts))

@@ -5,6 +5,7 @@
 
          camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
          com.github.oliyh/martian            {:mvn/version "0.1.31"}
+         com.github.oliyh/martian-test       {:mvn/version "0.1.31"}
          diehard/diehard                     {:mvn/version "0.11.14-SNAPSHOT"}
          metosin/jsonista                    {:mvn/version "0.3.13"}
          org.flatland/ordered                {:mvn/version "1.15.12"}
