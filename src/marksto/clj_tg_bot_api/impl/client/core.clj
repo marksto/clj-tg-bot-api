@@ -17,20 +17,18 @@
 ;; NB: Prevents secrets (bot auth token) from leaking, e.g. into logs.
 (defmethod print-method ::tg-bot-api-client [this ^Writer w]
   (.write w (str "#TelegramBotAPIClient"
-                 (into {} (select-keys this [:bot-id :in-test?])))))
+                 (into {} (select-keys this [:bot-id])))))
 
 (def global-server-url "https://api.telegram.org/bot")
 
-(defn get-api-root-url-for-bot
-  [server-url bot-token]
-  (str (or server-url global-server-url) bot-token))
-
 (defn ->client
-  [{:keys [bot-id bot-token server-url in-test?] :as _client-opts}]
-  (have! some? bot-id bot-token)
-  (-> (get-api-root-url-for-bot server-url bot-token)
-      (api-martian/build-martian)
-      (assoc :bot-id bot-id :in-test? in-test?)
+  [{:keys [bot-id bot-token server-url limit-rate?]
+    :or   {server-url  global-server-url
+           limit-rate? true}
+    :as   _client-opts}]
+  (have! some? bot-id bot-token server-url)
+  (-> (api-martian/build-martian (str server-url bot-token))
+      (assoc :bot-id bot-id :limit-rate? limit-rate?)
       (with-meta {:type ::tg-bot-api-client})))
 
 
@@ -214,7 +212,7 @@
 ;;
 
 (defn make-request!
-  [{:keys [bot-id in-test?] :as client} args]
+  [{:keys [bot-id limit-rate?] :as client} args]
   (let [[call-opts method params] (if (map? (first args)) args (cons nil args))]
     (have! keyword? method)
     (let [callbacks {:on-success (or (:on-success call-opts)
@@ -224,7 +222,7 @@
                      :on-error   (or (:on-error call-opts)
                                      log-error-and-rethrow)}
           chat-id (or (get params :chat-id) (get params :chat_id))
-          tg-resp (-> (rl/with-rate-limiter bot-id in-test? chat-id
+          tg-resp (-> (rl/with-rate-limiter bot-id limit-rate? chat-id
                         (call-tg-bot-api-method! client method params))
                       (utils/force-ref)
                       (prepare-response))]

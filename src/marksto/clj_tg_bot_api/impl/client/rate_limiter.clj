@@ -86,11 +86,11 @@
 ;;
 
 (defmacro with-rate-limiter
-  [bot-id in-test? chat-id form]
-  `(if ~in-test?
-     ~form
+  [bot-id limit-rate? chat-id form]
+  `(if ~limit-rate?
      (dh/with-rate-limiter (get-rate-limiter! ~bot-id)
        (if (some? ~chat-id)
          (dh/with-rate-limiter (get-rate-limiter! ~bot-id ~chat-id)
            ~form)
-         ~form))))
+         ~form))
+     ~form))
