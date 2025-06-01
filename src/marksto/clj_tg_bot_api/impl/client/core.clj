@@ -9,9 +9,15 @@
             [marksto.clj-tg-bot-api.impl.api.martian :as api-martian]
             [marksto.clj-tg-bot-api.impl.client.rate-limiter :as rl]
             [marksto.clj-tg-bot-api.impl.utils :as utils]
-            [marksto.clj-tg-bot-api.impl.utils.response :as response]))
+            [marksto.clj-tg-bot-api.impl.utils.response :as response])
+  (:import (java.io Writer)))
 
 ;;; Bot API client
+
+;; NB: Prevents secrets (bot auth token) from leaking, e.g. into logs.
+(defmethod print-method ::tg-bot-api-client [this ^Writer w]
+  (.write w (str "#TelegramBotAPIClient"
+                 (into {} (select-keys this [:bot-id :in-test?])))))
 
 (def global-server-url "https://api.telegram.org/bot")
 
@@ -19,13 +25,13 @@
   [server-url bot-token]
   (str (or server-url global-server-url) bot-token))
 
-;; TODO: Hide behind a custom `:type` to prevent secrets (token) from leaking.
 (defn ->client
   [{:keys [bot-id bot-token server-url in-test?] :as _client-opts}]
   (have! some? bot-id bot-token)
   (-> (get-api-root-url-for-bot server-url bot-token)
       (api-martian/build-martian)
-      (assoc :bot-id bot-id :in-test? in-test?)))
+      (assoc :bot-id bot-id :in-test? in-test?)
+      (with-meta {:type ::tg-bot-api-client})))
 
 
 ;;; Operations on response 'result'
