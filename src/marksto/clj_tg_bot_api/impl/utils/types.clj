@@ -1,9 +1,6 @@
 (ns marksto.clj-tg-bot-api.impl.utils.types
   "Aux checks and utilities for the Telegram Bot API types"
-  (:require [clojure.string :as str]
-            [taoensso.truss :refer [have!]]
-
-            [marksto.clj-tg-bot-api.impl.utils.md-v2 :as md-v2]))
+  (:require [clojure.string :as str]))
 
 ;;; Date/Time
 
@@ -22,30 +19,6 @@
 (defn is-bot?
   [{is-bot :is_bot :as _user}]
   is-bot)
-
-(def mention-types #{:by-name :by-full-name :by-username})
-
-;; TODO: Re-impl by avoiding escaping here + maybe move this out completely?
-(defn get-user-mention-text
-  ([user]
-   ;; NB: The default since a User always has a 'first_name' and an 'id'.
-   (get-user-mention-text user :by-name))
-  ([{user-id    :id
-     first-name :first_name
-     ?last-name :last_name
-     ?username  :username
-     :as        user}
-    mention-type]
-   (have! [:in mention-types] mention-type)
-   (md-v2/escape
-     (case mention-type
-       :by-name (str "[" first-name "](tg://user?id=" user-id ")")
-       :by-full-name (if (some? ?last-name)
-                       (str "[" first-name " " ?last-name "](tg://user?id=" user-id ")")
-                       (get-user-mention-text user))
-       :by-username (if (some? ?username)
-                      (str "@" ?username)
-                      (get-user-mention-text user))))))
 
 ;;; Chat Type
 

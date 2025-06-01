@@ -12,8 +12,6 @@
 ;;       the form of Malli Schemas and passed around as pure data (which avoids
 ;;       dealing w/ 2 forms of data representation and cumbersome fn calls).
 
-(def parse-mode:md2 "MarkdownV2")
-
 ; /sendMessage
 ;
 ; Use this method to send text messages. On success, the sent Message is returned.

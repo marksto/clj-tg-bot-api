@@ -29,25 +29,6 @@
   [user]
   (types/is-bot? user))
 
-(defn get-user-mention-text
-  "A handy utility fn for mentioning a given `user` in a message text.
-
-   The `mention-type` is one of these: `:by-name`, `:by-full-name`, or
-   `:by-username`. The default is `:by-name`, since a User type always
-   has a 'first_name' and an 'id' attributes.)
-
-   NB: Have to be used with the MarkdownV2 parse mode for the message."
-  {:arglists '([{user-id    :id
-                 first-name :first_name
-                 ?last-name :last_name
-                 ?username  :username
-                 :as        user}]
-               [user mention-type])}
-  ([user]
-   (types/get-user-mention-text user :by-name))
-  ([user mention-type]
-   (types/get-user-mention-text user mention-type)))
-
 ;;; Chat Type
 
 (def raw-chat-types
@@ -319,7 +300,19 @@
 
 ;;;; METHOD PARAMS BUILDERS
 
-(def parse-mode:md2 methods/parse-mode:md2)
+(def parse-mode:md
+  "A handy constant for Markdown-style message text entities parsing mode.
+   Pass as a `parse_mode` option to the `build-message-options` fn.
+
+   See syntax details: https://core.telegram.org/bots/api#markdownv2-style"
+  "MarkdownV2")
+
+(def parse-mode:html
+  "A handy constant for HTML-style message text entities parsing mode.
+   Pass as a `parse_mode` option to the `build-message-options` fn.
+
+   See supported tags: https://core.telegram.org/bots/api#html-style"
+  "HTML")
 
 (defn build-message-options
   "Builds a map with optional parameters for the \"sendMessage\" API method."
