@@ -7,8 +7,7 @@
          ;; TODO: Upgrade to the latest release after all my PRs are merged.
          com.github.oliyh/martian            {:mvn/version "0.1.31"}
          com.github.oliyh/martian-test       {:mvn/version "0.1.31"}
-         ;; TODO: Upgrade to the latest release after all my PRs are merged.
-         diehard/diehard                     {:mvn/version "0.11.14-SNAPSHOT"}
+         diehard/diehard                     {:mvn/version "0.12.0"}
          metosin/jsonista                    {:mvn/version "0.3.13"}
          org.flatland/ordered                {:mvn/version "1.15.12"}
          com.taoensso/truss                  {:mvn/version "2.1.1"}}
