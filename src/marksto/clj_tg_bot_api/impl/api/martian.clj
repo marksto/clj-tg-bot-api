@@ -1,12 +1,9 @@
 (ns marksto.clj-tg-bot-api.impl.api.martian
   (:require [camel-snake-kebab.core :as csk]
-            [clojure.set :as set]
             [clojure.string :as str]
             [clojure.tools.logging :as log]
             [jsonista.core :as json]
             [martian.core :as m]
-            [martian.encoders :as me]
-            [martian.encoding :as encoding]
             [martian.interceptors :as mi]
             [schema-tools.coerce :as stc]
 
@@ -51,39 +48,6 @@
               (assoc-in ctx [:request :body :method] (get-url-path handler))
               ctx))})
 
-;;; Martian Patch
-
-;; NB: W/o this function produces a request map of a wrong shape.
-;; {:body {:multipart [{:name "chat_id", :content 1} ...]}, ...}
-;; TODO: Fix/improve this upstream, in the `martian` codebase?
-
-(defn encode-request [encoders]
-  {:name    ::encode-request
-   :encodes (keys encoders)
-   :enter   (fn [{:keys [request handler] :as ctx}]
-              (let [has-body? (get-in ctx [:request :body])
-                    content-type (and has-body?
-                                      (not (get-in request [:headers "Content-Type"]))
-                                      (encoding/choose-content-type encoders (:consumes handler)))
-                    multipart? (= "multipart/form-data" content-type)
-                    {:keys [encode]} (encoding/find-encoder encoders content-type)]
-                (cond-> ctx
-                        has-body? (update-in [:request :body] encode)
-                        ;; NB: Luckily, all target HTTP clients — clj-http (but not lite), http-kit,
-                        ;;     hato, and even babashka/http-client — all support the same syntax.
-                        multipart? (update :request set/rename-keys {:body :multipart})
-                        content-type (assoc-in [:request :headers "Content-Type"] content-type))))})
-
-(defn multipart-encode [body]
-  (mapv (fn [[k v]] {:name (name k) :content v}) body))
-
-(def encoders (assoc (me/default-encoders)
-                "multipart/form-data" {:encode multipart-encode
-                                       :as     :multipart}))
-
-(alter-var-root #'mi/default-encode-body
-                (constantly (encode-request encoders)))
-
 ;;; Martian Builder
 
 (defn api-method->handler
@@ -125,7 +89,7 @@
 
 (def offline-interceptors
   (delay (conj m/default-interceptors
-               mi/default-encode-body
+               mi/default-encode-request
                mi/default-coerce-response)))
 
 (def martian-default-interceptors

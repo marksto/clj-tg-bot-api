@@ -5,8 +5,8 @@
 
          camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
          ;; TODO: Upgrade to the latest release after all my PRs are merged.
-         com.github.oliyh/martian            {:mvn/version "0.1.31"}
-         com.github.oliyh/martian-test       {:mvn/version "0.1.31"}
+         com.github.oliyh/martian            {:mvn/version "0.1.32-SNAPSHOT"}
+         com.github.oliyh/martian-test       {:mvn/version "0.1.32-SNAPSHOT"}
          diehard/diehard                     {:mvn/version "0.12.0"}
          metosin/jsonista                    {:mvn/version "0.3.13"}
          org.flatland/ordered                {:mvn/version "1.15.12"}
@@ -27,16 +27,16 @@
                  io.aviso/pretty             {:mvn/version "1.4.4"}}}
 
   :http/http-kit
-  {:extra-deps {com.github.oliyh/martian-httpkit {:mvn/version "0.1.31"}}}
+  {:extra-deps {com.github.oliyh/martian-httpkit {:mvn/version "0.1.32-SNAPSHOT"}}}
 
   :http/clj-http
-  {:extra-deps {com.github.oliyh/martian-clj-http {:mvn/version "0.1.31"}}}
+  {:extra-deps {com.github.oliyh/martian-clj-http {:mvn/version "0.1.32-SNAPSHOT"}}}
 
   :http/hato
-  {:extra-deps {com.github.oliyh/martian-hato {:mvn/version "0.1.31"}}}
+  {:extra-deps {com.github.oliyh/martian-hato {:mvn/version "0.1.32-SNAPSHOT"}}}
 
   :http/bb-http
-  {:extra-deps {com.github.oliyh/martian-babashka-http-client {:mvn/version "0.1.31"}}}
+  {:extra-deps {com.github.oliyh/martian-babashka-http-client {:mvn/version "0.1.32-SNAPSHOT"}}}
 
   :test
   {:extra-paths ["test"]
