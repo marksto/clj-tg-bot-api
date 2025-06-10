@@ -30,7 +30,7 @@
   (have! some? bot-id bot-token server-url)
   (have! [:or nil? fn?] response-fn)
   (-> (api-martian/build-martian (str server-url bot-token))
-      (cond-> response-fn (testing/respond-with response-fn))
+      (cond-> response-fn (testing/respond-with-dynamic response-fn))
       (assoc :bot-id bot-id :limit-rate? limit-rate?)
       (with-meta {:type ::tg-bot-api-client})))
 
