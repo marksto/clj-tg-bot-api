@@ -53,9 +53,8 @@
 (defn api-method->handler
   [{:keys [id name description _params
            params-schema uploads-file? json-serialized-paths]}]
-  ;; TODO: This breaks the existing end bots test infrastructure that currently
-  ;;       relies on `clj-http.fake` instead of `martian-test`, thus it ends up
-  ;;       with string values of a query string params. Disabling for now.
+  ;; NB: This breaks the existing end bots test infrastructure since it ends up
+  ;;     with string values of a query string params — disable HTTP GET for now.
   (let [use-http-get? #_(and (not uploads-file?) (str/starts-with? name "get")) false]
     (conj {:route-name (keyword (subs id (count api-spec/api-method-prefix)))
            :path-parts [(str "/" name)]
