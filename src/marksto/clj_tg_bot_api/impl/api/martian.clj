@@ -17,10 +17,9 @@
 
 (defn- json-serialize-param
   [param]
-  ;;(if (vector? param)
-  ;;  (mapv #(json/write-value-as-string % params-mapper) param)
-  ;;  (json/write-value-as-string param params-mapper))
-  (json/write-value-as-string param params-mapper))
+  (if (vector? param)
+    (mapv #(json/write-value-as-string % params-mapper) param)
+    (json/write-value-as-string param params-mapper)))
 
 (defn- json-serialize-params
   [params paths]
