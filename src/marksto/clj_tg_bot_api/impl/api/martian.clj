@@ -1,14 +1,42 @@
 (ns marksto.clj-tg-bot-api.impl.api.martian
   (:require [camel-snake-kebab.core :as csk]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.tools.logging :as log]
             [jsonista.core :as json]
             [martian.core :as m]
+            [martian.encoders :as me]
             [martian.interceptors :as mi]
             [schema-tools.coerce :as stc]
 
             [marksto.clj-tg-bot-api.impl.api.spec :as api-spec]
-            [marksto.clj-tg-bot-api.impl.utils :as utils]))
+            [marksto.clj-tg-bot-api.impl.utils :as utils])
+  (:import (java.io File InputStream)))
+
+;;; Martian Encoders
+
+;; TODO: Fix/improve this upstream, in the `martian` codebase?
+
+;; http-kit = {String, File, InputStream, byte[], ByteBuffer, Number!}
+;; clj-http = {String, File, InputStream, byte[], o.a.h.e.m.c.ContentBody}
+;; hato     = {String, File, InputStream, byte[], URL, URI, Socket, Path}
+;; bb/http  = {String, File, InputStream, byte[], URL, URI, Socket, Path?}
+
+(defn- coerce-content [obj]
+  (when (some? obj) ; let it fail downstream
+    (if (or (string? obj)
+            (instance? File obj)
+            (instance? InputStream obj)
+            (bytes? obj))
+      obj
+      (if (extends? io/IOFactory (type obj))
+        (io/input-stream obj)
+        (str obj)))))
+
+(defn coercing-multipart-encode [body]
+  (mapv (fn [[k v]] {:name (name k) :content (coerce-content v)}) body))
+
+(alter-var-root #'me/multipart-encode (constantly coercing-multipart-encode))
 
 ;;; Martian Interceptors
 
@@ -17,9 +45,7 @@
 
 (defn- json-serialize-param
   [param]
-  (if (vector? param)
-    (mapv #(json/write-value-as-string % params-mapper) param)
-    (json/write-value-as-string param params-mapper)))
+  (json/write-value-as-string param params-mapper))
 
 (defn- json-serialize-params
   [params paths]

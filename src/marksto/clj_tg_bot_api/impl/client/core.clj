@@ -254,6 +254,9 @@
                          :bot-token (System/getenv "BOT_AUTH_TOKEN")}))
   (dissoc client :handlers)
 
+  ;; CHECK WITH ALL SUPPORTED HTTP CLIENTS
+
+  ;; Error Handling
   ;; 1. Successful request
   (make-request! client '(:get-me))
   ;; 2. Failure - Unsuccessful request (400 Bad Request)
@@ -263,13 +266,24 @@
   ;; 4. Error - Network connection (drop internet access)
   (make-request! client '(:get-me))
 
+  ;; Multipart Requests
+  ;; 1. successful coercion (1 -> string)
+  (make-request! client '(:send-audio {:chat-id 1
+                                       :audio   "<audio>"}))
+  ;; 2. JSON-serialized
+  (make-request! client '(:set-webhook {:url             "https://example.com"
+                                        :allowed_updates ["message"
+                                                          "edited_channel_post"
+                                                          "callback_query"]}))
+
+  ;; Immediate Response
   ;; 1. no params methods
   (build-immediate-response client :get-me)
   (build-immediate-response client :get-me {})
   ;; 2. multipart request
   (build-immediate-response client :send-audio {:chat-id 1
                                                 :audio   "<audio>"})
-  ;; 3. JSON-serializable
+  ;; 3. JSON-serialized
   (build-immediate-response
     client
     :create-invoice-link
