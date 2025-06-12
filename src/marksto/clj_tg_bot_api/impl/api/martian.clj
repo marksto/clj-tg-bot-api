@@ -1,11 +1,13 @@
 (ns marksto.clj-tg-bot-api.impl.api.martian
   (:require [camel-snake-kebab.core :as csk]
             [clojure.java.io :as io]
+            [clojure.set :as set]
             [clojure.string :as str]
             [clojure.tools.logging :as log]
             [jsonista.core :as json]
             [martian.core :as m]
             [martian.encoders :as me]
+            [martian.encoding :as encoding]
             [martian.interceptors :as mi]
             [schema-tools.coerce :as stc]
 
@@ -13,9 +15,9 @@
             [marksto.clj-tg-bot-api.impl.utils :as utils])
   (:import (java.io File InputStream)))
 
-;;; Martian Encoders
+;;; Martian Patches
 
-;; TODO: Fix/improve this upstream, in the `martian` codebase?
+;; TODO: Fix/improve this upstream, in the `martian` and/or `clj-http` codebase?
 
 ;; http-kit = {String, File, InputStream, byte[], ByteBuffer, Number!}
 ;; clj-http = {String, File, InputStream, byte[], o.a.h.e.m.c.ContentBody}
@@ -37,6 +39,35 @@
   (mapv (fn [[k v]] {:name (name k) :content (coerce-content v)}) body))
 
 (alter-var-root #'me/multipart-encode (constantly coercing-multipart-encode))
+
+(defn encode-request [encoders]
+  {:name    ::encode-request
+   :encodes (keys encoders)
+   :enter   (fn [{:keys [request handler] :as ctx}]
+              (let [has-body? (:body request)
+                    content-type (and has-body?
+                                      (not (get-in request [:headers "Content-Type"]))
+                                      (encoding/choose-content-type encoders (:consumes handler)))
+                    ;; NB: There are many possible subtypes of multipart requests.
+                    multipart? (str/starts-with? content-type "multipart/")
+                    {:keys [encode]} (encoding/find-encoder encoders content-type)
+                    encoded-request (cond-> request
+
+                                            has-body?
+                                            (update :body encode)
+
+                                            multipart?
+                                            ;; NB: Luckily, all target HTTP clients — clj-http (but not lite), http-kit,
+                                            ;;     hato, and even babashka/http-client — all support the same syntax.
+                                            (-> (set/rename-keys {:body :multipart})
+                                                ;; NB: Fix the same as the https://github.com/dakrone/clj-http/pull/654.
+                                                (update :headers dissoc "Content-Type" "content-type" :content-type))
+
+                                            (and content-type (not multipart?))
+                                            (assoc-in [:headers "Content-Type"] content-type))]
+                (assoc ctx :request encoded-request)))})
+
+(alter-var-root #'mi/encode-request (constantly encode-request))
 
 ;;; Martian Interceptors
 
