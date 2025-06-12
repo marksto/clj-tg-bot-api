@@ -45,11 +45,11 @@
    :encodes (keys encoders)
    :enter   (fn [{:keys [request handler] :as ctx}]
               (let [has-body? (:body request)
-                    content-type (and has-body?
-                                      (not (get-in request [:headers "Content-Type"]))
-                                      (encoding/choose-content-type encoders (:consumes handler)))
+                    content-type (when (and has-body?
+                                            (not (get-in request [:headers "Content-Type"])))
+                                   (encoding/choose-content-type encoders (:consumes handler)))
                     ;; NB: There are many possible subtypes of multipart requests.
-                    multipart? (str/starts-with? content-type "multipart/")
+                    multipart? (when content-type (str/starts-with? content-type "multipart/"))
                     {:keys [encode]} (encoding/find-encoder encoders content-type)
                     encoded-request (cond-> request
 
