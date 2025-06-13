@@ -17,23 +17,41 @@
 
 ;;; Martian Patches
 
-;; TODO: Fix/improve this upstream, in the `martian` and/or `clj-http` codebase?
+;; TODO: Fix/improve this upstream, in the `martian` codebase?
 
-;; http-kit = {String, File, InputStream, byte[], ByteBuffer, Number!}
+;; http-kit = {String, File, InputStream, byte[], ByteBuffer!, ~Number!?~}
 ;; clj-http = {String, File, InputStream, byte[], o.a.h.e.m.c.ContentBody}
-;; hato     = {String, File, InputStream, byte[], URL, URI, Socket, Path}
+;; hato     = {String, File, InputStream, byte[], URL, URI, Socket, Path!}
 ;; bb/http  = {String, File, InputStream, byte[], URL, URI, Socket, Path?}
 
-(defn- coerce-content [obj]
-  (when (some? obj) ; let it fail downstream
-    (if (or (string? obj)
-            (instance? File obj)
-            (instance? InputStream obj)
-            (bytes? obj))
-      obj
-      (if (extends? io/IOFactory (type obj))
-        (io/input-stream obj)
-        (str obj)))))
+(defn common-binary? [obj]
+  (or (instance? File obj)
+      (instance? InputStream obj)
+      (bytes? obj)))
+
+(def default-make-is-impl (:make-input-stream io/default-streams-impl))
+
+(defn implements-make-input-stream? [obj]
+  (not= default-make-is-impl
+        (find-protocol-method io/IOFactory :make-input-stream obj)))
+
+(defn coerce-content
+  ([obj]
+   (coerce-content obj nil))
+  ([obj extra-coerce-fn]
+   (when (some? obj) ; let it fail downstream
+     (cond
+       (or (string? obj) (common-binary? obj))
+       obj
+
+       (implements-make-input-stream? obj)
+       (io/input-stream obj)
+
+       (some? extra-coerce-fn)
+       (extra-coerce-fn obj)
+
+       :else
+       (str obj)))))
 
 (defn coercing-multipart-encode [body]
   (mapv (fn [[k v]] {:name (name k) :content (coerce-content v)}) body))
