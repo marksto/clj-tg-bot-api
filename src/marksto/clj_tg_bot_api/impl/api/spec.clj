@@ -4,6 +4,7 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [clojure.tools.logging :as log]
+            [flatland.ordered.map :refer [ordered-map]]
             [jsonista.core :as json]
             [martian.schema-tools :as mct]
             [schema.core :as s]
@@ -279,6 +280,60 @@
                     (= "type/message" type) (assoc :message? true)
                     (str/starts-with? name "edited") (assoc :edited? true)))
           update-fields)))
+
+;;; Types Parsing Order
+
+(defn does-not-affect-order? [type]
+  (or (basic-type? type)
+      (= "type/input-file" type)
+      (and (vector? type) (recur (second type)))))
+
+(defn api-type->type-with-deps
+  [{:keys [id fields subtypes]}]
+  (cond-> {:id id}
+
+          (some? fields)
+          (assoc :deps (->> fields
+                            (map :type)
+                            (remove does-not-affect-order?)))
+
+          (some? subtypes)
+          (assoc :deps subtypes)))
+
+(defn ordered-type-ids
+  "Given all Telegram Bot API `types`, returns a sequence of their IDs ordered
+   for further types processing.
+
+   An ordinal number of a type is calculated according to the following rules:
+   - all types are assigned an initial ordinal of `0`
+   - if a type has some dependencies on other API types, all such dependencies
+     get their ordinals in increased by `1`
+   - if a type has no dependencies on other API types, the type gets the \"top
+     ordinal\" which then never changes
+
+   An API type is considered to not have dependencies on other API types if it
+   depends only on basic types, InputFile, and/or their container types.
+
+   The calculation result is then sorted by type ordinals in descending order."
+  [types]
+  (let [top-ordinal Integer/MAX_VALUE
+        inc-ordinal (fn [prev-ordinal]
+                      (if (= top-ordinal prev-ordinal)
+                        prev-ordinal
+                        (inc (or prev-ordinal 0))))
+        id->ordinal (->> types
+                         (map api-type->type-with-deps)
+                         (reduce
+                           (fn [acc {:keys [id deps]}]
+                             (if (seq deps)
+                               (reduce #(update %1 %2 inc-ordinal)
+                                       (update acc id #(or % 0))
+                                       deps)
+                               (assoc acc id top-ordinal)))
+                           (ordered-map)))]
+    (->> (seq id->ordinal)
+         (sort-by second >)
+         (map first))))
 
 ;;; Parsing
 
