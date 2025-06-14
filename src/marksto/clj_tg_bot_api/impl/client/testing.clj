@@ -1,5 +1,6 @@
 (ns marksto.clj-tg-bot-api.impl.client.testing
-  (:require [martian.test :as martian-test]))
+  (:require [martian.test :as martian-test]
+            [taoensso.truss :refer [have!]]))
 
 ;; TODO: Introduce this new feature upstream, to the `martian-test` codebase?
 
@@ -19,3 +20,14 @@
   [martian response-fn]
   (-> (#'martian-test/replace-http-interceptors martian)
       (update :interceptors conj (dynamic-responses response-fn))))
+
+(defn respond-with
+  [martian response-map-or-fn]
+  (have! [:or map? fn?] response-map-or-fn)
+  (cond-> martian
+
+          (map? response-map-or-fn)
+          (martian-test/respond-with-constant response-map-or-fn)
+
+          (fn? response-map-or-fn)
+          (respond-with-dynamic response-map-or-fn)))
