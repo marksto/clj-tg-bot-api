@@ -73,6 +73,12 @@
     "Float" Floating
     s/Any))
 
+(defn known-type-schemas []
+  (utils/map-keys
+    {input-file-api-type-id InputFile}
+    basic-type->schema
+    ["Boolean" "True" "String" "Integer" "Float"]))
+
 ;; NB: At the moment is as simple as this.
 (def api-type-schema? map?)
 
@@ -149,7 +155,6 @@
     (swap! *id->api-method-type* assoc api-type-id api-type)
     api-type))
 
-;; TODO: Re-impl the algorithm without an excessive stack consumption.
 (declare type->schema constrained-type->schema)
 
 (def ->field-name (comp keyword :name))
@@ -163,8 +168,8 @@
              (get obj (csk/->kebab-case field-name)))))))
 
 (defn api-type:supertype->schema
-  [name api-subtype-ids]
-  (let [subtype-schemas (map type->schema api-subtype-ids)
+  [*id->schema name api-subtype-ids]
+  (let [subtype-schemas (map #(type->schema *id->schema %) api-subtype-ids)
         subtypes (map get-api-type api-subtype-ids)
         type-dependant-field (some #(when (contains? % :value) %)
                                    (:fields (first subtypes)))]
@@ -177,29 +182,35 @@
       name)))
 
 (defn api-type:concrete->schema
-  [name fields]
-  (-> {}
-      (utils/index-by ->field-name fields)
-      (utils/update-kvs
-        (fn [field-name {:keys [required type constraints]}]
-          [(cond-> field-name (not required) (s/optional-key))
-           (constrained-type->schema type constraints)]))
-      (s/named name)))
+  [*id->schema name fields]
+  (let [schema (-> {}
+                   (utils/index-by ->field-name fields)
+                   (utils/update-kvs
+                     (fn [field-name {:keys [required type constraints]}]
+                       (let [field-schema (constrained-type->schema
+                                            *id->schema type constraints)
+                             {name :name} (get-api-type type)
+                             field-schema (if (has-type-schema-var? name)
+                                            (s/recursive (type-schema-var name))
+                                            field-schema)]
+                         [(cond-> field-name (not required) (s/optional-key))
+                          field-schema])))
+                   (s/named name))]
+    (when (has-type-schema-var? name)
+      (type-schema-var name schema))
+    schema))
 
 (defn api-type->schema
-  [^String api-type-id]
-  (let [{:keys [fields subtypes name]} (get-api-type api-type-id)]
-    (cond
-      (some? fields)
-      (api-type:concrete->schema name fields)
+  [*id->schema {:keys [id name fields subtypes] :as _api-type}]
+  (cond
+    (some? fields)
+    (api-type:concrete->schema *id->schema name fields)
 
-      (some? subtypes)
-      (api-type:supertype->schema name subtypes)
+    (some? subtypes)
+    (api-type:supertype->schema *id->schema name subtypes)
 
-      :else
-      (if (= "InputFile" name) InputFile s/Any))))
-
-(def memo:api-type->schema (memoize api-type->schema))
+    :else
+    (if (= input-file-api-type-id id) InputFile s/Any)))
 
 ;; "Boolean", "True", "String", "Integer", "Float"
 ;;
@@ -215,25 +226,24 @@
 ;; [:array [:or [:some-api-type ...]]]
 ;; [:array [:array :some-api-type]]
 
-(defn type->schema [type]
+(defn type->schema
+  [*id->schema type]
   (cond
     (string? type)
-    (if (basic-type? type)
-      (basic-type->schema type)
-      (memo:api-type->schema type))
+    (get @*id->schema type)
 
     (vector? type)
     (let [[container-type inner-type] type]
       (case container-type
-        "array" [(type->schema inner-type)]
-        "or" (or-schema (map type->schema inner-type))))
+        "array" [(type->schema *id->schema inner-type)]
+        "or" (or-schema (map #(type->schema *id->schema %) inner-type))))
 
     :else
     (throw (ex-info "Unsupported type" {:type type}))))
 
 (defn constrained-type->schema
-  [type constraints]
-  (let [schema (type->schema type)]
+  [*id->schema type constraints]
+  (let [schema (type->schema *id->schema type)]
     (if constraints
       (if (vector? schema)
         (mapv #(constrained-schema % constraints) schema)
@@ -241,8 +251,9 @@
       schema)))
 
 (defn parse:api-type
-  [{api-type-id :id fields :fields :as api-type}]
-  (let [schema (memo:api-type->schema api-type-id)
+  [*id->schema {api-type-id :id fields :fields :as api-type}]
+  (let [schema (api-type->schema *id->schema api-type)
+        ______ (swap! *id->schema assoc api-type-id schema)
         json-serialized-paths (get-json-serialized-paths fields)]
     (cond-> (assoc api-type :schema schema)
 
@@ -254,27 +265,28 @@
 (def api-method-prefix "method/")
 
 (defn api-method-param->param-schema
-  [{:keys [name type required constraints]}]
+  [*id->schema {:keys [name type required constraints]}]
   (let [param-key (cond-> (keyword name) (not required) (s/optional-key))
-        param-val (constrained-type->schema type constraints)]
+        param-val (constrained-type->schema *id->schema type constraints)]
     [param-key param-val]))
 
 (defn api-method-param-of-input-type?
   [{:keys [type]}]
-  (or (= "type/input-file" type)
-      (contains? (set (flatten type)) "type/input-file")))
+  (or (= input-file-api-type-id type)
+      (contains? (set (flatten type)) input-file-api-type-id)))
 
 (defn api-method-params->params-schema
-  [params]
-  (into {} (map api-method-param->param-schema params)))
+  [*id->schema params]
+  (into {} (map #(api-method-param->param-schema *id->schema %) params)))
 
 (defn parse:api-method
-  [{:keys [params] :as api-method}]
+  [*id->schema {:keys [params] :as api-method}]
   (let [json-serialized-paths (get-json-serialized-paths params)]
     (cond-> api-method
 
             (some? params)
-            (assoc :params-schema (api-method-params->params-schema params))
+            (assoc :params-schema
+                   (api-method-params->params-schema *id->schema params))
 
             (some api-method-param-of-input-type? params)
             (assoc :uploads-file? true)
@@ -342,14 +354,31 @@
 
 (defn parse-raw-spec
   [{:keys [types methods]}]
-  (binding [*id->api-type* (utils/index-by :id types)
-            *id->api-method-type* (atom {})]
-    (let [update-types (collect-update-types types)
-          parsed-methods (mapv parse:api-method methods)
-          method-types (mapv parse:api-type (vals @*id->api-method-type*))]
-      {:update-types update-types
-       :methods      parsed-methods
-       :method-types method-types})))
+  (let [types-deps-g (build-types-deps-graph types)
+        api-type-ids (ordered-type-ids types-deps-g)
+        id->api-type (utils/index-by :id types)
+
+        *id->schema (atom (ordered-map (known-type-schemas)))]
+    (prepare-recursive-types! types-deps-g id->api-type)
+
+    (binding [*id->api-type* id->api-type
+              *id->api-method-type* (atom {})]
+      (let [parsed-types (->> api-type-ids
+                              (map #(get *id->api-type* %))
+                              (mapv #(parse:api-type *id->schema %)))
+
+            ;; TODO: Get rid of this logic, it should not be needed anymore.
+            update-types (collect-update-types types)
+
+            parsed-methods (mapv #(parse:api-method *id->schema %) methods)
+
+            ;; TODO: Get rid of this logic, it should not be needed anymore.
+            method-types (mapv #(parse:api-type *id->schema %)
+                               (vals @*id->api-method-type*))]
+        {:type         parsed-types
+         :update-types update-types
+         :methods      parsed-methods
+         :method-types method-types}))))
 
 (defn read-raw-spec!
   [file-name]
