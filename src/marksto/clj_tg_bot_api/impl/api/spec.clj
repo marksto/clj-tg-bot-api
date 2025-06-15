@@ -127,6 +127,18 @@
   (condp = schema
     s/Str (s/constrained schema (->string-constraints-pred string))))
 
+(defn type-schema-symbol [type-name]
+  (symbol (str type-name "Schema")))
+
+(defn type-schema-var
+  ([type-name]
+   (intern *ns* (type-schema-symbol type-name)))
+  ([type-name schema]
+   (intern *ns* (type-schema-symbol type-name) schema)))
+
+(defn has-type-schema-var? [type-name]
+  (boolean (ns-resolve *ns* (type-schema-symbol type-name))))
+
 (def ^:dynamic *id->api-type* nil)
 
 (def ^:dynamic *id->api-method-type* nil)
@@ -318,6 +330,13 @@
   "Gives a seq of type IDs ordered topologically for further types processing."
   [types-deps-g]
   (reverse (utils/topsort-with-cycles types-deps-g)))
+
+(defn prepare-recursive-types!
+  "Creates (interns into current ns) type schema vars for the recursive types."
+  [types-deps-g id->api-type]
+  (let [cycled-types (utils/cycled-nodes types-deps-g)]
+    (doseq [api-type-id cycled-types]
+      (type-schema-var (:name (get id->api-type api-type-id))))))
 
 ;;; Parsing
 
