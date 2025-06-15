@@ -33,7 +33,8 @@
 
 (def api-type-prefix "type/")
 
-(def basic-type? #(not (str/starts-with? % api-type-prefix)))
+(def basic-type?
+  #(and (string? %) (not (str/starts-with? % api-type-prefix))))
 
 (def input-file?
   ;; NB: Omitting case for String that is usually handled by HTTP clients,
@@ -57,6 +58,8 @@
 (s/defschema InputFile
   "A file to be uploaded using 'multipart/form-data'."
   (s/pred input-file? 'input-file?))
+
+(def input-file-api-type-id "type/input-file")
 
 ;;; Types > Schemas
 
@@ -284,9 +287,12 @@
 ;;; Types Parsing Order
 
 (defn does-not-affect-order? [type]
-  (or (basic-type? type)
-      (= "type/input-file" type)
-      (and (vector? type) (recur (second type)))))
+  (or (basic-type? type) (= input-file-api-type-id type)))
+
+(defn decontainerize [type]
+  (if (vector? type)
+    (recur (second type))
+    type))
 
 (defn api-type->type-with-deps
   [{:keys [id fields subtypes]}]
@@ -294,7 +300,7 @@
 
           (some? fields)
           (assoc :deps (->> fields
-                            (map :type)
+                            (map (comp decontainerize :type))
                             (remove does-not-affect-order?)))
 
           (some? subtypes)
