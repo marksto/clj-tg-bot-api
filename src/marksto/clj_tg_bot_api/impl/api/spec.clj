@@ -145,16 +145,6 @@
 (defn has-type-schema-var? [type-name]
   (boolean (ns-resolve *ns* (type-schema-symbol type-name))))
 
-(def ^:dynamic *id->api-type* nil)
-
-(def ^:dynamic *id->api-method-type* nil)
-
-(defn- get-api-type
-  [^String api-type-id]
-  (let [api-type (get *id->api-type* api-type-id)]
-    (swap! *id->api-method-type* assoc api-type-id api-type)
-    api-type))
-
 (def ->field-name (comp keyword :name))
 
 (defn ->type-pred
@@ -180,23 +170,23 @@
 ;; [:array [:array :some-api-type]]
 
 (defn type->schema
-  [*id->schema type]
+  [*state type]
   (cond
     (string? type)
-    (get @*id->schema type)
+    (get-in @*state [:id->schema type])
 
     (vector? type)
     (let [[container-type inner-type] type]
       (case container-type
-        "array" [(type->schema *id->schema inner-type)]
-        "or" (or-schema (map #(type->schema *id->schema %) inner-type))))
+        "array" [(type->schema *state inner-type)]
+        "or" (or-schema (map #(type->schema *state %) inner-type))))
 
     :else
     (throw (ex-info "Unsupported type" {:type type}))))
 
 (defn constrained-type->schema
-  [*id->schema type constraints]
-  (let [schema (type->schema *id->schema type)]
+  [*state type constraints]
+  (let [schema (type->schema *state type)]
     (if constraints
       (if (vector? schema)
         (mapv #(constrained-schema % constraints) schema)
@@ -204,14 +194,14 @@
       schema)))
 
 (defn api-type:concrete->schema
-  [*id->schema name fields]
+  [*state name fields]
   (let [schema (-> {}
                    (utils/index-by ->field-name fields)
                    (utils/update-kvs
                      (fn [field-name {:keys [required type constraints]}]
                        (let [field-schema (constrained-type->schema
-                                            *id->schema type constraints)
-                             {name :name} (get-api-type type)
+                                            *state type constraints)
+                             {name :name} (get-in @*state [:id->api-type type])
                              field-schema (if (has-type-schema-var? name)
                                             (s/recursive (type-schema-var name))
                                             field-schema)]
@@ -223,9 +213,9 @@
     schema))
 
 (defn api-type:supertype->schema
-  [*id->schema name api-subtype-ids]
-  (let [subtype-schemas (map #(type->schema *id->schema %) api-subtype-ids)
-        subtypes (map get-api-type api-subtype-ids)
+  [*state name api-subtype-ids]
+  (let [subtype-schemas (map #(type->schema *state %) api-subtype-ids)
+        subtypes (map #(get-in @*state [:id->api-type %]) api-subtype-ids)
         type-dependant-field (some #(when (contains? % :value) %)
                                    (:fields (first subtypes)))]
     (s/named
@@ -237,21 +227,21 @@
       name)))
 
 (defn api-type->schema
-  [*id->schema {:keys [id name fields subtypes] :as _api-type}]
+  [*state {:keys [id name fields subtypes] :as _api-type}]
   (cond
     (some? fields)
-    (api-type:concrete->schema *id->schema name fields)
+    (api-type:concrete->schema *state name fields)
 
     (some? subtypes)
-    (api-type:supertype->schema *id->schema name subtypes)
+    (api-type:supertype->schema *state name subtypes)
 
     :else
     (if (= input-file-api-type-id id) InputFile s/Any)))
 
 (defn parse:api-type
-  [*id->schema {api-type-id :id fields :fields :as api-type}]
-  (let [schema (api-type->schema *id->schema api-type)
-        ______ (swap! *id->schema assoc api-type-id schema)
+  [*state {api-type-id :id fields :fields :as api-type}]
+  (let [schema (api-type->schema *state api-type)
+        ______ (swap! *state assoc-in [:id->schema api-type-id] schema)
         json-serialized-paths (get-json-serialized-paths fields)]
     (cond-> (assoc api-type :schema schema)
 
@@ -263,9 +253,9 @@
 (def api-method-prefix "method/")
 
 (defn api-method-param->param-schema
-  [*id->schema {:keys [name type required constraints]}]
+  [*state {:keys [name type required constraints]}]
   (let [param-key (cond-> (keyword name) (not required) (s/optional-key))
-        param-val (constrained-type->schema *id->schema type constraints)]
+        param-val (constrained-type->schema *state type constraints)]
     [param-key param-val]))
 
 (defn api-method-param-of-input-type?
@@ -274,17 +264,17 @@
       (contains? (set (flatten type)) input-file-api-type-id)))
 
 (defn api-method-params->params-schema
-  [*id->schema params]
-  (into {} (map #(api-method-param->param-schema *id->schema %) params)))
+  [*state params]
+  (into {} (map #(api-method-param->param-schema *state %) params)))
 
 (defn parse:api-method
-  [*id->schema {:keys [params] :as api-method}]
+  [*state {:keys [params] :as api-method}]
   (let [json-serialized-paths (get-json-serialized-paths params)]
     (cond-> api-method
 
             (some? params)
             (assoc :params-schema
-                   (api-method-params->params-schema *id->schema params))
+                   (api-method-params->params-schema *state params))
 
             (some api-method-param-of-input-type? params)
             (assoc :uploads-file? true)
@@ -332,27 +322,24 @@
   [types-deps-g id->api-type]
   (let [cycled-types (utils/cycled-nodes types-deps-g)]
     (doseq [api-type-id cycled-types]
-      (type-schema-var (:name (get id->api-type api-type-id))))))
+      (type-schema-var (-> api-type-id id->api-type :name)))))
 
 ;;; Parsing
 
 (defn parse-raw-spec
   [{:keys [types methods]}]
-  (let [types-deps-g (build-types-deps-graph types)
-        api-type-ids (ordered-type-ids types-deps-g)
-        id->api-type (utils/index-by :id types)
-
-        *id->schema (atom (ordered-map (known-type-schemas)))]
+  (let [id->api-type (utils/index-by :id types)
+        *state (atom {:id->api-type id->api-type
+                      :id->schema   (ordered-map (known-type-schemas))})
+        types-deps-g (build-types-deps-graph types)
+        ordered-types (map id->api-type (ordered-type-ids types-deps-g))]
     (prepare-recursive-types! types-deps-g id->api-type)
 
-    (binding [*id->api-type* id->api-type
-              *id->api-method-type* (atom {})]
-      (let [parsed-types (->> api-type-ids
-                              (map #(get *id->api-type* %))
-                              (mapv #(parse:api-type *id->schema %)))
-            parsed-methods (mapv #(parse:api-method *id->schema %) methods)]
-        {:types        parsed-types
-         :methods      parsed-methods}))))
+    (let [parsed-types (mapv #(parse:api-type *state %) ordered-types)
+          parsed-methods (mapv #(parse:api-method *state %) methods)]
+      (reset! *state nil)
+      {:types   parsed-types
+       :methods parsed-methods})))
 
 (defn read-raw-spec!
   [file-name]
