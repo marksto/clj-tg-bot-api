@@ -306,40 +306,18 @@
           (some? subtypes)
           (assoc :deps subtypes)))
 
-(defn ordered-type-ids
-  "Given all Telegram Bot API `types`, returns a sequence of their IDs ordered
-   for further types processing.
-
-   An ordinal number of a type is calculated according to the following rules:
-   - all types are assigned an initial ordinal of `0`
-   - if a type has some dependencies on other API types, all such dependencies
-     get their ordinals in increased by `1`
-   - if a type has no dependencies on other API types, the type gets the \"top
-     ordinal\" which then never changes
-
-   An API type is considered to not have dependencies on other API types if it
-   depends only on basic types, InputFile, and/or their container types.
-
-   The calculation result is then sorted by type ordinals in descending order."
+(defn build-types-deps-graph
   [types]
-  (let [top-ordinal Integer/MAX_VALUE
-        inc-ordinal (fn [prev-ordinal]
-                      (if (= top-ordinal prev-ordinal)
-                        prev-ordinal
-                        (inc (or prev-ordinal 0))))
-        id->ordinal (->> types
-                         (map api-type->type-with-deps)
-                         (reduce
-                           (fn [acc {:keys [id deps]}]
-                             (if (seq deps)
-                               (reduce #(update %1 %2 inc-ordinal)
-                                       (update acc id #(or % 0))
-                                       deps)
-                               (assoc acc id top-ordinal)))
-                           (ordered-map)))]
-    (->> (seq id->ordinal)
-         (sort-by second >)
-         (map first))))
+  (let [types-with-deps (map api-type->type-with-deps types)]
+    (->> types-with-deps
+         (map (juxt :id :deps))
+         (into {})
+         (utils/map->graph))))
+
+(defn ordered-type-ids
+  "Gives a seq of type IDs ordered topologically for further types processing."
+  [types-deps-g]
+  (reverse (utils/topsort-with-cycles types-deps-g)))
 
 ;;; Parsing
 
