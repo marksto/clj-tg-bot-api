@@ -368,15 +368,10 @@
             ;; TODO: Get rid of this logic, it should not be needed anymore.
             update-types (collect-update-types types)
 
-            parsed-methods (mapv #(parse:api-method *id->schema %) methods)
-
-            ;; TODO: Get rid of this logic, it should not be needed anymore.
-            method-types (mapv #(parse:api-type *id->schema %)
-                               (vals @*id->api-method-type*))]
-        {:type         parsed-types
+            parsed-methods (mapv #(parse:api-method *id->schema %) methods)]
+        {:types        parsed-types
          :update-types update-types
-         :methods      parsed-methods
-         :method-types method-types}))))
+         :methods      parsed-methods}))))
 
 (defn read-raw-spec!
   [file-name]
@@ -404,10 +399,11 @@
 ;;
 
 (comment
-  (def method-types (:method-types (get-tg-bot-api-spec)))
+  (def tg-bot-api-spec (parse-tg-bot-api-spec! "tg-bot-api-spec.json"))
 
   (def input-message-content
-    (some #(when (= "InputMessageContent" (:name %)) %) method-types))
+    (some #(when (= "InputMessageContent" (:name %)) %)
+          (:types tg-bot-api-spec)))
 
   (def input-message-content-validator
     (s/validator (:schema input-message-content)))
@@ -442,7 +438,7 @@
                                     :description "Extra firm tofu"
                                     :payload     "prod-T0003"
                                     :currency    "XTR"
-                                    :prices      [{:label "price" :amount 1000}]
-                                    #_#_:prices ["{\"label\":\"price\",\"amount\":1000}"]})
+                                    :prices      [{:label  "price"
+                                                   :amount 1000}]})
 
   :end/comment)
