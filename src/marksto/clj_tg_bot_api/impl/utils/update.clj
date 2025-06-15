@@ -6,19 +6,17 @@
             [marksto.clj-tg-bot-api.impl.utils.types :as types]))
 
 (def all-update-types
-  (->> (:update-types (api-spec/get-tg-bot-api-spec))
+  (->> (api-spec/collect-update-types)
        (map :name)
        (apply ordered-set)))
 
 (def message-update-types
-  (->> (:update-types (api-spec/get-tg-bot-api-spec))
-       (filter :message?)
+  (->> (api-spec/collect-update-types :message? true)
        (map :name)
        (apply ordered-set)))
 
 (def edited-update-types
-  (->> (:update-types (api-spec/get-tg-bot-api-spec))
-       (filter :edited?)
+  (->> (api-spec/collect-update-types :edited? true)
        (map :name)
        (apply ordered-set)))
 

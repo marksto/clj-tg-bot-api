@@ -292,20 +292,6 @@
             (seq json-serialized-paths)
             (assoc :json-serialized-paths json-serialized-paths))))
 
-;;; Updates
-
-(defn collect-update-types
-  [api-types]
-  (let [update-fields (->> api-types
-                           (some #(when (= "Update" (:name %)) %))
-                           :fields
-                           (remove #(= "update_id" (:name %))))]
-    (mapv (fn [{:keys [name type] :as field}]
-            (cond-> {:name (->field-name field)}
-                    (= "type/message" type) (assoc :message? true)
-                    (str/starts-with? name "edited") (assoc :edited? true)))
-          update-fields)))
-
 ;;; Types Parsing Order
 
 (defn does-not-affect-order? [type]
@@ -364,13 +350,8 @@
       (let [parsed-types (->> api-type-ids
                               (map #(get *id->api-type* %))
                               (mapv #(parse:api-type *id->schema %)))
-
-            ;; TODO: Get rid of this logic, it should not be needed anymore.
-            update-types (collect-update-types types)
-
             parsed-methods (mapv #(parse:api-method *id->schema %) methods)]
         {:types        parsed-types
-         :update-types update-types
          :methods      parsed-methods}))))
 
 (defn read-raw-spec!
@@ -395,6 +376,27 @@
 
 (defn get-tg-bot-api-spec []
   @*tg-bot-api-spec)
+
+;;; Update Types
+
+(defn collect-update-types
+  [& {:keys [message? edited?] :as _opts}]
+  (let [all-api-types (:types (get-tg-bot-api-spec))
+        update-fields (->> all-api-types
+                           (some #(when (= "Update" (:name %)) %))
+                           :fields
+                           (remove #(= "update_id" (:name %))))]
+    (reduce
+      (fn [acc {:keys [name type] :as field}]
+        (let [incl-message? (or (not message?)
+                                (= "type/message" type))
+              incl-edited? (or (not edited?)
+                               (str/starts-with? name "edited"))]
+          (if (and incl-message? incl-edited?)
+            (conj acc {:name (->field-name field)})
+            acc)))
+      []
+      update-fields)))
 
 ;;
 
