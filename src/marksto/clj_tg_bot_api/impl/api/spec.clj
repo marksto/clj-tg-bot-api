@@ -155,8 +155,6 @@
     (swap! *id->api-method-type* assoc api-type-id api-type)
     api-type))
 
-(declare type->schema constrained-type->schema)
-
 (def ->field-name (comp keyword :name))
 
 (defn ->type-pred
@@ -166,51 +164,6 @@
       (= (some :value (:fields subtype))
          (or (get obj field-name)
              (get obj (csk/->kebab-case field-name)))))))
-
-(defn api-type:supertype->schema
-  [*id->schema name api-subtype-ids]
-  (let [subtype-schemas (map #(type->schema *id->schema %) api-subtype-ids)
-        subtypes (map get-api-type api-subtype-ids)
-        type-dependant-field (some #(when (contains? % :value) %)
-                                   (:fields (first subtypes)))]
-    (s/named
-      (if (some? type-dependant-field)
-        (apply s/conditional
-               (interleave (map #(->type-pred type-dependant-field %) subtypes)
-                           subtype-schemas))
-        (or-schema subtype-schemas 'subtype?))
-      name)))
-
-(defn api-type:concrete->schema
-  [*id->schema name fields]
-  (let [schema (-> {}
-                   (utils/index-by ->field-name fields)
-                   (utils/update-kvs
-                     (fn [field-name {:keys [required type constraints]}]
-                       (let [field-schema (constrained-type->schema
-                                            *id->schema type constraints)
-                             {name :name} (get-api-type type)
-                             field-schema (if (has-type-schema-var? name)
-                                            (s/recursive (type-schema-var name))
-                                            field-schema)]
-                         [(cond-> field-name (not required) (s/optional-key))
-                          field-schema])))
-                   (s/named name))]
-    (when (has-type-schema-var? name)
-      (type-schema-var name schema))
-    schema))
-
-(defn api-type->schema
-  [*id->schema {:keys [id name fields subtypes] :as _api-type}]
-  (cond
-    (some? fields)
-    (api-type:concrete->schema *id->schema name fields)
-
-    (some? subtypes)
-    (api-type:supertype->schema *id->schema name subtypes)
-
-    :else
-    (if (= input-file-api-type-id id) InputFile s/Any)))
 
 ;; "Boolean", "True", "String", "Integer", "Float"
 ;;
@@ -249,6 +202,51 @@
         (mapv #(constrained-schema % constraints) schema)
         (constrained-schema schema constraints))
       schema)))
+
+(defn api-type:concrete->schema
+  [*id->schema name fields]
+  (let [schema (-> {}
+                   (utils/index-by ->field-name fields)
+                   (utils/update-kvs
+                     (fn [field-name {:keys [required type constraints]}]
+                       (let [field-schema (constrained-type->schema
+                                            *id->schema type constraints)
+                             {name :name} (get-api-type type)
+                             field-schema (if (has-type-schema-var? name)
+                                            (s/recursive (type-schema-var name))
+                                            field-schema)]
+                         [(cond-> field-name (not required) (s/optional-key))
+                          field-schema])))
+                   (s/named name))]
+    (when (has-type-schema-var? name)
+      (type-schema-var name schema))
+    schema))
+
+(defn api-type:supertype->schema
+  [*id->schema name api-subtype-ids]
+  (let [subtype-schemas (map #(type->schema *id->schema %) api-subtype-ids)
+        subtypes (map get-api-type api-subtype-ids)
+        type-dependant-field (some #(when (contains? % :value) %)
+                                   (:fields (first subtypes)))]
+    (s/named
+      (if (some? type-dependant-field)
+        (apply s/conditional
+               (interleave (map #(->type-pred type-dependant-field %) subtypes)
+                           subtype-schemas))
+        (or-schema subtype-schemas 'subtype?))
+      name)))
+
+(defn api-type->schema
+  [*id->schema {:keys [id name fields subtypes] :as _api-type}]
+  (cond
+    (some? fields)
+    (api-type:concrete->schema *id->schema name fields)
+
+    (some? subtypes)
+    (api-type:supertype->schema *id->schema name subtypes)
+
+    :else
+    (if (= input-file-api-type-id id) InputFile s/Any)))
 
 (defn parse:api-type
   [*id->schema {api-type-id :id fields :fields :as api-type}]
