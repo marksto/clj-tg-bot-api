@@ -1,5 +1,8 @@
 (ns marksto.clj-tg-bot-api.impl.utils
   "A set of necessary general-purpose utilities"
+  (:require [clojure.set :as set]
+            [loom.alg :as la]
+            [loom.graph :refer [add-edges add-nodes digraph nodes]])
   (:import (clojure.lang IDeref)))
 
 ;; collections
@@ -115,3 +118,30 @@
   (try
     (requiring-resolve sym)
     (catch Exception _ nil)))
+
+;; graphs
+
+(defn map->graph
+  [m]
+  (digraph m))
+
+(defn cycled-nodes
+  [g]
+  (->> (la/scc g)
+       (filter #(< 1 (count %)))
+       (map set)
+       (apply set/union)))
+
+(defn topsort-with-cycles
+  [g]
+  (let [components (la/scc g)
+        node->comp (into {} (for [component components, node component]
+                              [node component]))
+        ;; leaving only inter-component edges
+        cross-edges (remove (fn [[node-a node-b]]
+                              (= (node->comp node-a) (node->comp node-b)))
+                            (la/distinct-edges g))
+        ;; build subDAG on the original nodes
+        g-no-edges (reduce add-nodes (digraph) (nodes g))
+        acyclic-sg (apply add-edges g-no-edges cross-edges)]
+    (la/topsort acyclic-sg)))
