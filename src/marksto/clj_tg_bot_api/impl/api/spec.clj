@@ -63,6 +63,23 @@
 
 ;;; Types > Schemas
 
+;; - Basic types
+;;   "Boolean", "True", "String", "Integer", "Float"
+;;
+;; - API types
+;;   :some-api-type, :input-file (special case)
+;;
+;; - Container types > Union
+;;   [:or ["Integer" "String"]]
+;;   [:or [:input-file "String"]]
+;;   [:or [:some-api-type ...]]
+;;
+;; - Container types > Array
+;;   [:array "String"]
+;;   [:array :some-api-type]
+;;   [:array [:or [:some-api-type ...]]]
+;;   [:array [:array :some-api-type]]
+
 (defn basic-type->schema
   [^String type]
   (case type
@@ -119,7 +136,8 @@
                                     error-symbol (conj error-symbol))))
      (apply s/cond-pre schemas))))
 
-;; TODO: Impl the `after_entities_parsing`-related logic. Pre-parse the `obj`?
+;; TODO: Impl the `after_entities_parsing`-related logic. Pre-parse an `obj`?
+;;       Is the juice worth the squeeze though? Probably not, or vary rarely.
 (defn ->string-constraints-pred
   [{:keys [from to after_entities_parsing]}]
   (fn [obj]
@@ -155,24 +173,12 @@
          (or (get obj field-name)
              (get obj (csk/->kebab-case field-name)))))))
 
-;; "Boolean", "True", "String", "Integer", "Float"
-;;
-;; :some-api-type
-;; :input-file (special case)
-;;
-;; [:or ["Integer" "String"]]
-;; [:or [:input-file "String"]]
-;; [:or [:some-api-type ...]]
-;;
-;; [:array "String"]
-;; [:array :some-api-type]
-;; [:array [:or [:some-api-type ...]]]
-;; [:array [:array :some-api-type]]
-
 (defn type->schema
   [*state type]
   (cond
     (string? type)
+    ;; NB: We can rest assured that the required schema is already available
+    ;;     and avoid a recursion thanks to the topological order of parsing.
     (get-in @*state [:id->schema type])
 
     (vector? type)
@@ -195,22 +201,17 @@
 
 (defn api-type:concrete->schema
   [*state name fields]
-  (let [schema (-> {}
-                   (utils/index-by ->field-name fields)
-                   (utils/update-kvs
-                     (fn [field-name {:keys [required type constraints]}]
-                       (let [field-schema (constrained-type->schema
-                                            *state type constraints)
-                             {name :name} (get-in @*state [:id->api-type type])
-                             field-schema (if (has-type-schema-var? name)
-                                            (s/recursive (type-schema-var name))
-                                            field-schema)]
-                         [(cond-> field-name (not required) (s/optional-key))
-                          field-schema])))
-                   (s/named name))]
-    (when (has-type-schema-var? name)
-      (type-schema-var name schema))
-    schema))
+  (-> {}
+      (utils/index-by ->field-name fields)
+      (utils/update-kvs
+        (fn [field-name {:keys [required type constraints]}]
+          (let [{name :name} (get-in @*state [:id->api-type type])
+                field-schema (if (has-type-schema-var? name)
+                               (s/recursive (type-schema-var name))
+                               (constrained-type->schema *state type constraints))]
+            [(cond-> field-name (not required) (s/optional-key))
+             field-schema])))
+      (s/named name)))
 
 (defn api-type:supertype->schema
   [*state name api-subtype-ids]
@@ -230,12 +231,15 @@
   [*state {:keys [id name fields subtypes] :as _api-type}]
   (cond
     (some? fields)
-    (api-type:concrete->schema *state name fields)
+    (let [schema (api-type:concrete->schema *state name fields)]
+      (when (has-type-schema-var? name)
+        (type-schema-var name schema))
+      schema)
 
     (some? subtypes)
     (api-type:supertype->schema *state name subtypes)
 
-    :else
+    :else ; <=> "Currently holds no information"
     (if (= input-file-api-type-id id) InputFile s/Any)))
 
 (defn parse:api-type
