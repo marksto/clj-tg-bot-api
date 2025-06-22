@@ -1,3 +1,7 @@
+;; TODO: Add a complete test coverage.
+;; TODO: Add a GitHub workflow that triggers `update-spec` script runs tests.
+;; TODO: Wrap up writing documentation. Add interactive badges.
+
 {:paths ["src" "resources"]
 
  :deps  {org.clojure/clojure                 {:mvn/version "1.12.1"}
