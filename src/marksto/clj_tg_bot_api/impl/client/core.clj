@@ -4,11 +4,11 @@
             [clojure.tools.logging :as log]
             [jsonista.core :as json]
             [martian.core :as m]
+            [martian.test :as mt]
             [taoensso.truss :refer [have!]]
 
             [marksto.clj-tg-bot-api.impl.api.martian :as api-martian]
             [marksto.clj-tg-bot-api.impl.client.rate-limiter :as rl]
-            [marksto.clj-tg-bot-api.impl.client.testing :as testing]
             [marksto.clj-tg-bot-api.impl.utils :as utils]
             [marksto.clj-tg-bot-api.impl.utils.response :as response])
   (:import (java.io Writer)))
@@ -29,7 +29,7 @@
     :as   _client-opts}]
   (have! some? bot-id bot-token server-url)
   (-> (api-martian/build-martian (str server-url bot-token))
-      (cond-> response-fn (testing/respond-with response-fn))
+      (cond-> response-fn (mt/respond-with response-fn))
       (assoc :bot-id bot-id :limit-rate? limit-rate?)
       (with-meta {:type ::tg-bot-api-client})))
 
