@@ -5,8 +5,8 @@
 
          aysylu/loom                         {:mvn/version "1.0.2"}
          camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
-         com.github.oliyh/martian            {:mvn/version "0.1.32"}
-         com.github.oliyh/martian-test       {:mvn/version "0.1.32"}
+         com.github.marksto/martian          {:mvn/version "0.1.33-SNAPSHOT"}
+         com.github.marksto/martian-test     {:mvn/version "0.1.33-SNAPSHOT"}
          diehard/diehard                     {:mvn/version "0.12.0"}
          metosin/jsonista                    {:mvn/version "0.3.13"}
          org.flatland/ordered                {:mvn/version "1.15.12"}
@@ -27,16 +27,16 @@
                  io.aviso/pretty             {:mvn/version "1.4.4"}}}
 
   :http/http-kit
-  {:extra-deps {com.github.oliyh/martian-httpkit {:mvn/version "0.1.32"}}}
+  {:extra-deps {com.github.marksto/martian-httpkit {:mvn/version "0.1.33-SNAPSHOT"}}}
 
   :http/clj-http
-  {:extra-deps {com.github.oliyh/martian-clj-http {:mvn/version "0.1.32"}}}
+  {:extra-deps {com.github.marksto/martian-clj-http {:mvn/version "0.1.33-SNAPSHOT"}}}
 
   :http/hato
-  {:extra-deps {com.github.oliyh/martian-hato {:mvn/version "0.1.32"}}}
+  {:extra-deps {com.github.marksto/martian-hato {:mvn/version "0.1.33-SNAPSHOT"}}}
 
   :http/bb-http
-  {:extra-deps {com.github.oliyh/martian-babashka-http-client {:mvn/version "0.1.32"}}}
+  {:extra-deps {com.github.marksto/martian-babashka-http-client {:mvn/version "0.1.33-SNAPSHOT"}}}
 
   :test
   {:extra-paths ["test"]

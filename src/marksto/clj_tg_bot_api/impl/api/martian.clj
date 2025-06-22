@@ -1,91 +1,14 @@
 (ns marksto.clj-tg-bot-api.impl.api.martian
   (:require [camel-snake-kebab.core :as csk]
-            [clojure.java.io :as io]
-            [clojure.set :as set]
             [clojure.string :as str]
             [clojure.tools.logging :as log]
             [jsonista.core :as json]
             [martian.core :as m]
-            [martian.encoders :as me]
-            [martian.encoding :as encoding]
             [martian.interceptors :as mi]
             [schema-tools.coerce :as stc]
 
             [marksto.clj-tg-bot-api.impl.api.spec :as api-spec]
-            [marksto.clj-tg-bot-api.impl.utils :as utils])
-  (:import (java.io File InputStream)))
-
-;;; Martian Patches
-
-;; TODO: Fix/improve this upstream, in the `martian` codebase?
-
-;; http-kit = {String, File, InputStream, byte[], ByteBuffer!, ~Number!?~}
-;; clj-http = {String, File, InputStream, byte[], o.a.h.e.m.c.ContentBody}
-;; hato     = {String, File, InputStream, byte[], URL, URI, Socket, Path!}
-;; bb/http  = {String, File, InputStream, byte[], URL, URI, Socket, Path?}
-
-(defn common-binary? [obj]
-  (or (instance? File obj)
-      (instance? InputStream obj)
-      (bytes? obj)))
-
-(def default-make-is-impl (:make-input-stream io/default-streams-impl))
-
-(defn implements-make-input-stream? [obj]
-  (not= default-make-is-impl
-        (find-protocol-method io/IOFactory :make-input-stream obj)))
-
-(defn coerce-content
-  ([obj]
-   (coerce-content obj nil))
-  ([obj extra-coerce-fn]
-   (when (some? obj) ; let it fail downstream
-     (cond
-       (or (string? obj) (common-binary? obj))
-       obj
-
-       (implements-make-input-stream? obj)
-       (io/input-stream obj)
-
-       (some? extra-coerce-fn)
-       (extra-coerce-fn obj)
-
-       :else
-       (str obj)))))
-
-(defn coercing-multipart-encode [body]
-  (mapv (fn [[k v]] {:name (name k) :content (coerce-content v)}) body))
-
-(alter-var-root #'me/multipart-encode (constantly coercing-multipart-encode))
-
-(defn encode-request [encoders]
-  {:name    ::encode-request
-   :encodes (keys encoders)
-   :enter   (fn [{:keys [request handler] :as ctx}]
-              (let [has-body? (:body request)
-                    content-type (when (and has-body?
-                                            (not (get-in request [:headers "Content-Type"])))
-                                   (encoding/choose-content-type encoders (:consumes handler)))
-                    ;; NB: There are many possible subtypes of multipart requests.
-                    multipart? (when content-type (str/starts-with? content-type "multipart/"))
-                    {:keys [encode]} (encoding/find-encoder encoders content-type)
-                    encoded-request (cond-> request
-
-                                            has-body?
-                                            (update :body encode)
-
-                                            multipart?
-                                            ;; NB: Luckily, all target HTTP clients — clj-http (but not lite), http-kit,
-                                            ;;     hato, and even babashka/http-client — all support the same syntax.
-                                            (-> (set/rename-keys {:body :multipart})
-                                                ;; NB: Fix the same as the https://github.com/dakrone/clj-http/pull/654.
-                                                (update :headers dissoc "Content-Type" "content-type" :content-type))
-
-                                            (and content-type (not multipart?))
-                                            (assoc-in [:headers "Content-Type"] content-type))]
-                (assoc ctx :request encoded-request)))})
-
-(alter-var-root #'mi/encode-request (constantly encode-request))
+            [marksto.clj-tg-bot-api.impl.utils :as utils]))
 
 ;;; Martian Interceptors
 
