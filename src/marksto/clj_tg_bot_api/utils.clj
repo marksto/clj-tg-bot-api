@@ -2,7 +2,6 @@
   "Aux checks, utilities & method params builders for the Telegram Bot API"
   (:require [marksto.clj-tg-bot-api.impl.utils.types :as types]
             [marksto.clj-tg-bot-api.impl.utils.update :as update]
-            [marksto.clj-tg-bot-api.impl.utils.methods :as methods]
             [marksto.clj-tg-bot-api.impl.utils.response :as response]))
 
 ;;;; AUXILIARY CHECKS & UTILS
@@ -298,7 +297,7 @@
   [response]
   (response/retry-request-after-sec response))
 
-;;;; METHOD PARAMS BUILDERS
+;;;; PARSE MODES
 
 (def parse-mode:md
   "A handy constant for Markdown-style message text entities parsing mode.
@@ -313,71 +312,3 @@
 
    See supported tags: https://core.telegram.org/bots/api#html-style"
   "HTML")
-
-(defn build-message-options
-  "Builds a map with optional parameters for the \"sendMessage\" API method."
-  {:arglists '([{:keys [topic-id
-                        parse-mode
-                        no-link-preview
-                        send-silently
-                        protect-content
-                        original-msg-id
-                        reply-anyway
-                        reply-markup] :as options}])}
-  [options]
-  (methods/build-message-options options))
-
-(defn build-reply-markup
-  "Builds a `:reply-markup` option value of any supported type (see below)
-   for the `build-message-options` fn.
-
-   Possible `type` values are `:custom-keyboard` for 'ReplyKeyboardMarkup',
-   `:remove-keyboard` for 'ReplyKeyboardRemove', `:inline-keyboard` for
-   'InlineKeyboardMarkup', and `:force-reply` for 'ForceReply'.
-
-   Use the following fns to build the `type-specific-args` for this one:
-   - `build-reply-keyboard`  — with `:custom-keyboard`
-   - `build-remove-keyboard` — with `:remove-keyboard`
-   - `build-inline-keyboard` — with `:inline-keyboard`
-   - `build-force-reply`     — with `:force-reply`
-
-   Returns a map."
-  [type & type-specific-args]
-  (methods/build-reply-markup type type-specific-args))
-
-(defn build-reply-keyboard
-  {:arglists '([]
-               [button-rows]
-               [button-rows {:keys [persistent resize one-time placeholder selective]
-                             :as   options}])}
-  ([]
-   (methods/build-reply-keyboard))
-  ([button-rows]
-   (methods/build-reply-keyboard button-rows))
-  ([button-rows options]
-   (methods/build-reply-keyboard button-rows options)))
-
-(defn build-remove-keyboard
-  {:arglists '([] [{:keys [selective] :as options}])}
-  ([]
-   (methods/build-remove-keyboard))
-  ([options]
-   (methods/build-remove-keyboard options)))
-
-(defn build-inline-keyboard
-  {:arglists '([]
-               [[[{:keys [text type-key ?type-val]} ...]
-                 [{:keys [text type-key ?type-val]} ...]
-                 ...
-                 :as inline-keyboard-btns]])}
-  ([]
-   (methods/build-inline-keyboard))
-  ([inline-keyboard-btns]
-   (methods/build-inline-keyboard inline-keyboard-btns)))
-
-(defn build-force-reply
-  {:arglists '([] [{:keys [placeholder selective] :as options}])}
-  ([]
-   (methods/build-force-reply))
-  ([options]
-   (methods/build-force-reply options)))
