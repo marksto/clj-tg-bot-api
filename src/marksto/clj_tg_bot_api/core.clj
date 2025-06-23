@@ -21,9 +21,9 @@
                       otherwise, will bypass it, which is useful e.g. in tests;
    - `:response-fn` — a no-arg fn used to dynamically generate Telegram Bot API
                       server responses, effectively mocking real HTTP requests."
-  {:arglists '([{:keys [bot-id bot-token server-url limit-rate? response-fn]
-                 :as   client-opts}])}
-  [client-opts]
+  {:arglists '([& {:keys [bot-id bot-token server-url limit-rate? response-fn]
+                   :as   client-opts}])}
+  [& {:as client-opts}]
   (client/->client client-opts))
 
 ;;; Making Requests

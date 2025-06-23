@@ -5,13 +5,21 @@
             [jsonista.core :as json]
             [martian.core :as m]
             [martian.test :as mt]
-            [taoensso.truss :refer [have!]]
 
             [marksto.clj-tg-bot-api.impl.api.martian :as api-martian]
             [marksto.clj-tg-bot-api.impl.client.rate-limiter :as rl]
             [marksto.clj-tg-bot-api.impl.utils :as utils]
             [marksto.clj-tg-bot-api.impl.utils.response :as response])
   (:import (java.io Writer)))
+
+(defmacro validate-param [param pred]
+  `(when-not (~pred ~param)
+     (throw (ex-info (format "The `%s` must satisfy `%s` predicate"
+                             '~param '~pred)
+                     {:param '~param
+                      :pred  '~pred
+                      :value ~param
+                      :type  (type ~param)}))))
 
 ;;; Bot API client
 
@@ -27,7 +35,9 @@
     :or   {server-url  global-server-url
            limit-rate? true}
     :as   _client-opts}]
-  (have! some? bot-id bot-token server-url)
+  (validate-param bot-id some?)
+  (validate-param bot-token string?)
+  (validate-param server-url string?)
   (-> (api-martian/build-martian (str server-url bot-token))
       (cond-> response-fn (mt/respond-with response-fn))
       (assoc :bot-id bot-id :limit-rate? limit-rate?)
@@ -220,7 +230,7 @@
 (defn make-request!
   [{:keys [bot-id limit-rate?] :as client} args]
   (let [[call-opts method params] (if (map? (first args)) args (cons nil args))]
-    (have! keyword? method)
+    (validate-param method keyword?)
     (let [callbacks {:on-success (or (:on-success call-opts)
                                      get-result)
                      :on-failure (or (:on-failure call-opts)
@@ -242,7 +252,7 @@
   ([client method]
    (build-immediate-response client method {}))
   ([client method params]
-   (have! keyword? method)
+   (validate-param method keyword?)
    (let [method' (csk/->camelCaseString method)
          params' (assoc params :method method')]
      (-> client
