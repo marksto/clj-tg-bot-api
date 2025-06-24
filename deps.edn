@@ -38,9 +38,6 @@
   :http/hato
   {:extra-deps {com.github.marksto/martian-hato {:mvn/version "0.1.33-SNAPSHOT"}}}
 
-  :http/bb-http
-  {:extra-deps {com.github.marksto/martian-babashka-http-client {:mvn/version "0.1.33-SNAPSHOT"}}}
-
   :test
   {:extra-paths ["test"]
    :extra-deps  {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1"
