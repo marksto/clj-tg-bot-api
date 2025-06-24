@@ -1,9 +1,9 @@
-(ns user
+(ns marksto
   (:require [clojure.tools.namespace.repl :refer [set-refresh-dirs]]))
 
 (println "Loaded root `user.clj` ns\n")
 
-;; NB: No need to refresh the "development", "scripts" and "projects".
+;; NB: No need to refresh "bb" and "test" directories or "build.clj".
 (set-refresh-dirs "src")
 
 ;; NB: We use `io.aviso/pretty` in dev to highlight important aspects
