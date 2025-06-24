@@ -30,8 +30,8 @@
 
 (defn make-request!
   "Makes a request to the Telegram Bot API `method` (keyword) on behalf of some
-   bot using a given `client`, a `params` map, if any, as payload, and optional
-   `call-opts` map.
+   bot, using the given `client`, an optional `params` map as the payload, and
+   an optional `call-opts` map.
 
    Supported `call-opts`:
    - `:on-success` — a unary callback fn of a response body for a successful
@@ -67,11 +67,10 @@
   [client & args]
   (client/make-request! client args))
 
-(defn build-immediate-response
-  "Builds an immediate response — for making a request to the Telegram Bot API
-   `method` (keyword) on behalf of a bot using a given `client` and a `params`
-   map, if any, while responding to an incoming update received via the bot's
-   webhook.
+(defn build-response
+  "Constructs an HTTP response map for replying to an incoming update received
+   via the bot's webhook, triggering a call to the specified Telegram Bot API
+   `method` (keyword) call, using the given `client` and optional `params` map.
 
    From the Telegram Bot API documentation:
    If you're using *webhooks*, you can perform a request to the Bot API while
@@ -86,9 +85,9 @@
    See https://core.telegram.org/bots/api#making-requests-when-getting-updates"
   {:arglists '([client method params?])}
   ([client method]
-   (client/build-immediate-response client method))
+   (client/build-response client method))
   ([client method params]
-   (client/build-immediate-response client method params)))
+   (client/build-response client method params)))
 
 ;;; On-Success Callbacks
 

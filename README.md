@@ -14,7 +14,7 @@ Features:
 
 - Has no "moving parts" a.k.a. Bring Your Own HTTP client
 
-  Building a request body in a manual way, making HTTP requests, etc. is notoriously laborious and hard to maintain and, moreover, often unnecessary (tests, immediate responses, etc.), so we postpone making actual request
+  Building a request body in a manual way, making HTTP requests, etc. is notoriously laborious and hard to maintain and, moreover, often unnecessary (during testing, when making requests in response to updates, etc.), so we postpone making actual request
 
 - Uniform Bot API method contract
 

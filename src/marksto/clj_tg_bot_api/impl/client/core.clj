@@ -227,10 +227,14 @@
 
 ;;
 
+(def map-or-nil? #(or (map? %) (nil? %)))
+
 (defn make-request!
   [{:keys [bot-id limit-rate?] :as client} args]
   (let [[call-opts method params] (if (map? (first args)) args (cons nil args))]
     (validate-param method keyword?)
+    (validate-param params map-or-nil?)
+    (validate-param call-opts map-or-nil?)
     (let [callbacks {:on-success (or (:on-success call-opts)
                                      get-result)
                      :on-failure (or (:on-failure call-opts)
@@ -248,11 +252,12 @@
 
 ;;
 
-(defn build-immediate-response
+(defn build-response
   ([client method]
-   (build-immediate-response client method {}))
+   (build-response client method {}))
   ([client method params]
    (validate-param method keyword?)
+   (validate-param params map-or-nil?)
    (let [method' (csk/->camelCaseString method)
          params' (assoc params :method method')]
      (-> client
@@ -291,13 +296,13 @@
 
   ;; Immediate Response
   ;; 1. no params methods
-  (build-immediate-response client :get-me)
-  (build-immediate-response client :get-me {})
+  (build-response client :get-me)
+  (build-response client :get-me {})
   ;; 2. multipart request
-  (build-immediate-response client :send-audio {:chat-id 1
-                                                :audio   "<audio>"})
+  (build-response client :send-audio {:chat-id 1
+                                      :audio   "<audio>"})
   ;; 3. JSON-serialized
-  (build-immediate-response
+  (build-response
     client
     :create-invoice-link
     {:title                 "Tofu XF"
