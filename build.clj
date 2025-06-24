@@ -1,24 +1,37 @@
 (ns build
   (:refer-clojure :exclude [test])
-  (:require [clojure.tools.deps :as t]
+  (:require [clojure.string :as str]
             [clojure.tools.build.api :as b]
+            [clojure.tools.deps :as t]
             [deps-deploy.deps-deploy :as dd]))
 
 (def lib 'com.github.marksto/clj-tg-bot-api)
 (def version (format "1.0.%s" (b/git-count-revs nil)))
 (def class-dir "target/classes")
 
-(defn test "Run all the tests." [opts]
-  (println "\nRunning tests...")
-  (let [basis (b/create-basis {:aliases [:test]})
-        combined (t/combine-aliases basis [:test])
+(defn- run-tests [test-alias]
+  (println (format "\nRunning %s tests..." (name test-alias)))
+  (let [basis (b/create-basis {:aliases [test-alias :test/runner]})
+        combined (t/combine-aliases basis [test-alias :test/runner])
+        extra-paths (:extra-paths combined)
+        test-dir (or (when-some [test-dir (first extra-paths)]
+                       (when (str/starts-with? test-dir "test/")
+                         test-dir))
+                     (throw (ex-info "No test path in alias" {:alias test-alias
+                                                              :paths extra-paths})))
         cmds (b/java-command
                {:basis     basis
                 :java-opts (:jvm-opts combined)
                 :main      'clojure.main
-                :main-args ["-m" "cognitect.test-runner"]})
+                :main-args ["-m" "cognitect.test-runner" test-dir]})
         {:keys [exit]} (b/process cmds)]
-    (when-not (zero? exit) (throw (ex-info "Tests failed" {}))))
+    (when-not (zero? exit)
+      (throw (ex-info (format "Tests failed (with alias %s)" test-alias) {})))))
+
+(defn test "Run all the tests." [opts]
+  (println "\nRunning tests...")
+  (run-tests :test/unit)
+  (run-tests :test/integration)
   opts)
 
 (defn- pom-template [version]

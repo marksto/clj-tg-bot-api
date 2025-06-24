@@ -38,11 +38,17 @@
   :http/hato
   {:extra-deps {com.github.marksto/martian-hato {:mvn/version "0.1.33-SNAPSHOT"}}}
 
-  :test
-  {:extra-paths ["test"]
-   :extra-deps  {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1"
-                                                       :git/sha "dfb30dd"}
-                 nubank/matcher-combinators           {:mvn/version "3.9.1"}}}
+  :test/unit
+  {:extra-paths ["test/unit"]}
+
+  :test/integration
+  {:extra-paths ["test/integration"]}
+
+  ;; Run with "clojure -T:build test"
+  :test/runner
+  {:extra-deps {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1"
+                                                      :git/sha "dfb30dd"}
+                nubank/matcher-combinators           {:mvn/version "3.9.1"}}}
 
   :outdated
   {:deps      {com.github.liquidz/antq {:mvn/version "RELEASE"}
