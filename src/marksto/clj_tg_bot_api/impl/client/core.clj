@@ -31,7 +31,7 @@
 (def global-server-url "https://api.telegram.org/bot")
 
 (defn ->client
-  [{:keys [bot-id bot-token server-url limit-rate? response-fn]
+  [{:keys [bot-id bot-token server-url limit-rate? responses]
     :or   {server-url  global-server-url
            limit-rate? true}
     :as   _client-opts}]
@@ -39,7 +39,7 @@
   (validate-param bot-token string?)
   (validate-param server-url string?)
   (-> (api-martian/build-martian (str server-url bot-token))
-      (cond-> response-fn (mt/respond-with response-fn))
+      (cond-> responses (mt/respond-with responses))
       (assoc :bot-id bot-id :limit-rate? limit-rate?)
       (with-meta {:type ::tg-bot-api-client})))
 

@@ -14,14 +14,17 @@
    - `:bot-id`      — (mandatory) a bot identifier, usually a string or keyword,
                       that is used to distinguish between multiple clients, e.g.
                       for the purposes of rate limiting;
-   - `:bot-token`   — (mandatory) a Telegram Bot API auth token for a given bot;
+   - `:bot-token`   — (mandatory) a Telegram Bot API auth token for a particular
+                      Telegram bot which will be served by this client;
    - `:server-url`  — a Local Bot API Server URL; by default, uses a global one;
                       the provided `:bot-token` value gets appended to this URL;
    - `:limit-rate?` — when `true` (default), will use the built-in rate limiter;
-                      otherwise, will bypass it, which is useful e.g. in tests;
-   - `:response-fn` — a no-arg fn used to dynamically generate Telegram Bot API
-                      server responses, effectively mocking real HTTP requests."
-  {:arglists '([& {:keys [bot-id bot-token server-url limit-rate? response-fn]
+                      otherwise, will bypass it; used primarily during tests;
+   - `:responses`   — a map of predefined responses or response generator fns or
+                      a unary fn that, given the `ctx`, returns a response; used
+                      to dynamically generate Telegram Bot API server responses,
+                      effectively mocking real HTTP requests during tests."
+  {:arglists '([& {:keys [bot-id bot-token server-url limit-rate? responses]
                    :as   client-opts}])}
   [& {:as client-opts}]
   (client/->client client-opts))
