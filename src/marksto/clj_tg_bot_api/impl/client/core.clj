@@ -43,6 +43,8 @@
       (assoc :bot-id bot-id :limit-rate? limit-rate?)
       (with-meta {:type ::tg-bot-api-client})))
 
+(def client? #(= ::tg-bot-api-client (type %)))
+
 
 ;;; Operations on response 'result'
 
@@ -231,7 +233,10 @@
 
 (defn make-request!
   [{:keys [bot-id limit-rate?] :as client} args]
-  (let [[call-opts method params] (if (map? (first args)) args (cons nil args))]
+  (let [[call-opts method params] (if-not (map-or-nil? (first args))
+                                    (cons nil args)
+                                    args)]
+    (validate-param client client?)
     (validate-param method keyword?)
     (validate-param params map-or-nil?)
     (validate-param call-opts map-or-nil?)
@@ -256,6 +261,7 @@
   ([client method]
    (build-response client method {}))
   ([client method params]
+   (validate-param client client?)
    (validate-param method keyword?)
    (validate-param params map-or-nil?)
    (let [method' (csk/->camelCaseString method)
