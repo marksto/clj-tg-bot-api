@@ -4,6 +4,7 @@
             [clojure.tools.logging :as log]
             [jsonista.core :as json]
             [martian.core :as m]
+            [martian.encoders :as me]
             [martian.interceptors :as mi]
             [schema-tools.coerce :as stc]
 
@@ -80,37 +81,38 @@
   (or (utils/requiring-resolve* 'martian.httpkit/bootstrap)
       (utils/requiring-resolve* 'martian.clj-http/bootstrap)
       (utils/requiring-resolve* 'martian.hato/bootstrap)
-      (utils/requiring-resolve* 'martian.babashka.http-client/bootstrap)
       (utils/requiring-resolve* 'martian.clj-http-lite/bootstrap)
       offline-bootstrap-fn))
 
 (def offline-interceptors
-  (delay (conj m/default-interceptors
-               mi/default-encode-request
-               mi/default-coerce-response)))
+  (delay (let [encoders (assoc (me/default-encoders)
+                          "multipart/form-data" {:encode me/multipart-encode
+                                                 :as     :multipart})]
+           (conj m/default-interceptors
+                 (mi/encode-request encoders)
+                 mi/default-coerce-response))))
 
 (def martian-default-interceptors
   ;; NB: Sorted by descending popularity in the global Clojure community.
   (or (utils/requiring-resolve* 'martian.httpkit/default-interceptors)
       (utils/requiring-resolve* 'martian.clj-http/default-interceptors)
       (utils/requiring-resolve* 'martian.hato/default-interceptors)
-      (utils/requiring-resolve* 'martian.babashka.http-client/default-interceptors)
       (utils/requiring-resolve* 'martian.clj-http-lite/default-interceptors)
       offline-interceptors))
 
 (defn build-martian
   [tg-bot-api-root-url]
   (when (= offline-bootstrap-fn martian-bootstrap-fn)
-    (log/warn (str "WARNING! You are in offline mode, meaning there is no "
+    (log/warn (str "You are in \"offline mode\", which means there is no "
                    "supported HTTP client available for sending requests. "
                    "Please, add any Martian library for JVM/Babashka HTTP "
                    "client to the classpath. For supported, check out the "
                    "https://github.com/oliyh/martian page.")))
   (when (= "#'martian.clj-http-lite/bootstrap" (str martian-bootstrap-fn))
-    (log/warn (str "WARNING! You have picked up `clj-http-lite` which has "
-                   "no support for 'multipart/form-data' requests used to "
-                   "upload files, therefore this Telegram Bot API feature "
-                   "won't be available for your bot.")))
+    (log/warn (str "You have selected `clj-http-lite`, which has no support "
+                   "for \"multipart/form-data\" requests used for uploading "
+                   "files, therefore this Telegram Bot API feature will not "
+                   "be available to your bot.")))
   (let [[default-ints other-ints] (split-at (count m/default-interceptors)
                                             @martian-default-interceptors)]
     (martian-bootstrap-fn
