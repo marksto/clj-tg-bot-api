@@ -12,6 +12,15 @@
             [marksto.clj-tg-bot-api.impl.utils.response :as response])
   (:import (java.io Writer)))
 
+(def map-or-nil?
+  #(or (nil? %) (map? %)))
+
+(def map-or-fn-or-nil?
+  #(or (nil? %) (map? %) (fn? %)))
+
+(def coll-or-nil?
+  #(or (nil? %) (coll? %)))
+
 (defmacro validate-param [param pred]
   `(when-not (~pred ~param)
      (throw (ex-info (format "The `%s` must satisfy `%s` predicate"
@@ -31,14 +40,17 @@
 (def global-server-url "https://api.telegram.org/bot")
 
 (defn ->client
-  [{:keys [bot-id bot-token server-url limit-rate? responses]
+  [{:keys [bot-id bot-token server-url limit-rate? responses interceptors]
     :or   {server-url  global-server-url
            limit-rate? true}
     :as   _client-opts}]
   (validate-param bot-id some?)
   (validate-param bot-token string?)
   (validate-param server-url string?)
-  (-> (api-martian/build-martian (str server-url bot-token))
+  (validate-param limit-rate? boolean?)
+  (validate-param responses map-or-fn-or-nil?)
+  (validate-param interceptors coll-or-nil?)
+  (-> (api-martian/build-martian (str server-url bot-token) interceptors)
       (cond-> responses (mt/respond-with responses))
       (assoc :bot-id bot-id :limit-rate? limit-rate?)
       (with-meta {:type ::tg-bot-api-client})))
@@ -228,8 +240,6 @@
     (throw (IllegalStateException. "Malformed Telegram Bot API response"))))
 
 ;;
-
-(def map-or-nil? #(or (map? %) (nil? %)))
 
 (defn make-request!
   [{:keys [bot-id limit-rate?] :as client} args]

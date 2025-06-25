@@ -100,8 +100,12 @@
       (utils/requiring-resolve* 'martian.clj-http-lite/default-interceptors)
       offline-interceptors))
 
+(defn get-perform-request-interceptor []
+  (some #(when (= "perform-request" (name (:name %))) %)
+        @martian-default-interceptors))
+
 (defn build-martian
-  [tg-bot-api-root-url]
+  [tg-bot-api-root-url interceptors]
   (when (= offline-bootstrap-fn martian-bootstrap-fn)
     (log/warn (str "You are in \"offline mode\", which means there is no "
                    "supported HTTP client available for sending requests. "
@@ -113,13 +117,18 @@
                    "for \"multipart/form-data\" requests used for uploading "
                    "files, therefore this Telegram Bot API feature will not "
                    "be available to your bot.")))
-  (let [[default-ints other-ints] (split-at (count m/default-interceptors)
-                                            @martian-default-interceptors)]
+  (let [target-default-int ::mi/enqueue-route-specific-interceptors
+        basic-interceptors (-> @martian-default-interceptors
+                               (mi/inject inject-method-param-interceptor
+                                          :before target-default-int)
+                               (mi/inject json-serialize-params-interceptor
+                                          :before target-default-int))
+        final-interceptors (reduce (fn [ints [new rel-pos old-name]]
+                                     (mi/inject ints new rel-pos old-name))
+                                   basic-interceptors
+                                   interceptors)]
     (martian-bootstrap-fn
       tg-bot-api-root-url
       (build-handlers)
       {:coercion-matcher stc/json-coercion-matcher
-       :interceptors     (concat default-ints
-                                 [inject-method-param-interceptor
-                                  json-serialize-params-interceptor]
-                                 other-ints)})))
+       :interceptors     final-interceptors})))
