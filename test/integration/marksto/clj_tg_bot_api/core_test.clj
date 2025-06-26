@@ -1,6 +1,6 @@
 (ns marksto.clj-tg-bot-api.core-test
   (:require [clojure.string :as str]
-            [clojure.test :refer [deftest is testing]]
+            [clojure.test :refer [deftest is testing use-fixtures]]
             [marksto.clj-tg-bot-api.core :as sut]
             [marksto.clj-tg-bot-api.impl.api.martian :as api-martian]
             [marksto.clj-tg-bot-api.net-utils :as net-utils]
@@ -8,7 +8,21 @@
             [matcher-combinators.test]
             [martian.vcr :as vcr]))
 
-(def test-bot-token vcr-utils/real-bot-token)
+(def token->bot-id #(subs % 0 (str/index-of % ":")))
+
+(def real-bot-token (System/getenv "BOT_AUTH_TOKEN"))
+(def real-bot-id (token->bot-id real-bot-token))
+
+(def fake-bot-token "1234567890:TEST_pxWA8lDi7uLc3oadqNivHCALHBQ7sM")
+(def fake-bot-id (token->bot-id fake-bot-token))
+
+(def replacements
+  [[:string-val real-bot-token fake-bot-token]
+   [:string-val real-bot-id fake-bot-id]])
+
+(use-fixtures :once (fn [f] (vcr-utils/with-replacements replacements (f))))
+
+;;
 
 (def perform-request-interceptor
   (api-martian/get-perform-request-interceptor))
@@ -62,19 +76,24 @@
    [add-request-proxy-details :before perform-request-interceptor-name]
    [catching-perform-request :replace perform-request-interceptor-name]])
 
+;;
+
 (deftest make-request!-test
   (let [client (sut/->client {:bot-id       1
-                              :bot-token    test-bot-token
+                              :bot-token    real-bot-token
                               :interceptors (build-test-interceptors)})]
     (testing "Success:"
       ;; NB: All successful API requests first need to be recorded!
       (testing "The bot's authentication token"
-        (is (match?
-              {:id         1234567890
-               :is_bot     true
-               :first_name "Testy"
-               :username   "test_username"}
-              (sut/make-request! client :get-me)))))
+        (vcr-utils/with-replacements
+          [[:json-field "first_name" "Testy"]
+           [:json-field "username" "test_username"]]
+          (is (match?
+                {:id         1234567890
+                 :is_bot     true
+                 :first_name "Testy"
+                 :username   "test_username"}
+                (sut/make-request! client :get-me))))))
 
     (testing "Failure:"
       ;; NB: All unsuccessful API requests first need to be recorded!
@@ -102,6 +121,8 @@
               (net-utils/with-http-outage
                 (sut/make-request! client :send-message {:chat-id 1
                                                          :text    "🛜"}))))))))
+
+;;
 
 (comment
   ;; RECORDING

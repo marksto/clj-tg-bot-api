@@ -8,13 +8,14 @@
             [martian.vcr :as vcr])
   (:import [clojure.lang Reflector]))
 
-(def token->bot-id #(subs % 0 (str/index-of % ":")))
+;;; Persisting
 
-(def real-bot-token (System/getenv "BOT_AUTH_TOKEN"))
-(def real-bot-id (token->bot-id real-bot-token))
+(defonce ^:dynamic *replace-args* [])
 
-(def fake-bot-token "1234567890:TEST_pxWA8lDi7uLc3oadqNivHCALHBQ7sM")
-(def fake-bot-id (token->bot-id fake-bot-token))
+;; NB: The number of backslashes is for after the JSON is stringified:
+;; JSON str == "{...,\"field\":\"value\",...}"
+;; resp-str => "{...,\\\"field\\\":\\\"value\\\",...}"
+;; regexp   => "{...,\\\\\\\"field\\\\\\\":\\\\\\\"value\\\\\\\",...}"
 
 (defn re-str-for [field]
   (str "\\\\\\\"" field "\\\\\\\":\\\\\\\"[^\\\\]+\\\\\\\""))
@@ -22,25 +23,30 @@
 (defn replacement-for [field value]
   (str "\\\\\\\"" field "\\\\\\\":\\\\\\\"" value "\\\\\\\""))
 
-(def field+fake-value-seq
-  [["first_name" "Testy"]
-   ["username" "test_username"]])
+(defn prepare-replace-args [replacements]
+  (reduce
+    (fn [acc [type match replacement]]
+      (conj acc
+            (case type
+              :string-val [match replacement]
+              :json-field [(re-pattern (re-str-for match))
+                           (replacement-for match replacement)])))
+    []
+    replacements))
 
-(def match+replacement-seq
-  (into [[real-bot-token fake-bot-token]
-         [real-bot-id fake-bot-id]]
-        (reduce
-          (fn [acc [field fake-value]]
-            (conj acc [(re-pattern (re-str-for field))
-                       (replacement-for field fake-value)]))
-          []
-          field+fake-value-seq)))
+(defmacro with-replacements
+  [replacements & body]
+  `(binding [*replace-args* (into *replace-args*
+                                  (prepare-replace-args ~replacements))]
+     (do ~@body)))
 
 (defn persist:post-process [resp-str]
   (reduce (fn [acc-str [match replacement]]
             (str/replace acc-str match replacement))
           resp-str
-          match+replacement-seq))
+          *replace-args*))
+
+;;
 
 (defn stringify [obj pprint?]
   (if pprint?
@@ -78,6 +84,8 @@
                           (utils/remove-vals form #(raw-object? % pprint?))
                           form)))))
 
+;;
+
 (defmethod vcr/persist-response! :prepared-file
   [{{:keys [pprint?]} :store :as opts} {:keys [response] :as ctx}]
   (let [response (persist:pre-process response pprint?)
@@ -87,7 +95,7 @@
     (io/make-parents file)
     (spit file content)))
 
-;;
+;;; Loading
 
 (defn invoke-ctor [classy & args]
   (try
