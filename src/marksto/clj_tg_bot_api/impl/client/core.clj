@@ -200,16 +200,17 @@
   ;;     in case if request was unsuccessful (status codes other than 200-207,
   ;;     300-303, or 307) or in any of other exceptional situations (e.g. when
   ;;     an HTTP connection cannot be established).
-  (if-some [error-data (ex-data error)]
-    (if-some [body (:body error-data)]
-      ;; Failure - unsuccessful request (in terms of the Telegram Bot API)
-      (if (seq body)
-        (json/read-value body response-body-mapper)
-        {:ok          false
-         :error_code  (:status error-data)
-         :description (:reason-phrase error-data)})
-      ;; Error - in any other exceptional situation (incl. client-code-ex)
-      {:error error})
+  (if error
+    (let [error-data (ex-data error)]
+      (if-some [body (:body error-data)]
+        ;; Failure - unsuccessful request (in terms of the Telegram Bot API)
+        (if (seq body)
+          (json/read-value body response-body-mapper)
+          {:ok          false
+           :error_code  (:status error-data)
+           :description (:reason-phrase error-data)})
+        ;; Error - in any other exceptional situation (incl. client-code-ex)
+        {:error error}))
     ;; Successful request
     body))
 
