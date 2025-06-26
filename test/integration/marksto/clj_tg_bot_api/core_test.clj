@@ -35,7 +35,7 @@
               (update ctx :request conj {:proxy-url (net-utils/get-proxy-url)})
               ctx))})
 
-;; NB: Mimics clients that throw on errors (`clj-http` and `hato`) on playback.
+;; NB: Mimics clients throwing exceptions on error (`clj-http[-lite]`, `hato`).
 (def throw-exception-response
   {:name  ::throw-exception-response
    :leave (fn [{:keys [response] :as ctx}]

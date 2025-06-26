@@ -36,6 +36,9 @@
   :http/clj-http
   {:extra-deps {com.github.marksto/martian-clj-http {:mvn/version "0.1.33-SNAPSHOT"}}}
 
+  :http/clj-http-lite
+  {:extra-deps {com.github.marksto/martian-clj-http-lite {:mvn/version "0.1.33-SNAPSHOT"}}}
+
   :http/hato
   {:extra-deps {com.github.marksto/martian-hato {:mvn/version "0.1.33-SNAPSHOT"}}}
 
