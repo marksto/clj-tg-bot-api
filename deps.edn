@@ -40,16 +40,18 @@
   {:extra-deps {com.github.marksto/martian-hato {:mvn/version "0.1.33-SNAPSHOT"}}}
 
   :test/unit
-  {:extra-paths ["test/unit"]}
+  {:extra-paths ["test/unit"]
+   :extra-deps  {nubank/matcher-combinators {:mvn/version "3.9.1"}}}
 
   :test/integration
-  {:extra-paths ["test/integration"]}
+  {:extra-paths ["test/integration" "test-resources/integration"]
+   :extra-deps  {com.github.marksto/martian-vcr {:mvn/version "0.1.33-SNAPSHOT"}
+                 nubank/matcher-combinators     {:mvn/version "3.9.1"}}}
 
-  ;; Run with "clojure -T:build test"
+  ;; Run with "BOT_AUTH_TOKEN=... clojure -T:build test"
   :test/runner
   {:extra-deps {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1"
-                                                      :git/sha "dfb30dd"}
-                nubank/matcher-combinators           {:mvn/version "3.9.1"}}}
+                                                      :git/sha "dfb30dd"}}}
 
   :outdated
   {:deps      {com.github.liquidz/antq {:mvn/version "RELEASE"}
