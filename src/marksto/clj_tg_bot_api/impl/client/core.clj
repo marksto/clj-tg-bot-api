@@ -297,8 +297,8 @@
   (make-request! client '(:get-chat {:chat-id 1}))
   ;; 3. Error - Client code exception (params coercion)
   (make-request! client '(:send-audio {:chat-id 1}))
-  ;; 4. Error - Network connection (drop internet access)
-  (make-request! client '(:get-me))
+  ;; 4. Error - Network outage (server connection error)
+  (make-request! client '(:send-message {:chat-id 1 :text "Oops!"}))
 
   ;; Multipart Requests
   ;; 1. successful coercion (1 -> string)

@@ -104,6 +104,8 @@
             Exception
             #"The `params` must satisfy `map-or-nil\?` predicate"
             (sut/make-request! client {} :get-me "params"))))
+
+    ;; NB: All these requests are made in "offline mode", without actually being sent.
     (testing "echo responses for"
       (testing "methods w/o params"
         (is (= {:method :post
@@ -163,19 +165,6 @@
                                                          :allowed_updates ["message"
                                                                            "edited_channel_post"
                                                                            "callback_query"]}))))))))
-
-;; TODO: THIS TEST MUST BE ALSO RUN WITH ALL SUPPORTED HTTP CLIENTS VIA VCR!
-(comment
-  ;; Error Handling
-  ;; 1. Successful request
-  (sut/make-request! client :get-me)
-  ;; 2. Failure - Unsuccessful request (400 Bad Request)
-  (sut/make-request! client :get-chat {:chat-id 1})
-  ;; 3. Error - Client code exception (params coercion)
-  (sut/make-request! client :send-audio {:chat-id 1})
-  ;; 4. Error - Network connection (drop internet access)
-  (sut/make-request! client :get-me)
-  :end/comment)
 
 (deftest build-response-test
   (let [client (sut/->client {:bot-id    1
