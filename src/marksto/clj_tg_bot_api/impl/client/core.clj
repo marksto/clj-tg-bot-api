@@ -212,7 +212,12 @@
         ;; Error - in any other exceptional situation (incl. client-code-ex)
         {:error error}))
     ;; Successful request
-    body))
+    ;; NB: A real HTTP request will always come with parsed body at this point,
+    ;;     but `clj-http` client looses "Accept" header in the VCR-based tests.
+    ;; TODO: Try to avoid this unnecessary (VCR-specific) `:body` coercion.
+    (if (string? body)
+      (json/read-value body response-body-mapper)
+      body)))
 
 ;;
 
