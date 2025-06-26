@@ -1,0 +1,9 @@
+{:opts {:method :post,
+        :url "https://api.telegram.org/bot1234567890:TEST_pxWA8lDi7uLc3oadqNivHCALHBQ7sM/sendMessage",
+        :body "{\"chat_id\":1,\"text\":\"🛜\"}",
+        :headers {"Content-Type" "application/json",
+                  "Accept" "application/json"},
+        :as :text,
+        :proxy-url "http://127.0.0.1:9999"},
+ :error {:ex/class-name "java.net.ConnectException",
+         :ex/message "Connection refused"}}
