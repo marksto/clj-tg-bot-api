@@ -1,0 +1,3 @@
+{:ex/class-name "java.net.ConnectException",
+ :ex/cause {:ex/class-name "java.net.ConnectException",
+            :ex/cause {:ex/class-name "java.nio.channels.ClosedChannelException"}}}
