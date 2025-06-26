@@ -204,6 +204,8 @@
     (let [error-data (ex-data error)]
       (if-some [body (:body error-data)]
         ;; Failure - unsuccessful request (in terms of the Telegram Bot API)
+        ;; NB: Body of an HTTP error response most certainly won't be coerced.
+        ;; TODO: Fix `martian-httpkit` so that this JSON read isn't necessary?
         (if (seq body)
           (json/read-value body response-body-mapper)
           {:ok          false
@@ -212,12 +214,8 @@
         ;; Error - in any other exceptional situation (incl. client-code-ex)
         {:error error}))
     ;; Successful request
-    ;; NB: A real HTTP request will always come with parsed body at this point,
-    ;;     but `clj-http` client looses "Accept" header in the VCR-based tests.
-    ;; TODO: Try to avoid this unnecessary (VCR-specific) `:body` coercion.
-    (if (string? body)
-      (json/read-value body response-body-mapper)
-      body)))
+    ;; NB: A real HTTP request will always go w/ a coerced body at this point.
+    body))
 
 ;;
 

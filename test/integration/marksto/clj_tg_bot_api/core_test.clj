@@ -41,12 +41,17 @@
            :root-dir vcr-root-dir
            :pprint?  true}})
 
-;; NB: This one is `http-kit`-specific, since this HTTP client is based on NIO.
-(def add-request-proxy-details
-  {:name  ::add-request-proxy-details
+;; NB: HTTP client-specific. Addresses request inconsistencies between clients.
+(def http-client-specific-ops
+  {:name  ::http-client-specific-ops
    :enter (fn [ctx]
-            (if (= "httpkit" used-http-client)
+            (case used-http-client
+              "httpkit"
+              ;; manually set dead-end proxy details, since it is based on NIO
               (update ctx :request conj {:proxy-url (net-utils/get-proxy-url)})
+              ("clj-http" "clj-http-lite")
+              ;; just record request, so it is visible like with other clients
+              (update ctx :request conj {:save-request? true})
               ctx))})
 
 ;; NB: Mimics clients throwing exceptions on error (`clj-http[-lite]`, `hato`).
@@ -73,7 +78,7 @@
   [[(vcr/record vcr-opts) :before perform-request-interceptor-name]
    [(vcr/playback vcr-opts) :before perform-request-interceptor-name]
    [throw-exception-response :before ::vcr/record]
-   [add-request-proxy-details :before perform-request-interceptor-name]
+   [http-client-specific-ops :before perform-request-interceptor-name]
    [catching-perform-request :replace perform-request-interceptor-name]])
 
 ;;

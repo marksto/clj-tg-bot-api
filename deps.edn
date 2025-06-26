@@ -10,8 +10,8 @@
          aysylu/loom                         {:mvn/version "1.0.2"
                                               :exclusions  [org.clojure/clojurescript]}
          camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
-         com.github.marksto/martian          {:mvn/version "0.1.33-SNAPSHOT"}
-         com.github.marksto/martian-test     {:mvn/version "0.1.33-SNAPSHOT"}
+         com.github.marksto/martian          {:mvn/version "0.1.34-SNAPSHOT"}
+         com.github.marksto/martian-test     {:mvn/version "0.1.34-SNAPSHOT"}
          diehard/diehard                     {:mvn/version "0.12.0"}
          metosin/jsonista                    {:mvn/version "0.3.13"}
          org.flatland/ordered                {:mvn/version "1.15.12"}}
@@ -31,16 +31,16 @@
                  io.aviso/pretty             {:mvn/version "1.4.4"}}}
 
   :http/http-kit
-  {:extra-deps {com.github.marksto/martian-httpkit {:mvn/version "0.1.33-SNAPSHOT"}}}
+  {:extra-deps {com.github.marksto/martian-httpkit {:mvn/version "0.1.34-SNAPSHOT"}}}
 
   :http/clj-http
-  {:extra-deps {com.github.marksto/martian-clj-http {:mvn/version "0.1.33-SNAPSHOT"}}}
+  {:extra-deps {com.github.marksto/martian-clj-http {:mvn/version "0.1.34-SNAPSHOT"}}}
 
   :http/clj-http-lite
-  {:extra-deps {com.github.marksto/martian-clj-http-lite {:mvn/version "0.1.33-SNAPSHOT"}}}
+  {:extra-deps {com.github.marksto/martian-clj-http-lite {:mvn/version "0.1.34-SNAPSHOT"}}}
 
   :http/hato
-  {:extra-deps {com.github.marksto/martian-hato {:mvn/version "0.1.33-SNAPSHOT"}}}
+  {:extra-deps {com.github.marksto/martian-hato {:mvn/version "0.1.34-SNAPSHOT"}}}
 
   :test/unit
   {:extra-paths ["test/unit"]
@@ -48,7 +48,7 @@
 
   :test/integration
   {:extra-paths ["test/integration" "test-resources/integration"]
-   :extra-deps  {com.github.marksto/martian-vcr {:mvn/version "0.1.33-SNAPSHOT"}
+   :extra-deps  {com.github.marksto/martian-vcr {:mvn/version "0.1.34-SNAPSHOT"}
                  nubank/matcher-combinators     {:mvn/version "3.9.1"}}}
 
   ;; Run with "BOT_AUTH_TOKEN=... clojure -T:build test"
