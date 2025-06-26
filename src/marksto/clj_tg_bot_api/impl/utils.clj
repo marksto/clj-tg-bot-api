@@ -66,6 +66,14 @@
                       (transient {}))
            (persistent!)))
 
+(defn remove-vals
+  [m pred]
+  (some->> m
+           (reduce-kv (fn [m k v]
+                        (if-not (pred v) (assoc! m k v) m))
+                      (transient {}))
+           (persistent!)))
+
 ;; strings
 
 (defn char-sequence?
