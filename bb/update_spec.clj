@@ -329,6 +329,11 @@
 
 ;;;; Parsing
 
+(defn parse-version [tree]
+  (-> (s/select (s/follow (s/tag :h3) (s/tag :h4) (s/tag :p)) tree)
+      (first)
+      (text)))
+
 (defn ->dev-page-content [tree]
   (-> (s/select (s/id :dev_page_content) tree)
       (first)
@@ -343,11 +348,14 @@
             api-elements)
     api-elements))
 
-(defn shape-into-map [api-elements]
-  (group-by #(case (:kind %) :type :types :method :methods) api-elements))
+(defn shape-into-map [curr-version api-elements]
+  (merge
+    {:version curr-version}
+    (group-by #(case (:kind %) :type :types :method :methods) api-elements)))
 
 (defn parse-tg-bot-api-page [html-str]
   (let [page-hy-tree (-> html-str (h/parse) (h/as-hickory))
+        curr-version (parse-version page-hy-tree)
         page-content (->dev-page-content page-hy-tree)]
     (->> (->sections page-content)
          (map ->subsections)
@@ -355,7 +363,7 @@
          (map #(when-not (notes-subsection? %) (->api-element %)))
          (remove nil?)
          (normalize-ids)
-         (shape-into-map))))
+         (shape-into-map curr-version))))
 
 ;;; Entrypoint
 

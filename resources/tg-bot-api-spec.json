@@ -1,4 +1,5 @@
 {
+  "version" : "Bot API 9.0",
   "types" : [ {
     "id" : "type/update",
     "name" : "Update",
