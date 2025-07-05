@@ -1,4 +1,4 @@
-(ns marksto.clj-tg-bot-api.core-test
+(ns marksto.clj-tg-bot-api.core-itest
   (:require [clojure.string :as str]
             [clojure.test :refer [deftest is testing use-fixtures]]
             [marksto.clj-tg-bot-api.core :as sut]
