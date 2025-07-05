@@ -1,0 +1,52 @@
+name: Telegram Bot API spec update based on changes on the official docs page
+
+on:
+  # daily at 00:00 UTC
+  schedule:
+    - cron: '0 0 * * *'
+  # manually triggered
+  workflow_dispatch: { }
+
+jobs:
+  update-spec-and-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Git repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PERSONAL_TOKEN }}
+
+      - name: Configure Git user
+        run: |
+          git config user.name "Mark Sto"
+          git config user.email "marksto@yourown.software"
+
+      - name: Prepare Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt-hotspot'
+          java-version: '21'
+
+      - name: Install Clojure tools
+        uses: DeLaGuardo/setup-clojure@13.4
+        with:
+          cli: latest
+          bb: 1.12.204
+
+      - name: Update Telegram Bot API spec
+        id: update-spec
+        run: bb -f bb/update_spec.clj
+
+      - name: Run test suite
+        if: steps.update-spec.outputs.updated == 'true'
+        env:
+          BOT_AUTH_TOKEN: ${{ secrets.BOT_AUTH_TOKEN }}
+        run: |
+          clojure -T:build test
+
+      - name: Commit and push when changed
+        if: steps.update-spec.outputs.updated == 'true'
+        run: |
+          git add resources/tg-bot-api-spec.json resources/.tg-bot-api-etag
+          git commit -m "Update Telegram Bot API spec"
+          git push

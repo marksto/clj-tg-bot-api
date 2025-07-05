@@ -367,7 +367,7 @@
 
 ;;; Entrypoint
 
-(defn -main [& _args]
+(defn run! []
   (or (when-some [{:keys [body headers]} (fetch-tg-bot-api-page!)]
         (let [parsed-page (parse-tg-bot-api-page body)
               new-json (json/generate-string parsed-page {:pretty true})
@@ -378,6 +378,12 @@
             (log/info "Telegram Bot API >> Changed, spec updated")
             :updated)))
       (log/info "Telegram Bot API >> No changes")))
+
+(defn -main [& _args]
+  (when (= :updated (run!))
+    (some-> (System/getenv "GITHUB_OUTPUT")
+            (spit "updated=true\n" :append true)))
+  (System/exit 0))
 
 (when (= *file* (System/getProperty "babashka.file"))
   (apply -main *command-line-args*))
