@@ -32,6 +32,8 @@
 
 ;;; Bot API client
 
+;; TODO: Make it possible to provide a custom rate limiter?
+
 ;; NB: Prevents secrets (bot auth token) from leaking, e.g. into logs.
 (defmethod print-method ::tg-bot-api-client [this ^Writer w]
   (.write w (str "#TelegramBotAPIClient"

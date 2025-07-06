@@ -6,7 +6,6 @@
 
 ;;; Bot API client
 
-;; TODO: Make it possible to pass a custom rate limiter.
 (defn ->client
   "Creates a Telegram Bot API client instance using the provided `client-opts`.
 
@@ -49,21 +48,17 @@
    an optional `call-opts` map.
 
    Supported `call-opts`:
-   - `:on-success` — a unary callback fn of a response body for a successful
-                     request, i.e. when the body contains the `:ok true` entry;
-                     by default, returns the response `:result`;
-   - `:on-failure` — a ternary callback fn of `method`, `params` and a response
-                     body for an unsuccessful request, i.e. when the body goes
-                     with `:ok false` and `:error` entries;
-                     by default, logs the response and throws an exception that
-                     has `:response`, `:method` and `:params` keys in its data;
+   - `:on-success` — a unary fn of a response body containing an `:ok true`
+                     entry which indicates that the request was successful;
+                     by default, returns `:result` of the response;
+   - `:on-failure` — a ternary fn of `method`, `params`, and  response body
+                     containing `:ok false` and `:error` entries indicating
+                     that the request was unsuccessful;
+                     by default, logs the response and throws an exception;
                      supports `:ignore` value;
-   - `:on-error`   — a ternary callback fn of `method`, `params` and arbitrary
-                     `Exception` object for all exceptions that aren't related
-                     to an unsuccessful request, i.e. if an error happens upon
-                     making an HTTP request or retrieving the response body;
-                     by default, logs and rethrows an exception;
-                     supports `:ignore` value;
+   - `:on-error`   — a ternary fn of `method`, `params`, and any exception;
+                     by default, logs and rethrows the specified exception;
+                     supports `:ignore` value.
 
    In case of a successful request, if not overridden, returns the `on-success`
    callback result.
