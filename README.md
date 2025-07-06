@@ -22,8 +22,6 @@ Features:
 
 - Built-in rate limiting using Telegram defaults, yet re-configurable
 
-- Built-in auto-retry strategies for failed Telegram Bot API requests
-
 - Provides a long-polling for the ease of local development and debug
 
 - Supports multiple simultaneously running bots (via associating different instances with unique IDs)

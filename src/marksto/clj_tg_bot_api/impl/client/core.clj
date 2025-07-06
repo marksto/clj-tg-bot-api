@@ -187,10 +187,6 @@
 
 ;;
 
-;; TODO: Add an auto-retry strategy for Telegram Bot API response 'parameters':
-;;       - with 'migrate_to_chat_id'
-;;       - with 'retry_after'
-
 (def response-body-mapper
   (json/object-mapper {:decode-key-fn true}))
 
@@ -235,11 +231,11 @@
     (if (response/successful-response? tg-resp)
       (when (some? on-success) (on-success tg-resp))
       (call-ignorable-callback on-failure method params tg-resp))
-    ;;
+
     (contains? tg-resp :error)
     (let [ex (prepare-error tg-resp)]
       (call-ignorable-callback on-error method params ex))
-    ;;
+
     :else
     (throw (IllegalStateException. "Malformed Telegram Bot API response"))))
 

@@ -286,16 +286,17 @@
   [response]
   (response/get-response-parameters response))
 
-(defn migrated-to-supergroup?
-  "Returns a Chat ID of a supergroup to which the group has been migrated."
+(defn get-chat-id-for-retry
+  "Returns a Chat ID of a supergroup to which the group has been migrated for
+   a subsequent retry request."
   [response]
-  (response/migrated-to-supergroup? response))
+  (response/get-chat-id-for-retry response))
 
-(defn retry-request-after-sec
-  "Returns a number of seconds left to wait before the request can be repeated
+(defn get-wait-ms-for-retry
+  "Returns a number of millis left to wait before the request can be repeated
    in case of exceeding the Telegram Bot API flood control."
   [response]
-  (response/retry-request-after-sec response))
+  (response/get-wait-ms-for-retry response))
 
 ;;;; PARSE MODES
 

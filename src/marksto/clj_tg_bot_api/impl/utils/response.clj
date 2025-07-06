@@ -25,25 +25,14 @@
   (when-not (successful-response? response)
     (select-keys response [:error_code :description])))
 
-; ResponseParameters
-;
-; Contains information about why a request was unsuccessful.
-;
-; Field             	Type    	Description
-; migrate_to_chat_id 	Integer 	Optional. The group has been migrated to
-;                   	        	a supergroup with the specified identifier.
-; retry_after       	Integer 	Optional. In case of exceeding flood control,
-;                   	        	the number of seconds left to wait before
-;                   	        	the request can be repeated.
-
 (defn get-response-parameters
   [{:keys [parameters] :as _response}]
   parameters)
 
-(defn migrated-to-supergroup?
+(defn get-chat-id-for-retry
   [response]
   (:migrate_to_chat_id (get-response-parameters response)))
 
-(defn retry-request-after-sec
+(defn get-wait-ms-for-retry
   [response]
   (:retry_after (get-response-parameters response)))
