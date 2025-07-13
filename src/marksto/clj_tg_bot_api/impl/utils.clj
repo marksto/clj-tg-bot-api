@@ -3,7 +3,8 @@
   (:require [clojure.set :as set]
             [loom.alg :as la]
             [loom.graph :refer [add-edges add-nodes digraph nodes]])
-  (:import (clojure.lang IDeref)))
+  (:import (clojure.lang IDeref)
+           (java.util.concurrent Future)))
 
 ;; collections
 
@@ -105,7 +106,8 @@
 
 (defn derefable?
   [obj]
-  (instance? IDeref obj))
+  (or (instance? IDeref obj)
+      (instance? Future obj)))
 
 (defn force-ref
   [val]
