@@ -312,7 +312,7 @@
                                                           "edited_channel_post"
                                                           "callback_query"]}))
 
-  ;; Immediate Response
+  ;; Building Responses
   ;; 1. no params methods
   (build-response client :get-me)
   (build-response client :get-me {})
