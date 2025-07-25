@@ -139,7 +139,6 @@
 
 (defn prepare-error
   [{ex :error :as _tg-resp}]
-  ;; NB: Always unpack a noisy Martian container Interceptor Exception.
   (let [cause (ex-cause ex)
         cause-data (ex-data cause)]
     (or (when (= :schema-tools.coerce/error (:type cause-data))
@@ -147,7 +146,6 @@
           (doto (ex-info (ex-message cause)
                          (select-keys cause-data [#_:schema :value :error]))
             (utils/clear-stack-trace)))
-        cause
         ex)))
 
 (defn log-error
