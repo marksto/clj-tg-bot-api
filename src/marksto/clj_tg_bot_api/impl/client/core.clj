@@ -147,7 +147,8 @@
           (doto (ex-info (ex-message cause)
                          (select-keys cause-data [#_:schema :value :error]))
             (utils/clear-stack-trace)))
-        cause)))
+        cause
+        ex)))
 
 (defn log-error
   ([method params ex]
