@@ -130,5 +130,6 @@
     (martian-bootstrap-fn
       tg-bot-api-root-url
       (build-handlers)
-      {:coercion-matcher stc/json-coercion-matcher
-       :interceptors     final-interceptors})))
+      {:interceptors       final-interceptors
+       :validate-handlers? true
+       :coercion-matcher   stc/json-coercion-matcher})))
