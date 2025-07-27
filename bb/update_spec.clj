@@ -26,15 +26,6 @@
   [pred coll]
   (filterv (complement pred) coll))
 
-(defn remove-blank-strings
-  [tree]
-  (walk/prewalk
-    (fn [form]
-      (if (and (map? form) (seq (:content form)))
-        (update form :content #(removev blank-string? %))
-        form))
-    tree))
-
 ;; Credits to 'https://cninja.blogspot.com/2011/02/clojure-partition-at.html'
 (defn partition-at
   [f coll]
@@ -74,6 +65,14 @@
 
 ;;;; Parsing > Utils
 
+(defn remove-blank-strings [tree]
+  (walk/prewalk
+    (fn [form]
+      (if (and (map? form) (seq (:content form)))
+        (update form :content #(removev blank-string? %))
+        form))
+    tree))
+
 (defn assert-node-tag [tag node]
   (when (not= tag (:tag node))
     (throw (ex-info "Wrong type of node received" {:tag  tag
@@ -96,15 +95,32 @@
   (s/and (s/tag :a)
          (s/attr :href #(str/starts-with? % "#"))))
 
-(defn get-anchor-id
-  [node]
+(defn get-anchor-id [node]
   (subs (-> node :attrs :href) 1))
 
-(defn get-first-anchor-id
-  [node]
+(defn get-first-anchor-id [node]
   (some-> (s/select (s/child id-anchor-selector) node)
           (first)
           (get-anchor-id)))
+
+;;;; Parsing > Temp IDs
+
+(defn ->temp-id [anchor-id]
+  (keyword "tmp" anchor-id))
+
+(defn build-temp-id->id [api-elements]
+  (reduce (fn [acc {:keys [id name kind] :as _api-element}]
+            (assoc acc id (subs (str kind "/" (csk/->kebab-case name)) 1)))
+          {}
+          api-elements))
+
+(defn fallback-to-content-temp-id [form]
+  (if (and (map? form) (:temp-id form))
+    (if (and (keyword? (:temp-id form))
+             (= "tmp" (namespace (:temp-id form))))
+      (->temp-id (str/lower-case (:content form)))
+      (:temp-id form))
+    form))
 
 ;;;; Parsing > Data Types
 
@@ -113,12 +129,10 @@
 (def union-type-separator ",")
 (def type-noise? (some-fn empty? #{array-type-postfix union-type-separator}))
 
-(defn ->temp-id [anchor-id]
-  (keyword "tmp" anchor-id))
-
 (defn prepare-type-node
   [type-node]
-  (cond (map? type-node) (->temp-id (get-anchor-id type-node))
+  (cond (map? type-node) {:temp-id (->temp-id (get-anchor-id type-node))
+                          :content (text type-node)}
         (string? type-node) (remove type-noise?
                                     (-> type-node
                                         (str/trim)
@@ -341,12 +355,11 @@
       :content))
 
 (defn normalize-ids [api-elements]
-  (walk/postwalk-replace
-    (reduce (fn [acc {:keys [id name kind] :as _api-element}]
-              (assoc acc id (subs (str kind "/" (csk/->kebab-case name)) 1)))
-            {}
-            api-elements)
-    api-elements))
+  (let [temp-id->id (build-temp-id->id api-elements)]
+    (->> api-elements
+         (walk/postwalk-replace temp-id->id)
+         (walk/postwalk fallback-to-content-temp-id)
+         (walk/postwalk-replace temp-id->id))))
 
 (defn shape-into-map [curr-version api-elements]
   (merge

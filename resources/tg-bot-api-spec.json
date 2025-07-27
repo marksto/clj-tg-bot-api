@@ -12090,7 +12090,7 @@
       "json_serialized" : true
     }, {
       "name" : "reply_markup",
-      "type" : "tmp/inlinekeyboard",
+      "type" : "type/inline-keyboard-markup",
       "required" : false,
       "description" : "A JSON-serialized object for the new inline keyboard for the message",
       "json_serialized" : true
