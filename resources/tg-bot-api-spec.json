@@ -10050,7 +10050,7 @@
     "id" : "method/send-media-group",
     "name" : "sendMediaGroup",
     "kind" : "method",
-    "description" : "<p>Use this method to send a group of photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of <a href=\"#message\">Messages</a> that were sent is returned.</p>",
+    "description" : "<p>Use this method to send a group of photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of <a href=\"#message\">Message</a> objects that were sent is returned.</p>",
     "params" : [ {
       "name" : "business_connection_id",
       "type" : "String",
