@@ -1,10 +1,10 @@
 (ns marksto.clj-tg-bot-api.utils
-  "Aux checks, utilities & method params builders for the Telegram Bot API"
+  "Some utilities for Telegram Bot API types, updates and responses"
   (:require [marksto.clj-tg-bot-api.impl.utils.types :as types]
             [marksto.clj-tg-bot-api.impl.utils.update :as update]
             [marksto.clj-tg-bot-api.impl.utils.response :as response]))
 
-;;;; AUXILIARY CHECKS & UTILS
+;;;; TYPES
 
 ;;; Date/Time
 
@@ -143,6 +143,8 @@
   types/bot-command-scope-types:all)
 
 ;;;; UPDATES
+
+;;; Update Types
 
 (def all-update-types
   "A set of all update types in the latest supported Telegram Bot API version."

@@ -99,7 +99,119 @@ Since the library uses a number of JVM-specific dependencies, there is currently
 ;    :body    "{\"chat_id\":2946901,\"text\":\"Hello, world!\",\"method\":\"sendMessage\"}"}
 ```
 
-[//]: # (TODO: Cover advanced usage and utilities.)
+### Advanced Client Options
+
+The library also provides you with several advanced options for configuring the client and individual API method calls.
+
+#### Local Bot API Server
+
+If you are [using a Local Bot API Server](https://core.telegram.org/bots/api#using-a-local-bot-api-server), simply pass the `:server-url` string, which will be used instead of the global one.
+
+```clojure
+(def client (tg-bot-api/->client {:bot-id     1
+                                  :bot-token  "<TG_BOT_AUTH_TOKEN>"
+                                  :server-url "http://localhost:1234/bot"}))
+```
+
+#### Testing
+
+The `:responses` option is used for generating Telegram Bot API server responses, effectively mocking real HTTP requests during tests. Its value is either a map (from method to predefined response or request->response generator function), or a unary function (that returns a response for the given `ctx` map, which most importantly contains a `:request`, but also comes with other details about the call).
+
+```clojure
+;; Providing a static map of responses
+(def client (tg-bot-api/->client {:bot-id    1
+                                  :bot-token "<TG_BOT_AUTH_TOKEN>"
+                                  :responses {:get-me {:status 200
+                                                       :body   {:ok     true
+                                                                :result {:id         12345678
+                                                                         :is_bot     true
+                                                                         :first_name "Testy"
+                                                                         :username   "test_username"}}}}}))
+(tg-bot-api/make-request! client :get-me)
+;=> {:id 12345678, :is_bot true, :first_name "Testy", :username "test_username"}
+
+;; Providing a map of response generators
+(def client (tg-bot-api/->client {:bot-id    1
+                                  :bot-token "<TG_BOT_AUTH_TOKEN>"
+                                  :responses {:get-me (fn [_request]
+                                                        (case (rand-int 2)
+                                                          0 {:status 200
+                                                             :body   {:ok     true
+                                                                      :result {:id         12345678
+                                                                               :is_bot     true
+                                                                               :first_name "Testy"
+                                                                               :username   "test_username"}}}
+                                                          ;; assuming `clj-http` is used which itself throws exceptions
+                                                          1 (throw (ex-info "clj-http: status 404"
+                                                                            {:status 404
+                                                                             :body   "{\"ok\":false,\"error_code\":404,\"description\":\"Not Found\"}"}))))}}))
+(tg-bot-api/make-request! client :get-me)
+;=> {:id 12345678, :is_bot true, :first_name "Testy", :username "test_username"}
+(tg-bot-api/make-request! client :get-me)
+;=> ExceptionInfo: Interceptor Exception: clj-http: status 404 {..., :exception #error {
+;   :cause "clj-http: status 404"
+;   :data {:status 404, :body "{\"ok\":false,\"error_code\":404,\"description\":\"Not Found\"}"}
+;   ...}
+```
+
+The `martian.test/respond-with` function from the `martian-test` module is used under the hood. You might find it useful to explore its source code.
+
+Additionally, it usually makes sense to set the `:limit-rate?` to `false` for tests to bypass the built-in rate limiter and speed things up.
+
+#### Custom Behaviour
+
+Any custom behavior can be added via [Tripod interceptors](https://github.com/frankiesardo/tripod#interceptors), which are used by Martian under the hood for everything from setting and validating parameters to performing an HTTP request.
+
+The `:interceptors` option is used for injecting custom interceptors into the basic interceptor chain. Each element of this coll is a vector of the form `[interceptor rel-pos basic-name]`, where:
+- `interceptor` — a new object to add or `nil` to remove;
+- `rel-pos`     — may be `:before`, `:after`, `:replace`;
+- `basic-name`  — the name of some basic interceptor.
+
+Check out the `marksto.clj-tg-bot-api.core-itest` namespace for an example of leveraging the `:interceptors` option to enable VCR-based testing using the `martian-vcr` module.
+
+### Call Options
+
+The `make-request!` function supports the following call options:
+- `:on-success` — a unary callback function of a response body containing an `:ok true` entry which indicates that the request was successful; by default, returns `:result` of the response;
+- `:on-failure` — a ternary callback function of `method`, `params`, and  response body containing `:ok false` and `:error` entries indicating that the request was unsuccessful; by default, logs the response and throws an exception; supports `:ignore` value;
+- `:on-error` — a ternary callback function of `method`, `params`, and any exception; by default, logs and rethrows the specified exception; supports `:ignore` value.
+
+While you can always pass in a custom implementation, the `marksto.clj-tg-bot-api.core` namespace comes with a set of common ones that can be used as any of these callback functions:
+
+```clojure
+(def client (tg-bot-api/->client {:bot-id    1
+                                  :bot-token "<TG_BOT_AUTH_TOKEN>"}))
+
+;; Asserting the result of a successful request
+(tg-bot-api/make-request! client
+                          {:on-success #(tg-bot-api/assert-result {:is_bot false} %)}
+                          :get-me)
+;=> ExceptionInfo: The Telegram Bot API method returned an unexpected result {:expected {:is_bot false}, :actual {:is_bot true, ...}}
+
+;; Returning an error map upon an unsuccessful request
+(tg-bot-api/make-request! client
+                          {:on-failure tg-bot-api/get-error}
+                          :send-message
+                          {:chat-id 1
+                           :text    "Hello, world!"})
+;=> {:error_code 400,
+;    :description "Bad Request: chat not found",
+;    :method :send-message,
+;    :params {:chat-id 1, :text "Hello, world!"}}
+
+;; Ignoring all unsuccessful requests and errors
+(tg-bot-api/make-request! client
+                          {:on-failure :ignore
+                           :on-error   :ignore}
+                          :send-message
+                          {:chat-id 1
+                           :text    "Hello, world!"})
+;=> nil
+```
+
+### Utilities
+
+The library also provides a set of utility functions — for Telegram Bot API types, updates and responses — available for use through the `marksto.clj-tg-bot-api.utils` namespace. Feel free to check them out!
 
 ## Rationale
 
