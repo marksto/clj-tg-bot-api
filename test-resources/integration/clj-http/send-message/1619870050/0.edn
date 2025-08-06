@@ -1,2 +1,2 @@
-{:ex/class-name "java.net.ConnectException",
- :ex/message "Connection refused"}
+{:error {:ex/class-name "java.net.ConnectException",
+         :ex/message "Connection refused"}}

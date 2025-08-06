@@ -13,6 +13,22 @@
 
 ;;; Martian Interceptors
 
+(def error->response
+  "Makes all supported HTTP clients compatible with regards to error processing.
+
+   IMPLEMENTATION NOTES:
+   - Catches all HTTP error exceptions, so that they can be recorded by the VCR.
+   - The `:error` of response gets processed downstream, by the client impl fns."
+  {:name  ::error->response
+   :error (fn [ctx ex]
+            ;; NB: Always unpack a noisy Tripod container Interceptor Exception.
+            (let [ex' (if (contains? (ex-data ex) :interceptor)
+                        (ex-cause ex)
+                        ex)]
+              (assoc ctx :response {:error ex'})))})
+
+;;
+
 (def params-mapper
   (json/object-mapper {:encode-key-fn csk/->snake_case_string}))
 
@@ -28,8 +44,8 @@
     params
     paths))
 
-(def json-serialize-params-interceptor
-  {:name  ::json-serialize-params
+(def json-serialization
+  {:name  ::json-serialization
    :enter (fn [{:keys [handler] :as ctx}]
             (if-some [paths (:json-serialized-paths handler)]
               (update-in ctx [:request :body] #(json-serialize-params % paths))
@@ -40,8 +56,8 @@
 (defn- get-url-path [handler]
   (subs (first (:path-parts handler)) 1))
 
-(def inject-method-param-interceptor
-  {:name  ::inject-method-param-interceptor
+(def inject-method-param
+  {:name  ::inject-method-param
    :enter (fn [{:keys [tripod.context/queue handler] :as ctx}]
             (if (some #(= ::mi/request-only-handler (:name %)) queue)
               (assoc-in ctx [:request :body :method] (get-url-path handler))
@@ -117,14 +133,15 @@
                    "for \"multipart/form-data\" requests used for uploading "
                    "files, therefore this Telegram Bot API feature will not "
                    "be available to your bot.")))
-  (let [target-default-int ::mi/enqueue-route-specific-interceptors
-        basic-interceptors (-> @martian-default-interceptors
-                               (mi/inject inject-method-param-interceptor
-                                          :before target-default-int)
-                               (mi/inject json-serialize-params-interceptor
-                                          :before target-default-int))
-        final-interceptors (reduce (fn [ints [new rel-pos old-name]]
-                                     (mi/inject ints new rel-pos old-name))
+  (let [enqueue-rsi-int ::mi/enqueue-route-specific-interceptors
+        perform-req-int (:name (get-perform-request-interceptor))
+        basic-interceptors (cond-> (-> @martian-default-interceptors
+                                       (mi/inject inject-method-param :before enqueue-rsi-int)
+                                       (mi/inject json-serialization :before enqueue-rsi-int))
+                                   (some? perform-req-int)
+                                   (mi/inject error->response :before perform-req-int))
+        final-interceptors (reduce (fn [ints [new-int rel-pos basic-int-name]]
+                                     (mi/inject ints new-int rel-pos basic-int-name))
                                    basic-interceptors
                                    interceptors)]
     (martian-bootstrap-fn

@@ -179,24 +179,11 @@
 
 ;;; Making Requests
 
-(defn- call-tg-bot-api-method!
-  [client method params]
-  (try
-    (if (nil? params)
-      (m/response-for client method)
-      (m/response-for client method params))
-    (catch Throwable client-code-ex
-      ;; NB: To make all Martian-supported HTTP clients compatible. An `error`
-      ;;     is processed downstream by `prepare-response` & `handle-response`.
-      {:error client-code-ex})))
-
-;;
-
 (def response-body-mapper
   (json/object-mapper {:decode-key-fn true}))
 
 (defn- prepare-response
-  [{:keys [body error] :as _call-result}]
+  [{:keys [body error] :as _response}]
   ;; NB: Expects an HTTP client library to return a map with the `:error` key
   ;;     in case if request was unsuccessful (status codes other than 200-207,
   ;;     300-303, or 307) or in any of other exceptional situations (e.g. when
@@ -212,7 +199,7 @@
           {:ok          false
            :error_code  (:status error-data)
            :description (:reason-phrase error-data)})
-        ;; Error - in any other exceptional situation (incl. client-code-ex)
+        ;; Error - in any other exceptional situation (incl. client code ex)
         {:error error}))
     ;; Successful request
     ;; NB: A real HTTP request will always go w/ a coerced body at this point.
@@ -263,7 +250,9 @@
                                      log-error-and-rethrow)}
           chat-id (or (get params :chat-id) (get params :chat_id))
           tg-resp (-> (rl/with-rate-limiter limiter-opts bot-id chat-id
-                        (call-tg-bot-api-method! client method params))
+                        (if (nil? params)
+                          (m/response-for client method)
+                          (m/response-for client method params)))
                       (utils/force-ref)
                       (prepare-response))]
       (log/debugf "Telegram Bot API returned: %s" (pr-str tg-resp))

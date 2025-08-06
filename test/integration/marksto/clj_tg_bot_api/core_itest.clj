@@ -53,32 +53,11 @@
               (update ctx :request conj {:save-request? true})
               ctx))})
 
-;; NB: Mimics clients throwing exceptions on error (`clj-http[-lite]`, `hato`).
-(def throw-exception-response
-  {:name  ::throw-exception-response
-   :leave (fn [{:keys [response] :as ctx}]
-            (if (instance? Throwable response)
-              (throw response)
-              ctx))})
-
-;; NB: Catches all HTTP error exceptions, so that they get recorded by the VCR.
-(def catching-perform-request
-  {:name  ::catching-perform-request
-   :leave (fn [ctx]
-            (try
-              ;; NB: There's no need to do anything specific for `http-kit`,
-              ;;     its errors get recorded anyway, under the `:error` key.
-              ((:leave perform-request-interceptor) ctx)
-              (catch Exception ex
-                (assoc ctx :response ex))))})
-
 (defn build-test-interceptors []
   ;; NB: We need to rebuild the interceptor chain to reset the counters.
-  [[(vcr/record vcr-opts) :before perform-request-interceptor-name]
-   [(vcr/playback vcr-opts) :before perform-request-interceptor-name]
-   [throw-exception-response :before ::vcr/record]
-   [http-client-specific-ops :before perform-request-interceptor-name]
-   [catching-perform-request :replace perform-request-interceptor-name]])
+  [[(vcr/record vcr-opts) :before ::api-martian/error->response]
+   [(vcr/playback vcr-opts) :before ::api-martian/error->response]
+   [http-client-specific-ops :before perform-request-interceptor-name]])
 
 ;;
 
@@ -128,11 +107,13 @@
 ;;
 
 (comment
-  ;; RECORDING
+  ;; RECORDING (failures are fine)
   (clojure.test/run-tests)
 
-  ;; PLAY BACK
+  ;; PLAY BACK (no test failures!)
   (clojure.test/run-tests)
+
+  ;; NB: `http-kit` requires retries!
 
   ;; RESETTING
   (do (require '[babashka.fs :as fs])
