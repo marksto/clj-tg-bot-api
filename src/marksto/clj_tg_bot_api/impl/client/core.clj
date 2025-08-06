@@ -250,9 +250,7 @@
                                      log-error-and-rethrow)}
           chat-id (or (get params :chat-id) (get params :chat_id))
           tg-resp (-> (rl/with-rate-limiter limiter-opts bot-id chat-id
-                        (if (nil? params)
-                          (m/response-for client method)
-                          (m/response-for client method params)))
+                        (m/response-for client method params))
                       (utils/force-ref)
                       (prepare-response))]
       (log/debugf "Telegram Bot API returned: %s" (pr-str tg-resp))
