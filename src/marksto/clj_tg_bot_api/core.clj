@@ -20,21 +20,28 @@
    - `:server-url`   — a Local Bot API Server URL (string); uses a global one by
                        default; the provided `:bot-token` value gets appended to
                        this URL;
-   - `:limit-rate?`  — if `true` (default), will use the built-in rate limiter;
-                       otherwise, will bypass it; used primarily during tests;
    - `:responses`    — a map from method to predefined response/generator fn or
                        a unary fn that, given the `ctx`, returns a response; it
                        is used for generating Telegram Bot API server responses,
                        effectively mocking real HTTP requests during tests;
-   - `:interceptors` — custom interceptors to inject into the basic interceptor
-                       chain; each element of this coll is a vector of the form
-                       `[interceptor rel-pos basic-name]`, where:
-                       - `interceptor` — a new object to add or `nil` to remove;
-                       - `rel-pos`     — may be `:before`, `:after`, `:replace`;
-                       - `basic-name`  — the name of some basic interceptor.
+   - `:limiter-opts` — a map of opts for configuring the built-in rate limiter;
+                       can come with all/any of the following entries (if entry
+                       is absent, its default value will be used):
+                       - `:total` — a map of the bot-wide rate limiter options;
+                       - `:chat`  — a unary fn of 'chat-id' that returns a map
+                                    of chat-specific rate limiter options;
+                       see the `diehard.rate-limiter` ns for supported options;
+                       set to `nil` to bypass the rate limiting (used primarily
+                       during tests);
+   - `:interceptors` — a sequential coll of custom interceptors to inject into
+                       the basic interceptor chain; each element is a vector of
+                       the form `[interceptor rel-position basic-name]`, where:
+                       - `interceptor`  — a new object to add, `nil` to remove;
+                       - `rel-position` — keyword ∈ #{:before :after :replace};
+                       - `basic-name`   — the name of some basic interceptor.
 
   Returns a client instance for making requests on behalf of the Telegram bot."
-  {:arglists '([& {:keys [bot-token server-url limit-rate? responses interceptors]
+  {:arglists '([& {:keys [bot-token server-url responses limiter-opts interceptors]
                    :as   client-opts}])}
   [& {:as client-opts}]
   (client/->client client-opts))

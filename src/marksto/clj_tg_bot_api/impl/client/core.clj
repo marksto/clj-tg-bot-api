@@ -18,8 +18,8 @@
 (def map-or-fn-or-nil?
   #(or (nil? %) (map? %) (fn? %)))
 
-(def coll-or-nil?
-  #(or (nil? %) (coll? %)))
+(def sequential-or-nil?
+  #(or (nil? %) (sequential? %)))
 
 (defmacro validate-param [param pred]
   `(when-not (~pred ~param)
@@ -31,8 +31,6 @@
                       :type  (type ~param)}))))
 
 ;;; Bot API client
-
-;; TODO: Make it possible to provide a custom rate limiter?
 
 ;; NB: Prevents secrets (bot auth token) from leaking, e.g. into logs.
 (defmethod print-method ::tg-bot-api-client [this ^Writer w]
@@ -48,19 +46,19 @@
       (throw (ex-info "Failed to parse an ID from the bot auth token" {} ex)))))
 
 (defn ->client
-  [{:keys [bot-token server-url limit-rate? responses interceptors]
-    :or   {server-url  global-server-url
-           limit-rate? true}
+  [{:keys [bot-token server-url responses limiter-opts interceptors]
+    :or   {server-url   global-server-url
+           limiter-opts rl/default-opts}
     :as   _client-opts}]
   (validate-param bot-token string?)
   (validate-param server-url string?)
-  (validate-param limit-rate? boolean?)
   (validate-param responses map-or-fn-or-nil?)
-  (validate-param interceptors coll-or-nil?)
+  (validate-param limiter-opts map-or-nil?)
+  (validate-param interceptors sequential-or-nil?)
   (-> (api-martian/build-martian (str server-url bot-token) interceptors)
       (cond-> responses (mt/respond-with responses))
       (assoc :bot-id (parse-bot-id bot-token)
-             :limit-rate? limit-rate?)
+             :limiter-opts limiter-opts)
       (with-meta {:type ::tg-bot-api-client})))
 
 (def client? #(= ::tg-bot-api-client (type %)))
@@ -249,7 +247,7 @@
 ;;
 
 (defn make-request!
-  [{:keys [bot-id limit-rate?] :as client} args]
+  [{:keys [bot-id limiter-opts] :as client} args]
   (let [[call-opts method params] (if-not (map-or-nil? (first args))
                                     (cons nil args)
                                     args)]
@@ -264,7 +262,7 @@
                      :on-error   (or (:on-error call-opts)
                                      log-error-and-rethrow)}
           chat-id (or (get params :chat-id) (get params :chat_id))
-          tg-resp (-> (rl/with-rate-limiter limit-rate? bot-id chat-id
+          tg-resp (-> (rl/with-rate-limiter limiter-opts bot-id chat-id
                         (call-tg-bot-api-method! client method params))
                       (utils/force-ref)
                       (prepare-response))]

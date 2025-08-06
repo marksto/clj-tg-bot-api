@@ -39,7 +39,7 @@
       (let [client (sut/->client {:bot-token test-bot-token})]
         (is (match? {:bot-id test-bot-id} client)
             "Bot ID should be visible")
-        (is (true? (:limit-rate? client))
+        (is (some? (:limiter-opts client))
             "The rate limiting is enabled by default")
         (is (= test-bot-str (pr-str client))
             "Secrets (bot auth token) must be protected from leakage"))
@@ -47,16 +47,16 @@
                                   :server-url "https://example.com/bot"})]
         (is (match? {:bot-id test-bot-id} client)
             "Bot ID should be visible")
-        (is (true? (:limit-rate? client))
+        (is (some? (:limiter-opts client))
             "The rate limiting is enabled by default")
         (is (= test-bot-str (pr-str client))
             "Secrets (bot auth token) must be protected from leakage"))
-      (let [client (sut/->client {:bot-token   test-bot-token
-                                  :limit-rate? false})]
+      (let [client (sut/->client {:bot-token    test-bot-token
+                                  :limiter-opts nil})]
         (is (match? {:bot-id test-bot-id} client)
             "Bot ID should be visible")
-        (is (false? (:limit-rate? client))
-            "The rate limiting can be disabled via `:rate-limit?`")
+        (is (nil? (:limiter-opts client))
+            "The rate limiting can be disabled via `:limiter-opts nil`")
         (is (= test-bot-str (pr-str client))
             "Secrets (bot auth token) must be protected from leakage")))))
 

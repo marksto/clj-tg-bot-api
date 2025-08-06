@@ -152,16 +152,16 @@ The `:responses` option is used for generating Telegram Bot API server responses
 
 The `martian.test/respond-with` function from the `martian-test` module is used under the hood. You might find it useful to explore its source code.
 
-Additionally, it usually makes sense to set the `:limit-rate?` to `false` for tests to bypass the built-in rate limiter and speed things up.
+Additionally, it usually makes sense to set the `:limiter-opts` to `nil` for tests to bypass the built-in rate limiter and speed things up.
 
 #### Custom Behaviour
 
 Any custom behavior can be added via [Tripod interceptors](https://github.com/frankiesardo/tripod#interceptors), which are used by Martian under the hood for everything from setting and validating parameters to performing an HTTP request.
 
-The `:interceptors` option is used for injecting custom interceptors into the basic interceptor chain. Each element of this coll is a vector of the form `[interceptor rel-pos basic-name]`, where:
-- `interceptor` — a new object to add or `nil` to remove;
-- `rel-pos`     — may be `:before`, `:after`, `:replace`;
-- `basic-name`  — the name of some basic interceptor.
+The `:interceptors` option is used for injecting custom interceptors into the basic interceptor chain. Each element of this coll is a vector of the form `[interceptor rel-position basic-name]`, where:
+- `interceptor`  — a new object to add OR `nil` to remove;
+- `rel-position` — keyword ∈ `#{:before :after :replace}`;
+- `basic-name`   — the name of some basic interceptor.
 
 Check out the `marksto.clj-tg-bot-api.core-itest` namespace for an example of leveraging the `:interceptors` option to enable VCR-based testing using the `martian-vcr` module.
 

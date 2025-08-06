@@ -54,43 +54,50 @@
 (defn ->rate [n sec]
   (/ (double n) sec))
 
-(defn ->total-rate-limiter []
-  (dh.rl/rate-limiter {:rate     (->rate 30 1)
-                       :sleep-fn dh.rl/uninterruptible-sleep}))
+(def default-opts
+  {:total {:rate     (->rate 30 1)
+           :sleep-fn dh.rl/uninterruptible-sleep}
+   :chat  (fn [chat-id]
+            (if-let [_is-group? (neg? chat-id)]
+              {:rate     (->rate 20 60)
+               :sleep-fn dh.rl/uninterruptible-sleep}
+              {:rate     (->rate 1 1)
+               :sleep-fn dh.rl/uninterruptible-sleep}))})
 
-(defn ->chat-rate-limiter [chat-id]
-  (if-let [_is-group? (neg? chat-id)]
-    (dh.rl/rate-limiter {:rate     (->rate 20 60)
-                         :sleep-fn dh.rl/uninterruptible-sleep})
-    (dh.rl/rate-limiter {:rate     (->rate 1 1)
-                         :sleep-fn dh.rl/uninterruptible-sleep})))
+(defn ->total-rate-limiter [limiter-opts]
+  (dh.rl/rate-limiter (or (:total limiter-opts)
+                          (:total default-opts))))
+
+(defn ->chat-rate-limiter [limiter-opts chat-id]
+  (dh.rl/rate-limiter ((or (:chat limiter-opts)
+                           (:chat default-opts)) chat-id)))
 
 (defn get-rate-limiter!
-  ([bot-id]
+  ([limiter-opts bot-id]
    (-> *rate-limiters
        (swap!
          (fn [rate-limiters]
            (if (some? (get-in rate-limiters [bot-id :total]))
              rate-limiters
-             (assoc-in rate-limiters [bot-id :total] (->total-rate-limiter)))))
+             (assoc-in rate-limiters [bot-id :total] (->total-rate-limiter limiter-opts)))))
        (get-in [bot-id :total])))
-  ([bot-id chat-id]
+  ([limiter-opts bot-id chat-id]
    (-> *rate-limiters
        (swap!
          (fn [rate-limiters]
            (if (some? (get-in rate-limiters [bot-id chat-id]))
              rate-limiters
-             (assoc-in rate-limiters [bot-id chat-id] (->chat-rate-limiter chat-id)))))
+             (assoc-in rate-limiters [bot-id chat-id] (->chat-rate-limiter limiter-opts chat-id)))))
        (get-in [bot-id chat-id]))))
 
 ;;
 
 (defmacro with-rate-limiter
-  [limit-rate? bot-id chat-id form]
-  `(if ~limit-rate?
-     (dh/with-rate-limiter (get-rate-limiter! ~bot-id)
+  [limiter-opts bot-id chat-id form]
+  `(if (some? ~limiter-opts)
+     (dh/with-rate-limiter (get-rate-limiter! ~limiter-opts ~bot-id)
        (if (some? ~chat-id)
-         (dh/with-rate-limiter (get-rate-limiter! ~bot-id ~chat-id)
+         (dh/with-rate-limiter (get-rate-limiter! ~limiter-opts ~bot-id ~chat-id)
            ~form)
          ~form))
      ~form))
