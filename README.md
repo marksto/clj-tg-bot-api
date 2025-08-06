@@ -26,7 +26,6 @@ It exposes a uniform interface with just **3 primary functions** and uses Martia
   - no fancy n-ary functions for methods — just a keyword and a map of params
   - basic validation/coercion of method parameters to their schemas
   - auto-conversion of dashes to underscores in param keys
-  - support for multiple simultaneously running bots
 * **Does things at the right level of abstraction**
   - it's a simple API client library, not an opinionated framework
   - has zero "moving parts" — even [an HTTP client is pluggable](#supported-http-clients)!
@@ -38,6 +37,7 @@ It exposes a uniform interface with just **3 primary functions** and uses Martia
 * **Production-ready built-in essentials**
   - rate limiting — using Bot API defaults, yet re-configurable
   - multipart requests and JSON-serialized params support
+  - support for multiple simultaneously running bots
   - set of simple, frequently used utility functions
 
 ## Installation
@@ -71,8 +71,7 @@ Since the library uses a number of JVM-specific dependencies, there is currently
   (:require [marksto.clj-tg-bot-api.core :as tg-bot-api]))
 
 ;; Create a client for the bot
-(def client (tg-bot-api/->client {:bot-id    1
-                                  :bot-token "<TG_BOT_AUTH_TOKEN>"}))
+(def client (tg-bot-api/->client {:bot-token "<TG_BOT_AUTH_TOKEN>"}))
 
 ;; Test the bot's authentication token
 (tg-bot-api/make-request! client :get-me)
@@ -108,8 +107,7 @@ The library also provides you with several advanced options for configuring the 
 If you are [using a Local Bot API Server](https://core.telegram.org/bots/api#using-a-local-bot-api-server), simply pass the `:server-url` string, which will be used instead of the global one.
 
 ```clojure
-(def client (tg-bot-api/->client {:bot-id     1
-                                  :bot-token  "<TG_BOT_AUTH_TOKEN>"
+(def client (tg-bot-api/->client {:bot-token  "<TG_BOT_AUTH_TOKEN>"
                                   :server-url "http://localhost:1234/bot"}))
 ```
 
@@ -119,8 +117,7 @@ The `:responses` option is used for generating Telegram Bot API server responses
 
 ```clojure
 ;; Providing a static map of responses
-(def client (tg-bot-api/->client {:bot-id    1
-                                  :bot-token "<TG_BOT_AUTH_TOKEN>"
+(def client (tg-bot-api/->client {:bot-token "<TG_BOT_AUTH_TOKEN>"
                                   :responses {:get-me {:status 200
                                                        :body   {:ok     true
                                                                 :result {:id         12345678
@@ -131,8 +128,7 @@ The `:responses` option is used for generating Telegram Bot API server responses
 ;=> {:id 12345678, :is_bot true, :first_name "Testy", :username "test_username"}
 
 ;; Providing a map of response generators
-(def client (tg-bot-api/->client {:bot-id    1
-                                  :bot-token "<TG_BOT_AUTH_TOKEN>"
+(def client (tg-bot-api/->client {:bot-token "<TG_BOT_AUTH_TOKEN>"
                                   :responses {:get-me (fn [_request]
                                                         (case (rand-int 2)
                                                           0 {:status 200
@@ -179,8 +175,7 @@ The `make-request!` function supports the following call options:
 While you can always pass in a custom implementation, the `marksto.clj-tg-bot-api.core` namespace comes with a set of common ones that can be used as any of these callback functions:
 
 ```clojure
-(def client (tg-bot-api/->client {:bot-id    1
-                                  :bot-token "<TG_BOT_AUTH_TOKEN>"}))
+(def client (tg-bot-api/->client {:bot-token "<TG_BOT_AUTH_TOKEN>"}))
 
 ;; Asserting the result of a successful request
 (tg-bot-api/make-request! client

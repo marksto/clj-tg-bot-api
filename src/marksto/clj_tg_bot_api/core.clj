@@ -9,12 +9,12 @@
 (defn ->client
   "Creates a Telegram Bot API client instance using the provided `client-opts`.
 
-   Basic options, all mandatory:
-   - `:bot-id`    — a bot identifier, usually a string, an integer or a keyword,
-                    which is used to distinguish between multiple clients, e.g.
-                    for the purposes of rate limiting;
-   - `:bot-token` — a Bot API authentication token (string) of the Telegram bot
-                    that will be served by this client;
+   The `:bot-token` is a mandatory Bot API authentication token (string) of the
+   Telegram bot that will be served by this client.
+
+   When providing a fake `:bot-token` value for tests, make sure it follows the
+   official format and starts with a numeric ID, as it is used to differentiate
+   between multiple clients.
 
    Advanced options:
    - `:server-url`   — a Local Bot API Server URL (string); uses a global one by
@@ -34,8 +34,7 @@
                        - `basic-name`  — the name of some basic interceptor.
 
   Returns a client instance for making requests on behalf of the Telegram bot."
-  {:arglists '([& {:keys [bot-id bot-token server-url limit-rate? responses
-                          interceptors]
+  {:arglists '([& {:keys [bot-token server-url limit-rate? responses interceptors]
                    :as   client-opts}])}
   [& {:as client-opts}]
   (client/->client client-opts))

@@ -41,12 +41,17 @@
 
 (def global-server-url "https://api.telegram.org/bot")
 
+(defn parse-bot-id [bot-token]
+  (try
+    (parse-long (subs bot-token 0 (str/index-of bot-token \:)))
+    (catch Exception ex
+      (throw (ex-info "Failed to parse an ID from the bot auth token" {} ex)))))
+
 (defn ->client
-  [{:keys [bot-id bot-token server-url limit-rate? responses interceptors]
+  [{:keys [bot-token server-url limit-rate? responses interceptors]
     :or   {server-url  global-server-url
            limit-rate? true}
     :as   _client-opts}]
-  (validate-param bot-id some?)
   (validate-param bot-token string?)
   (validate-param server-url string?)
   (validate-param limit-rate? boolean?)
@@ -54,7 +59,8 @@
   (validate-param interceptors coll-or-nil?)
   (-> (api-martian/build-martian (str server-url bot-token) interceptors)
       (cond-> responses (mt/respond-with responses))
-      (assoc :bot-id bot-id :limit-rate? limit-rate?)
+      (assoc :bot-id (parse-bot-id bot-token)
+             :limit-rate? limit-rate?)
       (with-meta {:type ::tg-bot-api-client})))
 
 (def client? #(= ::tg-bot-api-client (type %)))
@@ -258,7 +264,7 @@
                      :on-error   (or (:on-error call-opts)
                                      log-error-and-rethrow)}
           chat-id (or (get params :chat-id) (get params :chat_id))
-          tg-resp (-> (rl/with-rate-limiter bot-id limit-rate? chat-id
+          tg-resp (-> (rl/with-rate-limiter limit-rate? bot-id chat-id
                         (call-tg-bot-api-method! client method params))
                       (utils/force-ref)
                       (prepare-response))]
@@ -285,8 +291,7 @@
 ;;
 
 (comment
-  (def client (->client {:bot-id    1
-                         :bot-token (System/getenv "BOT_AUTH_TOKEN")}))
+  (def client (->client {:bot-token (System/getenv "BOT_AUTH_TOKEN")}))
   (dissoc client :handlers)
 
   ;; CHECK WITH ALL SUPPORTED HTTP CLIENTS

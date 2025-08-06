@@ -4,65 +4,60 @@
             [marksto.clj-tg-bot-api.core :as sut])
   (:import (java.net URI)))
 
-(def test-bot-token "1234567890:TEST_pxWA8lDi7uLc3oadqNivHCALHBQ7sM")
+(def test-bot-id 1234567890)
+(def test-bot-token (format "%s:TEST_pxWA8lDi7uLc3oadqNivHCALHBQ7sM" test-bot-id))
+
+(def test-bot-str (format "#TelegramBotAPIClient{:bot-id %s}" test-bot-id))
 
 (deftest ->client-test
   (testing "invalid parameters"
     (is (thrown-with-msg?
           Exception
-          #"The `bot-id` must satisfy `some\?` predicate"
+          #"The `bot-token` must satisfy `string\?` predicate"
           (sut/->client)))
     (is (thrown-with-msg?
           Exception
-          #"The `bot-id` must satisfy `some\?` predicate"
-          (sut/->client {:bot-token test-bot-token})))
+          #"The `bot-token` must satisfy `string\?` predicate"
+          (sut/->client {})))
     (is (thrown-with-msg?
           Exception
-          #"The `bot-token` must satisfy `string\?` predicate"
-          (sut/->client :bot-id 1)))
-    (is (thrown-with-msg?
-          Exception
-          #"The `bot-token` must satisfy `string\?` predicate"
-          (sut/->client {:bot-id 1})))
+          #"Failed to parse an ID from the bot auth token"
+          (sut/->client {:bot-token "malformed-bot-auth-token"})))
     (is (thrown-with-msg?
           Exception
           #"The `server-url` must satisfy `string\?` predicate"
-          (sut/->client {:bot-id     1
-                         :bot-token  test-bot-token
+          (sut/->client {:bot-token  test-bot-token
                          :server-url (.toURL (URI. "https://example.com"))}))))
   (testing "valid parameters"
     (testing "provided as kwargs"
-      (let [client (sut/->client :bot-id 1 :bot-token test-bot-token)]
-        (is (match? {:bot-id 1} client)
+      (let [client (sut/->client :bot-token test-bot-token)]
+        (is (match? {:bot-id test-bot-id} client)
             "Bot ID should be visible")
-        (is (= "#TelegramBotAPIClient{:bot-id 1}" (pr-str client))
+        (is (= test-bot-str (pr-str client))
             "Secrets (bot auth token) must be protected from leakage")))
     (testing "provided as a map"
-      (let [client (sut/->client {:bot-id    1
-                                  :bot-token test-bot-token})]
-        (is (match? {:bot-id 1} client)
+      (let [client (sut/->client {:bot-token test-bot-token})]
+        (is (match? {:bot-id test-bot-id} client)
             "Bot ID should be visible")
         (is (true? (:limit-rate? client))
             "The rate limiting is enabled by default")
-        (is (= "#TelegramBotAPIClient{:bot-id 1}" (pr-str client))
+        (is (= test-bot-str (pr-str client))
             "Secrets (bot auth token) must be protected from leakage"))
-      (let [client (sut/->client {:bot-id     1
-                                  :bot-token  test-bot-token
+      (let [client (sut/->client {:bot-token  test-bot-token
                                   :server-url "https://example.com/bot"})]
-        (is (match? {:bot-id 1} client)
+        (is (match? {:bot-id test-bot-id} client)
             "Bot ID should be visible")
         (is (true? (:limit-rate? client))
             "The rate limiting is enabled by default")
-        (is (= "#TelegramBotAPIClient{:bot-id 1}" (pr-str client))
+        (is (= test-bot-str (pr-str client))
             "Secrets (bot auth token) must be protected from leakage"))
-      (let [client (sut/->client {:bot-id      1
-                                  :bot-token   test-bot-token
+      (let [client (sut/->client {:bot-token   test-bot-token
                                   :limit-rate? false})]
-        (is (match? {:bot-id 1} client)
+        (is (match? {:bot-id test-bot-id} client)
             "Bot ID should be visible")
         (is (false? (:limit-rate? client))
             "The rate limiting can be disabled via `:rate-limit?`")
-        (is (= "#TelegramBotAPIClient{:bot-id 1}" (pr-str client))
+        (is (= test-bot-str (pr-str client))
             "Secrets (bot auth token) must be protected from leakage")))))
 
 (defn ctx->mock-responses
@@ -72,8 +67,7 @@
             :result (:request ctx)}})
 
 (deftest make-request!-test
-  (let [client (sut/->client {:bot-id    1
-                              :bot-token test-bot-token
+  (let [client (sut/->client {:bot-token test-bot-token
                               :responses ctx->mock-responses})]
     (testing "invalid parameters"
       (is (thrown-with-msg?
@@ -167,8 +161,7 @@
                                                                            "callback_query"]}))))))))
 
 (deftest build-response-test
-  (let [client (sut/->client {:bot-id    1
-                              :bot-token test-bot-token})]
+  (let [client (sut/->client {:bot-token test-bot-token})]
     (testing "invalid parameters"
       (is (thrown-with-msg?
             Exception

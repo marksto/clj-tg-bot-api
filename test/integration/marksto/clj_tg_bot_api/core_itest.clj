@@ -2,23 +2,22 @@
   (:require [clojure.string :as str]
             [clojure.test :refer [deftest is testing use-fixtures]]
             [marksto.clj-tg-bot-api.core :as sut]
+            [marksto.clj-tg-bot-api.impl.client.core :as client]
             [marksto.clj-tg-bot-api.impl.api.martian :as api-martian]
             [marksto.clj-tg-bot-api.net-utils :as net-utils]
             [marksto.clj-tg-bot-api.vcr-utils :as vcr-utils]
             [matcher-combinators.test]
             [martian.vcr :as vcr]))
 
-(def token->bot-id #(subs % 0 (str/index-of % ":")))
-
 (def real-bot-token (System/getenv "BOT_AUTH_TOKEN"))
-(def real-bot-id (token->bot-id real-bot-token))
+(def real-bot-id (client/parse-bot-id real-bot-token))
 
 (def fake-bot-token "1234567890:TEST_pxWA8lDi7uLc3oadqNivHCALHBQ7sM")
-(def fake-bot-id (token->bot-id fake-bot-token))
+(def fake-bot-id (client/parse-bot-id fake-bot-token))
 
 (def replacements
   [[:string-val real-bot-token fake-bot-token]
-   [:string-val real-bot-id fake-bot-id]])
+   [:string-val (str real-bot-id) (str fake-bot-id)]])
 
 (use-fixtures :once (fn [f] (vcr-utils/with-replacements replacements (f))))
 
@@ -84,8 +83,7 @@
 ;;
 
 (deftest make-request!-test
-  (let [client (sut/->client {:bot-id       1
-                              :bot-token    real-bot-token
+  (let [client (sut/->client {:bot-token    real-bot-token
                               :interceptors (build-test-interceptors)})]
     (testing "Success:"
       ;; NB: All successful API requests first need to be recorded!
