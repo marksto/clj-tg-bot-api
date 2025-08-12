@@ -4,7 +4,7 @@
 
 # Clojure Telegram Bot API
 
-The latest [Telegram Bot API](https://core.telegram.org/bots/api) specification and client lib for Clojure-based apps.
+The latest [Telegram Bot API](https://core.telegram.org/bots/api) specification and client lib for Clojure-based applications.
 
 ![Clojure Telegram Bot API logo](docs/clj-tg-bot-api-logo.jpg)
 
@@ -23,7 +23,7 @@ It exposes a uniform interface with just **3 primary functions** and uses Martia
   - based off of the official Bot API [documentation page](https://core.telegram.org/bots/api)
   - with regular, automated updates — never miss a new Bot API version again!
 * **Uniform and idiomatic Clojure interface**
-  - no fancy n-ary functions for methods — just a keyword and a map of params
+  - no fancy n-ary functions for methods — [just a keyword and a map of params](#available-methods)
   - basic validation/coercion of method parameters to their schemas
   - auto-conversion of dashes to underscores in param keys
 * **Does things at the right level of abstraction**
@@ -60,7 +60,7 @@ Add the following dependencies to your `deps.edn` or `project.clj` file:
 | `clj-http-lite`    | [![Clojars](https://img.shields.io/clojars/v/com.github.oliyh/martian-clj-http-lite.svg)](https://clojars.org/com.github.oliyh/martian-clj-http-lite) |
 | `hato`             | [![Clojars](https://img.shields.io/clojars/v/com.github.oliyh/martian-hato.svg)](https://clojars.org/com.github.oliyh/martian-hato)                 |
 
-Since the library uses a number of JVM-specific dependencies, there is currently no support for running it with `bb` and `org.babashka/http-client`.
+⚠️ Since the library uses a number of JVM-specific dependencies, there is currently no support for running it with `bb` and `org.babashka/http-client`.
 
 ## Usage
 
@@ -96,6 +96,26 @@ Since the library uses a number of JVM-specific dependencies, there is currently
 ;=> {:status  200
 ;    :headers {"Content-Type" "application/json", "Accept" "application/json"}
 ;    :body    "{\"chat_id\":2946901,\"text\":\"Hello, world!\",\"method\":\"sendMessage\"}"}
+```
+
+### Available Methods
+
+Use the `martian.core/explore` function on a Telegram Bot API client instance to see the full list of available methods (keywords with summaries) and detailed information (parameters schema) about any of them:
+
+```clojure
+(martian/explore client)
+;=> [[:get-updates "..."]
+;    [:set-webhook "..."]
+;    [:delete-webhook "..."]
+;    ...]
+
+(martian/explore client :get-updates)
+;=> {:summary    "<p>Use this method to receive incoming updates using long polling ..."
+;    :parameters {:body {#schema.core.OptionalKey{:k :offset}  Int
+;                        #schema.core.OptionalKey{:k :limit}   Int
+;                        #schema.core.OptionalKey{:k :timeout} Int
+;                        #schema.core.OptionalKey{:k :allowed-updates} [java.lang.String]}}
+;    :returns    {}}
 ```
 
 ### Advanced Client Options
@@ -159,11 +179,11 @@ Additionally, it usually makes sense to set the `:limiter-opts` to `nil` for tes
 Any custom behavior can be added via [Tripod interceptors](https://github.com/frankiesardo/tripod#interceptors), which are used by Martian under the hood for everything from setting and validating parameters to performing an HTTP request.
 
 The `:interceptors` option is used for injecting custom interceptors into the basic interceptor chain. Each element of this coll is a vector of the form `[interceptor rel-position basic-name]`, where:
-- `interceptor`  — a new object to add OR `nil` to remove;
-- `rel-position` — keyword ∈ `#{:before :after :replace}`;
+- `interceptor`  — a new interceptor to add, or a `nil` to remove;
+- `rel-position` — a keyword ∈ `#{:before :after :replace}`;
 - `basic-name`   — the name of some basic interceptor.
 
-Check out the `marksto.clj-tg-bot-api.core-itest` namespace for an example of leveraging the `:interceptors` option to enable VCR-based testing using the `martian-vcr` module.
+Check out the `marksto.clj-tg-bot-api.core-i9n-test` namespace for an example of leveraging the `:interceptors` option to enable VCR-based testing using the `martian-vcr` module.
 
 ### Call Options
 
