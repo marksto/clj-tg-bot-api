@@ -46,6 +46,15 @@
   [& {:as client-opts}]
   (client/->client client-opts))
 
+(defn explore
+  "Given a Telegram Bot API `client` instance, returns a vector of all available
+   methods (keywords with summaries) or, if the `method` is specified, detailed
+   information (parameters schema) about that particular Bot API method."
+  ([client]
+   (client/explore client))
+  ([client method]
+   (client/explore client method)))
+
 ;;; Making Requests
 
 (defn make-request!

@@ -100,22 +100,26 @@ Add the following dependencies to your `deps.edn` or `project.clj` file:
 
 ### Available Methods
 
-Use the `martian.core/explore` function on a Telegram Bot API client instance to see the full list of available methods (keywords with summaries) and detailed information (parameters schema) about any of them:
+Use the `marksto.clj-tg-bot-api.core/explore` helper function on a Telegram Bot API client instance to see the full list of available methods (keywords with summaries) and detailed information (parameters schema) about any of them:
 
 ```clojure
-(martian/explore client)
+(tg-bot-api/explore client)
 ;=> [[:get-updates "..."]
 ;    [:set-webhook "..."]
 ;    [:delete-webhook "..."]
+;    [:get-webhook-info "..."]
+;    [:get-me "..."]
+;    [:log-out "..."]
+;    [:close "..."]
+;    [:send-message "..."]
 ;    ...]
 
-(martian/explore client :get-updates)
+(tg-bot-api/explore client :get-updates)
 ;=> {:summary    "<p>Use this method to receive incoming updates using long polling ..."
-;    :parameters {:body {#schema.core.OptionalKey{:k :offset}  Int
-;                        #schema.core.OptionalKey{:k :limit}   Int
-;                        #schema.core.OptionalKey{:k :timeout} Int
-;                        #schema.core.OptionalKey{:k :allowed-updates} [java.lang.String]}}
-;    :returns    {}}
+;    :parameters {#schema.core.OptionalKey{:k :offset}          Int
+;                 #schema.core.OptionalKey{:k :limit}           Int
+;                 #schema.core.OptionalKey{:k :timeout}         Int
+;                 #schema.core.OptionalKey{:k :allowed-updates} [java.lang.String]}}
 ```
 
 ### Advanced Client Options

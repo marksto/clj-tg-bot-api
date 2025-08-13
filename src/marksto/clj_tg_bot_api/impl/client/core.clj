@@ -63,6 +63,17 @@
 
 (def client? #(= ::tg-bot-api-client (type %)))
 
+(defn explore
+  ([client]
+   (validate-param client client?)
+   (m/explore client))
+  ([client method]
+   (validate-param client client?)
+   (validate-param method keyword?)
+   (-> (m/explore client method)
+       (update :parameters :body)
+       (dissoc :returns))))
+
 
 ;;; Operations on response 'result'
 

@@ -60,6 +60,27 @@
         (is (= test-bot-str (pr-str client))
             "Secrets (bot auth token) must be protected from leakage")))))
 
+(deftest explore-test
+  (let [client (sut/->client :bot-token test-bot-token)]
+    (testing "invalid parameters"
+      (is (thrown-with-msg?
+            Exception
+            #"The `client` must satisfy `client\?` predicate"
+            (sut/explore {:bot-token test-bot-token} :get-me)))
+      (is (thrown-with-msg?
+            Exception
+            #"The `method` must satisfy `keyword\?` predicate"
+            (sut/explore client "get-me"))))
+    (testing "valid parameters"
+      (let [available-methods (set (map first (sut/explore client)))]
+        (is (every? available-methods [:get-me
+                                       :get-chat
+                                       :send-message
+                                       :create-invoice-link
+                                       :send-audio
+                                       :set-webhook])
+            "All methods used in this test namespace must be available")))))
+
 (defn ctx->mock-responses
   [ctx]
   {:status 200
