@@ -15,7 +15,7 @@ The latest [Telegram Bot API](https://core.telegram.org/bots/api) specification 
 
 The `clj-tg-bot-api` is an idiomatic, data-driven Clojure client for the *latest* Telegram Bot API. It auto-synchronizes API method definitions and validation schemas straight from the official docs — so you never fall behind on new Telegram bot features.
 
-It exposes a uniform interface with just **3 primary functions** and uses Martian under the hood to deliver a pluggable HTTP layer, parameter validation, rich testing support (without brittle global mocks), and production-ready essentials like rate limiting — so you can focus on your bot's core logic.
+It exposes a uniform interface with just [3 primary functions](#basics) and uses Martian under the hood to deliver a pluggable HTTP layer, parameter validation, rich testing support (without brittle global mocks), and production-ready essentials like rate limiting — so you can focus on your bot's core logic.
 
 ## Features
 
@@ -35,9 +35,10 @@ It exposes a uniform interface with just **3 primary functions** and uses Martia
   - superior testing experience — without brittle global mocks
   - recording and playing back responses in a VCR style
 * **Production-ready built-in essentials**
-  - rate limiting — using Bot API defaults, yet re-configurable
-  - multipart requests and JSON-serialized params support
-  - support for multiple simultaneously running bots
+  - [rate limiting](#rate-limiting) — with conservative defaults, yet re-configurable
+  - support for multipart requests and JSON-serialized params
+  - HTTP response maps — for [replying to incoming updates](https://core.telegram.org/bots/api#making-requests-when-getting-updates)
+  - support for multiple bots running simultaneously
   - set of simple, frequently used utility functions
 
 ## Installation
@@ -65,6 +66,8 @@ Add the following dependencies to your `deps.edn` or `project.clj` file:
 ## Usage
 
 ### Basics
+
+First, create a Telegram Bot API client instance for the bot. Use it to make API requests with the `make-request!` function. Alternatively, use the `build-response` function to construct an HTTP response map for [replying to an incoming update via the bot's webhook](https://core.telegram.org/bots/api#making-requests-when-getting-updates).
 
 ```clojure
 (ns my.bot.core
@@ -134,6 +137,24 @@ If you are [using a Local Bot API Server](https://core.telegram.org/bots/api#usi
 (def client (tg-bot-api/->client {:bot-token  "<TG_BOT_AUTH_TOKEN>"
                                   :server-url "http://localhost:1234/bot"}))
 ```
+
+#### Rate Limiting
+
+The built-in rate limiter is conservative. It aims to avoid exceeding the API limits as much as possible by following the [Telegram Bot API FAQ](https://core.telegram.org/bots/faq#my-bot-is-hitting-limits-how-do-i-avoid-this) and applying the following defaults:
+- No more than   1 message   per second in a single chat,
+- No more than 20 messages per minute in the same group chat,
+- No more than 30 messages per second in total (for broadcasting).
+
+This helps to avoid HTTP 429 "Too many requests, retry after N" error in most cases, though it can feel quite limiting (pun intended), so it can be reconfigured like this:
+
+```clojure
+(def custom-limiter-opts {:total {:rate ...}
+                          :chat  (fn [chat-id] {:rate ...})})
+```
+
+See the `marksto.clj-tg-bot-api.impl.client.rate-limiter` namespace for default settings and the `diehard.rate-limiter` namespace for the full list of supported rate limiter options.
+
+Alternatively, if you prefer to run at full speed and handle HTTP 429 errors yourself — basically, [retrying after](https://core.telegram.org/bots/api#responseparameters) the specified time — set `:limiter-opts` to `nil` to bypass the built-in rate limiter. This is usually preferable in tests.
 
 #### Testing
 
