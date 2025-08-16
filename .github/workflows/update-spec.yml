@@ -1,4 +1,4 @@
-name: Telegram Bot API spec update based on changes on the official docs page
+name: Telegram Bot API spec update # based on changes on the official docs page
 
 on:
   # daily at 00:00 UTC
@@ -42,12 +42,19 @@ jobs:
         env:
           BOT_AUTH_TOKEN: ${{ secrets.BOT_AUTH_TOKEN }}
         run: |
-          clojure -T:build test
+          clojure -T:build ci
 
       - name: Commit and push when changed
         if: steps.update-spec.outputs.updated == 'true'
         run: |
           git add resources/tg-bot-api-spec.json
           if [ -f resources/.tg-bot-api-etag ]; then git add resources/.tg-bot-api-etag; fi
-          git commit -m "Update Telegram Bot API spec"
+          git commit -m "Update Telegram Bot API spec [skip ci]"
           git push
+
+      - name: Deploy to Clojars
+        if: steps.update-spec.outputs.updated == 'true'
+        env:
+          CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
+          CLOJARS_PASSWORD: ${{ secrets.CLOJARS_DEPLOY_TOKEN }}
+        run: clojure -T:build deploy
