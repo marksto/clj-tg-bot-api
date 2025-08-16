@@ -51,26 +51,31 @@
   *rate-limiters
   (atom {}))
 
-(defn ->rate [n sec]
+(defn ->rate
+  "Calculates a numerical rate value for making `n` calls in `sec` seconds."
+  [n sec]
   (/ (double n) sec))
+
+(def default-sleep-fn dh.rl/uninterruptible-sleep)
 
 (def default-opts
   {:total {:rate     (->rate 30 1)
-           :sleep-fn dh.rl/uninterruptible-sleep}
+           :sleep-fn default-sleep-fn}
    :chat  (fn [chat-id]
             (if-let [_is-group? (neg? chat-id)]
               {:rate     (->rate 20 60)
-               :sleep-fn dh.rl/uninterruptible-sleep}
+               :sleep-fn default-sleep-fn}
               {:rate     (->rate 1 1)
-               :sleep-fn dh.rl/uninterruptible-sleep}))})
+               :sleep-fn default-sleep-fn}))})
 
 (defn ->total-rate-limiter [limiter-opts]
-  (dh.rl/rate-limiter (or (:total limiter-opts)
-                          (:total default-opts))))
+  (dh.rl/rate-limiter (merge (:total default-opts)
+                             (:total limiter-opts))))
 
 (defn ->chat-rate-limiter [limiter-opts chat-id]
-  (dh.rl/rate-limiter ((or (:chat limiter-opts)
-                           (:chat default-opts)) chat-id)))
+  (dh.rl/rate-limiter (merge ((:chat default-opts) chat-id)
+                             (when-some [custom-fn (:chat limiter-opts)]
+                               (custom-fn chat-id)))))
 
 (defn get-rate-limiter!
   ([limiter-opts bot-id]
