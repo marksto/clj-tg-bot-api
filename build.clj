@@ -76,8 +76,7 @@
     :src-dirs ["src"]
     :pom-data (pom-template version)))
 
-(defn ci "Run the CI pipeline of tests (and build the JAR)." [opts]
-  (test opts)
+(defn jar "Builds the JAR file." [opts]
   (b/delete {:path "target"})
   (let [opts (jar-opts opts)]
     (println "\nWriting pom.xml...")
@@ -88,6 +87,12 @@
     (b/jar opts))
   opts)
 
+(defn ci "Run the CI pipeline: check, test, build the JAR." [opts]
+  ;; TODO: Add 'check' step (linters, formatter).
+  (-> opts
+      (test)
+      (jar)))
+
 (defn install "Install the JAR locally." [opts]
   (let [opts (jar-opts opts)]
     (b/install opts))
@@ -95,6 +100,7 @@
 
 (defn deploy "Deploy the JAR to Clojars." [opts]
   (let [{:keys [jar-file] :as opts} (jar-opts opts)]
-    (dd/deploy {:installer :remote :artifact (b/resolve-path jar-file)
+    (dd/deploy {:installer :remote
+                :artifact  (b/resolve-path jar-file)
                 :pom-file  (b/pom-path (select-keys opts [:lib :class-dir]))}))
   opts)
