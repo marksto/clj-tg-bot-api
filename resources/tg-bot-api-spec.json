@@ -3070,7 +3070,7 @@
     "id" : "type/suggested-post-price",
     "name" : "SuggestedPostPrice",
     "kind" : "type",
-    "description" : "<p>Desribes price of a suggested post.</p>",
+    "description" : "<p>Describes the price of a suggested post.</p>",
     "fields" : [ {
       "name" : "currency",
       "type" : "String",
