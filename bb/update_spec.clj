@@ -224,7 +224,8 @@
   [{:keys [description] :as field}]
   (let [optional? (-> (s/select s/first-child description)
                       (first)
-                      (has-text? "Optional"))
+                      (text)
+                      (str/starts-with? "Optional"))
         desc-text (text description)
         tdf-value (last (re-find type-dependant-field-re desc-text))
         json-ser? (str/includes? desc-text "JSON-serialized")
