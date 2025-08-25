@@ -258,7 +258,14 @@
                (sut/build-response client :set-webhook {:url             "https://example.com"
                                                         :allowed_updates ["message"
                                                                           "edited_channel_post"
-                                                                          "callback_query"]})))))))
+                                                                          "callback_query"]}))))))
+  (testing "presence of mock responses does not affect interceptors chain"
+    (let [client (sut/->client {:bot-token test-bot-token
+                                :responses {}})]
+      (is (= {:status  200
+              :headers {"Content-Type" "application/json"}
+              :body    "{\"method\":\"getMe\"}"}
+             (sut/build-response client :get-me))))))
 
 (comment
   (clojure.test/run-tests)
