@@ -102,8 +102,7 @@
 
 (def offline-interceptors
   (delay (let [encoders (assoc (me/default-encoders)
-                          "multipart/form-data" {:encode me/multipart-encode
-                                                 :as     :multipart})]
+                          "multipart/form-data" {:encode me/multipart-encode})]
            (conj m/default-interceptors
                  (mi/encode-request encoders)
                  mi/default-coerce-response))))
