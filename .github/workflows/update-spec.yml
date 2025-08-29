@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Git repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           token: ${{ secrets.PERSONAL_TOKEN }}
           fetch-depth: 0 # full history for version number
@@ -23,7 +23,7 @@ jobs:
           git config user.email "marksto@yourown.software"
 
       - name: Prepare Java
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v5
         with:
           distribution: 'adopt-hotspot'
           java-version: '21'
@@ -32,7 +32,7 @@ jobs:
         uses: DeLaGuardo/setup-clojure@13.4
         with:
           cli: latest
-          bb: 1.12.204
+          bb: 1.12.207
 
       - name: Update Telegram Bot API spec
         id: update-spec
