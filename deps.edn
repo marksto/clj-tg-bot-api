@@ -1,15 +1,19 @@
 {:paths ["src" "resources"]
 
  :deps  {aysylu/loom                         {:mvn/version "1.0.2"
-                                              :exclusions  [org.clojure/clojurescript]}
+                                              :exclusions  [org.clojure/clojure
+                                                            org.clojure/clojurescript]}
          camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
          ;; TODO: Upgrade Martian to "0.2.1" after it gets released.
-         com.github.oliyh/martian            {:mvn/version "0.2.1-SNAPSHOT"}
+         com.github.oliyh/martian            {:mvn/version "0.2.1-SNAPSHOT"
+                                              :exclusions  [com.cognitect/transit-cljs]}
          com.github.oliyh/martian-test       {:mvn/version "0.2.1-SNAPSHOT"}
-         diehard/diehard                     {:mvn/version "0.12.0"}
+         diehard/diehard                     {:mvn/version "0.12.0"
+                                              :exclusions  [org.clojure/clojure]}
          metosin/jsonista                    {:mvn/version "0.3.13"}
          org.clojure/tools.logging           {:mvn/version "1.3.0"}
-         org.flatland/ordered                {:mvn/version "1.15.12"}}
+         org.flatland/ordered                {:mvn/version "1.15.12"
+                                              :exclusions  [org.clojure/clojure]}}
 
  :aliases
  {:dev
