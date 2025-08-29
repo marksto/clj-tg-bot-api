@@ -1,9 +1,6 @@
 {:paths ["src" "resources"]
 
- :deps  {org.clojure/clojure                 {:mvn/version "1.12.1"}
-         org.clojure/tools.logging           {:mvn/version "1.3.0"}
-
-         aysylu/loom                         {:mvn/version "1.0.2"
+ :deps  {aysylu/loom                         {:mvn/version "1.0.2"
                                               :exclusions  [org.clojure/clojurescript]}
          camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
          ;; TODO: Upgrade Martian to "0.2.1" after it gets released.
@@ -11,12 +8,16 @@
          com.github.oliyh/martian-test       {:mvn/version "0.2.1-SNAPSHOT"}
          diehard/diehard                     {:mvn/version "0.12.0"}
          metosin/jsonista                    {:mvn/version "0.3.13"}
+         org.clojure/tools.logging           {:mvn/version "1.3.0"}
          org.flatland/ordered                {:mvn/version "1.15.12"}}
 
  :aliases
  {:dev
   {:extra-paths ["bb" "build.clj" "dev"]
-   :extra-deps  {;; Repeat built-in libs for in-REPL development
+   :extra-deps  {;; Clojure
+                 org.clojure/clojure         {:mvn/version "1.12.2"}
+
+                 ;; Repeat built-in libs for in-REPL development
                  babashka/fs                 {:mvn/version "0.5.26"}
                  cheshire/cheshire           {:mvn/version "6.0.0"}
                  org.babashka/http-client    {:mvn/version "0.4.23"}

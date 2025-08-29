@@ -6,6 +6,8 @@
   (:import (clojure.lang IDeref)
            (java.util.concurrent Future)))
 
+(set! *warn-on-reflection* true)
+
 ;; collections
 
 (def keyset (comp set keys))
@@ -83,15 +85,15 @@
 
 (defn not-empty?
   [obj]
-  (and (char-sequence? obj) (not (CharSequence/.isEmpty obj))))
+  (and (char-sequence? obj) (not (.isEmpty ^CharSequence obj))))
 
 (defn truncate
   ^String [^CharSequence s n]
   (assert (nat-int? n) "`n` must be a non-negative int")
   (when s
-    (let [sl (CharSequence/.length s)]
+    (let [sl (.length s)]
       (if (< n sl)
-        (subs (CharSequence/.toString s) (- sl n))
+        (subs (.toString s) (- sl n))
         s))))
 
 ;; functions
@@ -118,8 +120,8 @@
 ;; exceptions
 
 (defn clear-stack-trace
-  [t]
-  (Throwable/.setStackTrace t (into-array StackTraceElement [])))
+  [^Throwable t]
+  (.setStackTrace t (into-array StackTraceElement [])))
 
 ;; dynaload
 
