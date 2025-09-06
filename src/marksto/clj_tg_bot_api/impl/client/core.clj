@@ -9,6 +9,7 @@
             [marksto.clj-tg-bot-api.impl.api.martian :as api-martian]
             [marksto.clj-tg-bot-api.impl.client.rate-limiter :as rl]
             [marksto.clj-tg-bot-api.impl.utils :as utils]
+            [marksto.clj-tg-bot-api.impl.utils.bot :as bot]
             [marksto.clj-tg-bot-api.impl.utils.response :as response])
   (:import (java.io Writer)))
 
@@ -39,12 +40,6 @@
 
 (def global-server-url "https://api.telegram.org/bot")
 
-(defn parse-bot-id [bot-token]
-  (try
-    (parse-long (subs bot-token 0 (str/index-of bot-token \:)))
-    (catch Exception ex
-      (throw (ex-info "Failed to parse an ID from the bot auth token" {} ex)))))
-
 (defn ->client
   [{:keys [bot-token server-url responses limiter-opts interceptors]
     :or   {server-url   global-server-url
@@ -60,7 +55,7 @@
               (-> (mt/respond-with responses)
                   ;; TODO: Drop this temp patch when Martian PR #243 is merged.
                   (update :interceptors vec)))
-      (assoc :bot-id (parse-bot-id bot-token)
+      (assoc :bot-id (bot/parse-bot-id bot-token)
              :limiter-opts limiter-opts)
       (with-meta {:type ::tg-bot-api-client})))
 

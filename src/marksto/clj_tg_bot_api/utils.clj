@@ -1,8 +1,24 @@
 (ns marksto.clj-tg-bot-api.utils
   "Some utilities for Telegram Bot API types, updates and responses"
-  (:require [marksto.clj-tg-bot-api.impl.utils.types :as types]
+  (:require [marksto.clj-tg-bot-api.impl.utils.bot :as bot]
+            [marksto.clj-tg-bot-api.impl.utils.types :as types]
             [marksto.clj-tg-bot-api.impl.utils.update :as update]
             [marksto.clj-tg-bot-api.impl.utils.response :as response]))
+
+;;;; BOT
+
+(defn parse-bot-id
+  "Retrieves a Telegram Bot ID from a plain `bot-token` string.
+   Useful during tests, e.g. when mocking the Telegram Bot API."
+  [bot-token]
+  (bot/parse-bot-id bot-token))
+
+(defn mask-bot-token
+  "Masks the sensitive portion of the given `bot-token` string."
+  ([bot-token]
+   (bot/mask-bot-token bot-token "..."))
+  ([bot-token mask-str]
+   (bot/mask-bot-token bot-token mask-str)))
 
 ;;;; TYPES
 

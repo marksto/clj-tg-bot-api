@@ -2,7 +2,7 @@
   (:require [clojure.string :as str]
             [clojure.test :refer [deftest is testing use-fixtures]]
             [marksto.clj-tg-bot-api.core :as sut]
-            [marksto.clj-tg-bot-api.impl.client.core :as client]
+            [marksto.clj-tg-bot-api.utils :as utils]
             [marksto.clj-tg-bot-api.impl.api.martian :as api-martian]
             [marksto.clj-tg-bot-api.net-utils :as net-utils]
             [marksto.clj-tg-bot-api.vcr-utils :as vcr-utils]
@@ -11,10 +11,10 @@
 
 (def real-bot-token (or (System/getenv "BOT_AUTH_TOKEN")
                         (throw (ex-info "Missing BOT_AUTH_TOKEN env var" {}))))
-(def real-bot-id (client/parse-bot-id real-bot-token))
+(def real-bot-id (utils/parse-bot-id real-bot-token))
 
 (def fake-bot-token "1234567890:TEST_pxWA8lDi7uLc3oadqNivHCALHBQ7sM")
-(def fake-bot-id (client/parse-bot-id fake-bot-token))
+(def fake-bot-id (utils/parse-bot-id fake-bot-token))
 
 (def replacements
   [[:string-val real-bot-token fake-bot-token]
