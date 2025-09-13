@@ -73,7 +73,10 @@
                      supports `:ignore` value;
    - `:on-error`   — a ternary fn of `method`, `params`, and any exception;
                      by default, logs and rethrows the specified exception;
-                     supports `:ignore` value.
+                     supports `:ignore` value;
+   - other entries — HTTP client-specific options for making requests, such
+                     as timeouts, redirect policy, etc., that go as is into
+                     the request map.
 
    In case of a successful request, if not overridden, returns the `on-success`
    callback result.
