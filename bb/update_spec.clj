@@ -44,11 +44,26 @@
 
 (def tg-bot-api-url "https://core.telegram.org/bots/api")
 
+(def fetch-timeout 5000)
+(def fetch-attempts 3)
+
+(defn fetch-with-retries! [headers n-attempt]
+  (or (try
+        (if (pos? n-attempt)
+          (http/get tg-bot-api-url {:headers         headers
+                                    :throw           false
+                                    :connect-timeout fetch-timeout
+                                    :timeout         fetch-timeout})
+          {:status -1})
+        (catch Exception ex
+          (log/errorf ex "Failed Bot API page fetching attempt")
+          nil))
+      (recur headers (dec n-attempt))))
+
 (defn fetch-tg-bot-api-page! []
   (let [headers (when (fs/exists? etag-file)
                   {"If-None-Match" (str/trim (slurp etag-file))})
-        {:keys [status] :as resp} (http/get tg-bot-api-url {:headers headers
-                                                            :throw   false})]
+        {:keys [status] :as resp} (fetch-with-retries! headers fetch-attempts)]
     (cond
       (<= 200 status 299) resp
       (= 304 status) nil
@@ -381,7 +396,7 @@
 
 ;;; Entrypoint
 
-(defn run! []
+(defn update-spec! []
   (or (when-some [{:keys [body headers]} (fetch-tg-bot-api-page!)]
         (let [parsed-page (parse-tg-bot-api-page body)
               new-json (json/generate-string parsed-page {:pretty true})
@@ -394,7 +409,7 @@
       (log/info "Telegram Bot API >> No changes")))
 
 (defn -main [& _args]
-  (when (= :updated (run!))
+  (when (= :updated (update-spec!))
     (some-> (System/getenv "GITHUB_OUTPUT")
             (spit "updated=true\n" :append true)))
   (System/exit 0))
