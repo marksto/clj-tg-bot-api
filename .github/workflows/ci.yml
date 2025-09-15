@@ -28,10 +28,8 @@ jobs:
         with:
           path: |
             ~/.m2/repository
-            ~/.deps.clj
             ~/.gitlibs
-            .cpcache
-          key: ${{ runner.os }}-clojure-${{ hashFiles('deps.edn') }}
+          key: ${{ runner.os }}-clojure-${{ hashFiles('**/deps.edn', '**/bb.edn') }}
           restore-keys: ${{ runner.os }}-clojure-
 
       - name: Prepare Java
@@ -43,9 +41,9 @@ jobs:
       - name: Install Clojure tools
         uses: DeLaGuardo/setup-clojure@13.4
         with:
-          cli: latest
-          clj-kondo: 2025.07.28
-          bb: 1.12.208
+          cli: '1.12.2.1565'
+          clj-kondo: '2025.07.28'
+          bb: '1.12.208'
 
       - name: Run checks
         run: |
