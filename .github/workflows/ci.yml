@@ -27,12 +27,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            ~/.clojure
-            ~/.gitlibs
             ~/.m2/repository
-          key: ${{ runner.os }}-clojure-${{ hashFiles('**/deps.edn') }}
-          restore-keys: |
-            ${{ runner.os }}-clojure-
+            ~/.deps.clj
+            ~/.gitlibs
+            .cpcache
+          key: ${{ runner.os }}-clojure-${{ hashFiles('deps.edn') }}
+          restore-keys: ${{ runner.os }}-clojure-
 
       - name: Prepare Java
         uses: actions/setup-java@v5
