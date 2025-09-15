@@ -58,7 +58,7 @@
   {:extra-deps {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1"
                                                       :git/sha "dfb30dd"}}}
 
-  ;; Run with "bb lint:splint"
+  ;; Run with "bb lint:splint" (or as part of "bb lint")
   :splint
   {:extra-deps {io.github.noahtheduke/splint {:mvn/version "1.21.0"}}
    :main-opts  ["-m" "noahtheduke.splint"]}

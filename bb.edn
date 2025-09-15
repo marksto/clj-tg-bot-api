@@ -55,7 +55,7 @@
    :task (let [[root-dir] *command-line-args*]
            (apply clojure "-M:splint" (t-fs/clj-files {:root root-dir})))}
 
-  lint:all
+  lint
   {:doc  "Run all linters"
    :task (do (run 'lint:kondo)
              (run 'lint:splint))}
@@ -65,7 +65,7 @@
   check
   {:doc  "Run all the checks"
    :task (do (run 'fmt:check)
-             (run 'lint:all))}
+             (run 'lint))}
 
   test:unit
   {:doc  "Run only unit tests"
@@ -106,12 +106,12 @@
   pre-commit
   {:doc  "Run a pre-commit local dev routine"
    :task (do (run 'fmt:fix)
-             (run 'lint:all))}
+             (run 'lint))}
 
   pre-push
   {:doc  "Run a pre-push local dev routine"
    :task (do (run 'fmt:fix)
-             (run 'lint:all)
+             (run 'lint)
              (run 'test))}
 
   outdated
