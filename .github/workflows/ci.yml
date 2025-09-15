@@ -17,7 +17,10 @@ jobs:
       - name: Cache dependencies
         uses: actions/cache@v4
         with:
-          path: ~/.m2/repository
+          path: |
+            ~/.clojure
+            ~/.gitlibs
+            ~/.m2/repository
           key: ${{ runner.os }}-clojure-${{ hashFiles('**/deps.edn') }}
           restore-keys: |
             ${{ runner.os }}-clojure-
