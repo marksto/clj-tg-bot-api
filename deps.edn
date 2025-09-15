@@ -22,8 +22,8 @@
                  org.clojure/clojure         {:mvn/version "1.12.2"}
 
                  ;; Repeat built-in libs for in-REPL development
-                 babashka/fs                 {:mvn/version "0.5.26"}
-                 cheshire/cheshire           {:mvn/version "6.0.0"}
+                 babashka/fs                 {:mvn/version "0.5.27"}
+                 cheshire/cheshire           {:mvn/version "6.1.0"}
                  org.babashka/http-client    {:mvn/version "0.4.23"}
                  org.clj-commons/hickory     {:mvn/version "0.7.7"}
 
