@@ -42,8 +42,7 @@ jobs:
         if: steps.update-spec.outputs.updated == 'true'
         env:
           BOT_AUTH_TOKEN: ${{ secrets.BOT_AUTH_TOKEN }}
-        run: |
-          clojure -T:build test
+        run: bb test
 
       - name: Commit and push when changed
         if: steps.update-spec.outputs.updated == 'true'
@@ -55,11 +54,11 @@ jobs:
 
       - name: Build JAR file
         if: steps.update-spec.outputs.updated == 'true'
-        run: clojure -T:build jar
+        run: bb jar
 
       - name: Deploy to Clojars
         if: steps.update-spec.outputs.updated == 'true'
         env:
           CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
           CLOJARS_PASSWORD: ${{ secrets.CLOJARS_DEPLOY_TOKEN }}
-        run: clojure -T:build deploy
+        run: bb deploy

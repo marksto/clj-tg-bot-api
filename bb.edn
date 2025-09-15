@@ -60,7 +60,12 @@
    :task (do (run 'lint:kondo)
              (run 'lint:splint))}
 
-  ;;; Testing
+  ;;; Checking / Testing
+
+  check
+  {:doc  "Run all the checks"
+   :task (do (run 'fmt:check)
+             (run 'lint:all))}
 
   test
   {:doc  "Run all the tests"
@@ -82,8 +87,7 @@
 
   release
   {:doc  "Release a new version of the library"
-   :task (do (run 'fmt:fix)
-             (run 'lint:all)
+   :task (do (run 'check)
              (run 'test)
              (run 'jar)
              (run 'install)
@@ -92,12 +96,12 @@
   ;;; Dev Workflow
 
   pre-commit
-  {:doc  "Run a pre-commit routine"
+  {:doc  "Run a pre-commit local dev routine"
    :task (do (run 'fmt:fix)
              (run 'lint:all))}
 
   pre-push
-  {:doc  "Run a pre-push routine"
+  {:doc  "Run a pre-push local dev routine"
    :task (do (run 'fmt:fix)
              (run 'lint:all)
              (run 'test))}

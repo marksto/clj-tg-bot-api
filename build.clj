@@ -88,12 +88,6 @@
     (b/jar opts))
   opts)
 
-(defn ci "Run the CI pipeline: check, test, build the JAR." [opts]
-  ;; TODO: Add 'check' step (linters, formatter).
-  (-> opts
-      (test)
-      (jar)))
-
 (defn install "Install the JAR locally." [opts]
   (let [opts (jar-opts opts)]
     (b/install opts))

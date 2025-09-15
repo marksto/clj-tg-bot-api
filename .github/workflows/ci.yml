@@ -32,9 +32,16 @@ jobs:
         uses: DeLaGuardo/setup-clojure@13.4
         with:
           cli: latest
+          bb: 1.12.208
 
-      - name: Run CI task
+      - name: Run checks
+        run: bb check
+
+      - name: Run tests
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         env:
           BOT_AUTH_TOKEN: ${{ secrets.BOT_AUTH_TOKEN }}
-        run: clojure -T:build ci
+        run: bb test
+
+      - name: Build JAR file
+        run: bb jar
