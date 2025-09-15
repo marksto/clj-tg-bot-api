@@ -58,6 +58,11 @@
   {:extra-deps {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1"
                                                       :git/sha "dfb30dd"}}}
 
+  ;; Run with "bb lint:splint"
+  :splint
+  {:extra-deps {io.github.noahtheduke/splint {:mvn/version "1.21.0"}}
+   :main-opts  ["-m" "noahtheduke.splint"]}
+
   ;; Run with "bb outdated --upgrade", "bb outdated --upgrade --force"
   :outdated
   {:deps      {com.github.liquidz/antq {:mvn/version "RELEASE"}

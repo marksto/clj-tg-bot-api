@@ -51,12 +51,9 @@
              (shell)))}
 
   lint:splint
-  {:doc        "Run 'splint' linter"
-   :extra-deps {io.github.noahtheduke/splint {:mvn/version "1.21.0"}}
-   :requires   ([noahtheduke.splint])
-   :task       (let [[root-dir] *command-line-args*]
-                 (apply noahtheduke.splint/-main
-                   (t-fs/clj-files {:root root-dir})))}
+  {:doc  "Run 'splint' linter"
+   :task (let [[root-dir] *command-line-args*]
+           (apply clojure "-M:splint" (t-fs/clj-files {:root root-dir})))}
 
   lint:all
   {:doc  "Run all linters"
@@ -106,8 +103,7 @@
              (run 'test))}
 
   outdated
-  {:doc      "Check for outdated dependencies"
+  {:doc  "Check for outdated dependencies"
    ;; - "bb outdated --upgrade"
    ;; - "bb outdated --upgrade --force"
-   :requires ([clojure.string :as str])
-   :task     (clojure (str/join " " (cons "-M:outdated" *command-line-args*)))}}}
+   :task (apply clojure (cons "-M:outdated" *command-line-args*))}}}
