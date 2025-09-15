@@ -1,12 +1,14 @@
 (ns marksto.clj-tg-bot-api.vcr-utils
-  (:require [clojure.java.io :as io]
-            [clojure.string :as str]
-            [clojure.walk :as walk]
-            [fipp.clojure :as fipp]
-            [matcher-combinators.test]
-            [marksto.clj-tg-bot-api.impl.utils :as utils]
-            [martian.vcr :as vcr])
-  (:import [clojure.lang Reflector]))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [clojure.walk :as walk]
+   [fipp.clojure :as fipp]
+   [marksto.clj-tg-bot-api.impl.utils :as utils]
+   [martian.vcr :as vcr]
+   [matcher-combinators.test])
+  (:import
+   (clojure.lang Reflector)))
 
 ;;; Persisting
 

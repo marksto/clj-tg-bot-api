@@ -2,7 +2,8 @@
   "Provides a convenient wrapper (a client library) around the Telegram Bot API
    adding handy callback fns (operations) handling responses (success, failure)
    and any errors (exception)."
-  (:require [marksto.clj-tg-bot-api.impl.client.core :as client]))
+  (:require
+   [marksto.clj-tg-bot-api.impl.client.core :as client]))
 
 ;;; Bot API client
 

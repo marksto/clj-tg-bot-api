@@ -1,13 +1,14 @@
 (ns marksto.clj-tg-bot-api.core-i9n-test
-  (:require [clojure.string :as str]
-            [clojure.test :refer [deftest is testing use-fixtures]]
-            [marksto.clj-tg-bot-api.core :as sut]
-            [marksto.clj-tg-bot-api.utils :as utils]
-            [marksto.clj-tg-bot-api.impl.api.martian :as api-martian]
-            [marksto.clj-tg-bot-api.net-utils :as net-utils]
-            [marksto.clj-tg-bot-api.vcr-utils :as vcr-utils]
-            [matcher-combinators.test]
-            [martian.vcr :as vcr]))
+  (:require
+   [clojure.string :as str]
+   [clojure.test :refer [deftest is testing use-fixtures]]
+   [marksto.clj-tg-bot-api.core :as sut]
+   [marksto.clj-tg-bot-api.impl.api.martian :as api-martian]
+   [marksto.clj-tg-bot-api.net-utils :as net-utils]
+   [marksto.clj-tg-bot-api.utils :as utils]
+   [marksto.clj-tg-bot-api.vcr-utils :as vcr-utils]
+   [martian.vcr :as vcr]
+   [matcher-combinators.test]))
 
 (def real-bot-token (or (System/getenv "BOT_AUTH_TOKEN")
                         (throw (ex-info "Missing BOT_AUTH_TOKEN env var" {}))))

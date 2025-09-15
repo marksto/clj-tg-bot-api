@@ -1,11 +1,12 @@
 (ns build
   (:refer-clojure :exclude [test])
-  (:require [clojure.edn :as edn]
-            [clojure.java.io :as io]
-            [clojure.string :as str]
-            [clojure.tools.build.api :as b]
-            [clojure.tools.deps :as t]
-            [deps-deploy.deps-deploy :as dd]))
+  (:require
+   [clojure.edn :as edn]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [clojure.tools.build.api :as b]
+   [clojure.tools.deps :as t]
+   [deps-deploy.deps-deploy :as dd]))
 
 (def lib 'com.github.marksto/clj-tg-bot-api)
 (def version (format "1.0.%s" (b/git-count-revs nil)))

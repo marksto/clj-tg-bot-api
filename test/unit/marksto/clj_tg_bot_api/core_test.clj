@@ -1,8 +1,10 @@
 (ns marksto.clj-tg-bot-api.core-test
-  (:require [clojure.test :refer [deftest is testing]]
-            [matcher-combinators.test]
-            [marksto.clj-tg-bot-api.core :as sut])
-  (:import (java.net URI)))
+  (:require
+   [clojure.test :refer [deftest is testing]]
+   [marksto.clj-tg-bot-api.core :as sut]
+   [matcher-combinators.test])
+  (:import
+   (java.net URI)))
 
 (def test-bot-id 1234567890)
 (def test-bot-token (format "%s:TEST_pxWA8lDi7uLc3oadqNivHCALHBQ7sM" test-bot-id))

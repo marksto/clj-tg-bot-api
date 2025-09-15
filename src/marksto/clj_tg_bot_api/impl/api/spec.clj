@@ -1,19 +1,20 @@
 (ns marksto.clj-tg-bot-api.impl.api.spec
-  (:require [camel-snake-kebab.core :as csk]
-            [clojure.java.io :as io]
-            [clojure.set :as set]
-            [clojure.string :as str]
-            [clojure.tools.logging :as log]
-            [flatland.ordered.map :refer [ordered-map]]
-            [jsonista.core :as json]
-            [martian.schema-tools :as mct]
-            [schema.core :as s]
-
-            [marksto.clj-tg-bot-api.impl.utils :as utils])
-  (:import (java.io File InputStream)
-           (java.net URI URL)
-           (java.nio.file Path)
-           (schema.core NamedSchema)))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.java.io :as io]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [clojure.tools.logging :as log]
+   [flatland.ordered.map :refer [ordered-map]]
+   [jsonista.core :as json]
+   [marksto.clj-tg-bot-api.impl.utils :as utils]
+   [martian.schema-tools :as mct]
+   [schema.core :as s])
+  (:import
+   (java.io File InputStream)
+   (java.net URI URL)
+   (java.nio.file Path)
+   (schema.core NamedSchema)))
 
 (defn get-json-serialized-paths
   [api-element]

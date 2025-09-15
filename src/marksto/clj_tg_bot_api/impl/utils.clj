@@ -1,10 +1,12 @@
 (ns marksto.clj-tg-bot-api.impl.utils
   "A set of necessary general-purpose utilities"
-  (:require [clojure.set :as set]
-            [loom.alg :as la]
-            [loom.graph :refer [add-edges add-nodes digraph nodes]])
-  (:import (clojure.lang IDeref)
-           (java.util.concurrent Future)))
+  (:require
+   [clojure.set :as set]
+   [loom.alg :as la]
+   [loom.graph :refer [add-edges add-nodes digraph nodes]])
+  (:import
+   (clojure.lang IDeref)
+   (java.util.concurrent Future)))
 
 (set! *warn-on-reflection* true)
 

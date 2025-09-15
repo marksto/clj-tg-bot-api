@@ -1,14 +1,15 @@
 (ns marksto.clj-tg-bot-api.impl.utils.types
   "Aux checks and utilities for the Telegram Bot API types"
-  (:require [clojure.string :as str]))
+  (:require
+   [clojure.string :as str]))
 
 ;;; Date/Time
 
 (defn ms->tg-dt
   (^long []
-   (ms->tg-dt (System/currentTimeMillis)))
+    (ms->tg-dt (System/currentTimeMillis)))
   (^long [^long dt-ms]
-   (quot dt-ms 1000)))
+    (quot dt-ms 1000)))
 
 (defn tg-dt->ms
   ^long [tg-dt]

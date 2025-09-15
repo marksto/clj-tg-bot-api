@@ -1,6 +1,7 @@
 (ns marksto.clj-tg-bot-api.impl.client.rate-limiter
-  (:require [diehard.core :as dh]
-            [diehard.rate-limiter :as dh.rl]))
+  (:require
+   [diehard.core :as dh]
+   [diehard.rate-limiter :as dh.rl]))
 
 ;; NB: The Bots FAQ on the official Telegram website lists the following limits
 ;;     on server requests.

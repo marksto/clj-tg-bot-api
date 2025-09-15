@@ -1,5 +1,6 @@
 (ns marksto
-  (:require [clojure.tools.namespace.repl :refer [set-refresh-dirs]]))
+  (:require
+   [clojure.tools.namespace.repl :refer [set-refresh-dirs]]))
 
 (println "Loaded root `user.clj` ns\n")
 

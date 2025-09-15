@@ -1,5 +1,6 @@
 (ns marksto.clj-tg-bot-api.impl.utils.bot
-  (:require [clojure.string :as str]))
+  (:require
+   [clojure.string :as str]))
 
 (defn parse-bot-id
   [bot-token]

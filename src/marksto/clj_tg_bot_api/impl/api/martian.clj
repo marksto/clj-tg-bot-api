@@ -1,15 +1,15 @@
 (ns marksto.clj-tg-bot-api.impl.api.martian
-  (:require [camel-snake-kebab.core :as csk]
-            [clojure.string :as str]
-            [clojure.tools.logging :as log]
-            [jsonista.core :as json]
-            [martian.core :as m]
-            [martian.encoders :as me]
-            [martian.interceptors :as mi]
-            [schema-tools.coerce :as stc]
-
-            [marksto.clj-tg-bot-api.impl.api.spec :as api-spec]
-            [marksto.clj-tg-bot-api.impl.utils :as utils]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.string :as str]
+   [clojure.tools.logging :as log]
+   [jsonista.core :as json]
+   [marksto.clj-tg-bot-api.impl.api.spec :as api-spec]
+   [marksto.clj-tg-bot-api.impl.utils :as utils]
+   [martian.core :as m]
+   [martian.encoders :as me]
+   [martian.interceptors :as mi]
+   [schema-tools.coerce :as stc]))
 
 ;;; Martian Interceptors
 

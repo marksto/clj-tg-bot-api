@@ -1,9 +1,9 @@
 (ns marksto.clj-tg-bot-api.impl.utils.update
   "Telegram Bot API 'Update' type data accessors and utils"
-  (:require [flatland.ordered.set :refer [ordered-set]]
-
-            [marksto.clj-tg-bot-api.impl.api.spec :as api-spec]
-            [marksto.clj-tg-bot-api.impl.utils.types :as types]))
+  (:require
+   [flatland.ordered.set :refer [ordered-set]]
+   [marksto.clj-tg-bot-api.impl.api.spec :as api-spec]
+   [marksto.clj-tg-bot-api.impl.utils.types :as types]))
 
 (def all-update-types
   (->> (api-spec/collect-update-types)

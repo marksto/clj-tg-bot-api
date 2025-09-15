@@ -1,17 +1,18 @@
 (ns marksto.clj-tg-bot-api.impl.client.core
-  (:require [camel-snake-kebab.core :as csk]
-            [clojure.string :as str]
-            [clojure.tools.logging :as log]
-            [jsonista.core :as json]
-            [martian.core :as m]
-            [martian.test :as mt]
-
-            [marksto.clj-tg-bot-api.impl.api.martian :as api-martian]
-            [marksto.clj-tg-bot-api.impl.client.rate-limiter :as rl]
-            [marksto.clj-tg-bot-api.impl.utils :as utils]
-            [marksto.clj-tg-bot-api.impl.utils.bot :as bot]
-            [marksto.clj-tg-bot-api.impl.utils.response :as response])
-  (:import (java.io Writer)))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.string :as str]
+   [clojure.tools.logging :as log]
+   [jsonista.core :as json]
+   [marksto.clj-tg-bot-api.impl.api.martian :as api-martian]
+   [marksto.clj-tg-bot-api.impl.client.rate-limiter :as rl]
+   [marksto.clj-tg-bot-api.impl.utils :as utils]
+   [marksto.clj-tg-bot-api.impl.utils.bot :as bot]
+   [marksto.clj-tg-bot-api.impl.utils.response :as response]
+   [martian.core :as m]
+   [martian.test :as mt])
+  (:import
+   (java.io Writer)))
 
 (def map-or-nil?
   #(or (nil? %) (map? %)))
@@ -72,7 +73,6 @@
        (update :parameters :body)
        (dissoc :returns))))
 
-
 ;;; Operations on response 'result'
 
 (defn get-result
@@ -90,7 +90,6 @@
                  {:expected expected
                   :actual   tg-resp-result})))
     tg-resp-result))
-
 
 ;;; Operations on response 'error'
 
@@ -145,7 +144,6 @@
    (log-failure-reason log-level base-msg method params failed-tg-resp)
    (throw-for-failure base-msg method params failed-tg-resp)))
 
-
 ;;; Operations on arbitrary errors (e.g. network)
 
 (def error-msg "Error while making a Telegram Bot API request")
@@ -184,7 +182,6 @@
   ([base-msg method params ex]
    (log-error base-msg method params ex)
    (rethrow-error method params ex)))
-
 
 ;;; Making Requests
 
