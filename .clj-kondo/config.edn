@@ -1,0 +1,86 @@
+;;
+;; SETUP & USAGE
+;;
+;; Copy external configs and enrich `clj-kondo` linting cache in one go:
+;; ```
+;; bb lint:kondo:import-configs
+;; ```
+;;
+;; Run `clj-kondo` for the project by running a dedicated Babashka task:
+;; ```
+;; bb lint:kondo
+;; bb lint:kondo:no-cache
+;; ```
+;;
+;; CONFIGURATION
+;;
+;; Our approach to the `clj-kondo` configuration is as follows:
+;;
+;; 1. be as precise and specific as possible when switching off the analyzer
+;;    - never use an unlimited `^:clj-kondo/ignore` on any form (!)
+;;    - almost never exclude an entire file or group of files from analysis
+;;
+;; 2. always try to understand if there is a general solution for a specific
+;;    problem in code, e.g. by reviewing the documentation:
+;;    https://github.com/clj-kondo/clj-kondo/blob/master/doc/linters.md
+;;
+;; 3. when the general configuration options are insufficient, use ignore:
+;;    - on a specific line via `#_{:clj-kondo/ignore [...]}` reader comment
+;;    - in a whole namespace via `{:clj-kondo/config '{:linters {...}}}` map
+;;
+;; !) Since SCA tool is the only way to keep comments up to date and workable,
+;;    we abandon the practice of marking them with `^:clj-kondo/ignore`.
+;;
+{:lint-as       {#_"NB: These are only 3rd-party libraries' macros."}
+ :linters       {:cond-else            {:level :off}
+                 :consistent-alias     {:aliases {babashka.fs            fs
+                                                  babashka.http-client   http
+                                                  camel-snake-kebab.core csk
+                                                  cheshire.core          json
+                                                  clojure.core.protocols p
+                                                  clojure.core.reducers  r
+                                                  clojure.data.csv       csv
+                                                  clojure.data.xml       xml
+                                                  clojure.datafy         datafy
+                                                  clojure.edn            edn
+                                                  clojure.java.io        io
+                                                  clojure.java.shell     sh
+                                                  clojure.math           math
+                                                  clojure.pprint         pp
+                                                  clojure.set            set
+                                                  clojure.spec.alpha     s
+                                                  clojure.string         str
+                                                  clojure.tools.cli      cli
+                                                  clojure.tools.logging  log
+                                                  clojure.walk           walk
+                                                  clojure.zip            zip
+                                                  diehard.core           dh
+                                                  diehard.rate-limiter   dh.rl
+                                                  jsonista.core          json
+                                                  martian.core           m
+                                                  martian.encoders       me
+                                                  martian.interceptors   mi
+                                                  martian.schema-tools   mct
+                                                  martian.test           mt
+                                                  martian.vcr            vcr
+                                                  schema.core            s
+                                                  schema-tools.core      st
+                                                  schema-tools.coerce    stc}}
+                 :redefined-var        {:level :off}
+                 :unresolved-namespace {:exclude [user]}
+                 :unresolved-symbol    {:exclude []}
+                 :unused-namespace     {:exclude []}}
+
+ :ns-groups     [{:name    cores
+                  :pattern "marksto\\.clj-tg-bot-api\\.[^.]+(?<!-test)$"}
+                 {:name    tests
+                  :pattern "marksto\\.clj-tg-bot-api\\.[^.]+-test$"}]
+ :config-in-ns  {cores {:linters {:missing-docstring {:level :warning}
+                                  :unused-binding    {:exclude-destructured-keys-in-fn-args false}}}
+                 tests {:linters {:missing-docstring {:level :off}
+                                  :refer-all         {:exclude [clojure.test]}
+                                  :unresolved-symbol {:exclude [(clojure.test/is)
+                                                                Exception]}
+                                  :unused-namespace  {:level :off}}}}
+
+ :exclude-files "\\.clj-kondo/.*|target"}
