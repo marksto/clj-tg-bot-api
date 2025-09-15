@@ -89,6 +89,7 @@
   [obj]
   (and (char-sequence? obj) (not (.isEmpty ^CharSequence obj))))
 
+#_{:splint/disable [style/tostring]}
 (defn truncate
   ^String [^CharSequence s n]
   (assert (nat-int? n) "`n` must be a non-negative int")

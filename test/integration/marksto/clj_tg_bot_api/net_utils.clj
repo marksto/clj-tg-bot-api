@@ -42,7 +42,7 @@
   `(do
      (simulate-http-outage!)
      (try
-       ~@body
+       (do ~@body)
        (finally
          (restore-http-settings!)))))
 

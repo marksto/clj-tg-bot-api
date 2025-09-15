@@ -1,3 +1,4 @@
+#_{:splint/disable [naming/single-segment-namespace]}
 (ns marksto
   (:require
    [clojure.tools.namespace.repl :refer [set-refresh-dirs]]))

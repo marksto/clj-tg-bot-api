@@ -110,6 +110,7 @@
 
 ;;; Loading
 
+#_{:splint/disable [lint/catch-throwable]}
 (defn- invoke-ctor [classy & args]
   (try
     (Reflector/invokeConstructor classy (to-array args))

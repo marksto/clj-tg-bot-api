@@ -1,5 +1,6 @@
 #!/usr/bin/env bb
 
+#_{:splint/disable [naming/single-segment-namespace]}
 (ns update-spec
   (:require
    [babashka.fs :as fs]
@@ -129,6 +130,7 @@
           {}
           api-elements))
 
+#_{:splint/disable [naming/conversion-functions]}
 (defn fallback-to-content-temp-id [form]
   (if (and (map? form) (:temp-id form))
     (if (and (keyword? (:temp-id form))
