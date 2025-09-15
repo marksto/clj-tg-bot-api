@@ -1,14 +1,14 @@
 (ns marksto.clj-tg-bot-api.net-utils)
 
-(def default-state {:enabled? false
-                    :prop-map {}})
+(def ^:private default-state {:enabled? false
+                              :prop-map {}})
 
 (def ^:private *state (atom default-state))
 
-(def dead-end-host "127.0.0.1")
-(def dead-end-port "9999")
+(def ^:private dead-end-host "127.0.0.1")
+(def ^:private dead-end-port "9999")
 
-(def props
+(def ^:private props
   ["http.proxyHost"
    "http.proxyPort"
    "https.proxyHost"
@@ -46,6 +46,9 @@
        (finally
          (restore-http-settings!)))))
 
-(defn get-proxy-url []
+(defn get-proxy-url
+  "Returns a dead-end proxy URL for using with NIO-based clients in case
+   there's an HTTP outage, otherwise `nil`."
+  []
   (when (:enabled? @*state)
     (str "http://" dead-end-host ":" dead-end-port)))

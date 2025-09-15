@@ -41,77 +41,104 @@
 ;;; User
 
 (defn is-bot?
-  "Checks if a given `user` is a bot."
+  "Checks if the given `user` is a bot."
   [user]
   (types/is-bot? user))
 
 ;;; Chat Type
 
 (def raw-chat-types
+  "A set of chat type strings, e.g. \"private\", \"group\", etc."
   types/raw-chat-types)
 
 (defn is-private?
+  "Checks if the given `chat-type` string represents a private chat."
   [chat-type]
   (types/is-private? chat-type))
 
 (defn is-group?
+  "Checks if the given `chat-type` string represents a group chat."
   [chat-type]
   (types/is-group? chat-type))
 
 (defn is-supergroup?
+  "Checks if the given `chat-type` string represents a supergroup chat."
   [chat-type]
   (types/is-supergroup? chat-type))
 
 (defn is-channel?
+  "Checks if the given `chat-type` string represents a channel."
   [chat-type]
   (types/is-channel? chat-type))
 
 ;;; Message
 
 (defn is-reply-to?
+  "Checks if the given `message` is a reply to a message with ID `msg-id`."
   {:arglists '([{original-msg :reply_to_message :as message} msg-id])}
   [message msg-id]
   (types/is-reply-to? message msg-id))
 
 (defn message-text-includes?
+  "Checks if the given `message` has text that includes the given `substr`."
   [message substr]
   (types/message-text-includes? message substr))
 
 ;;; Message Entity
 
 (defn get-bot-commands
+  "Retrieves a list of bot commands, if any, from the text of a given `message`.
+   If there are no message `:entities` with \"bot_command\" type, returns `nil`."
   [message]
   (types/get-bot-commands message))
 
 (defn ->bot-command-name
+  "For the given `message` and `bot-command` maps, returns a normalized command
+   name (string)."
   [message bot-command]
   (types/->bot-command-name message bot-command))
 
 ;;; Chat Member
 
 (def active-chat-member-statuses
+  "A set of active chat member statuses, e.g. \"member\", \"creator\", etc."
   types/active-chat-member-statuses)
 
 (def inactive-chat-member-statuses
+  "A set of inactive chat member statuses, e.g. \"left\", \"kicked\", etc."
   types/inactive-chat-member-statuses)
 
 (defn has-joined?
+  "Given a `chat-member-updated` map (which represents changes in the status of
+   a chat member's status), returns `true` if and only if the given chat member
+   has joined the chat, i.e. has become active."
   [chat-member-updated]
   (types/has-joined? chat-member-updated))
 
 (defn has-left?
+  "Given a `chat-member-updated` map (which represents changes in the status of
+   a chat member's status), returns `true` if and only if the given chat member
+   has left the chat, i.e. has become inactive."
   [chat-member-updated]
   (types/has-left? chat-member-updated))
 
 (defn is-administrator?
+  "Checks if the given `chat-member` has administrator or creator status, i.e.
+   has some additional privileges."
   [chat-member]
   (types/is-administrator? chat-member))
 
 (defn is-promoted-administrator?
+  "Given a `chat-member-updated` map (which represents changes in the status of
+   a chat member's status), returns `true` if and only if the given chat member
+   has been promoted to an administrator in the chat."
   [chat-member-updated]
   (types/is-promoted-administrator? chat-member-updated))
 
 (defn is-demoted-administrator?
+  "Given a `chat-member-updated` map (which represents changes in the status of
+   a chat member's status), returns `true` if and only if the given chat member
+   has been demoted to a non-administrator in the chat."
   [chat-member-updated]
   (types/is-demoted-administrator? chat-member-updated))
 
@@ -201,7 +228,7 @@
 ;;; Update Data Accessors
 
 (defn get-update-id
-  "Returns the ID of a given `update`."
+  "Returns the ID of the given `update`."
   [update]
   (update/get-update-id update))
 

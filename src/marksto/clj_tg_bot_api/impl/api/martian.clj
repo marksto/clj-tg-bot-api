@@ -1,7 +1,6 @@
 (ns marksto.clj-tg-bot-api.impl.api.martian
   (:require
    [camel-snake-kebab.core :as csk]
-   [clojure.string :as str]
    [clojure.tools.logging :as log]
    [jsonista.core :as json]
    [marksto.clj-tg-bot-api.impl.api.spec :as api-spec]

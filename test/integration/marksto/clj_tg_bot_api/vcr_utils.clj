@@ -3,7 +3,7 @@
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.walk :as walk]
-   [fipp.clojure :as fipp]
+   [fipp.clojure :as fipp] ; comes with Martian VCR
    [marksto.clj-tg-bot-api.impl.utils :as utils]
    [martian.vcr :as vcr]
    [matcher-combinators.test])
@@ -12,6 +12,7 @@
 
 ;;; Persisting
 
+#_{:clj-kondo/ignore [:missing-docstring]}
 (defonce ^:dynamic *replace-args* [])
 
 ;; NB: The number of backslashes is for after the JSON is stringified:
@@ -19,12 +20,13 @@
 ;; resp-str => "{...,\\\"field\\\":\\\"value\\\",...}"
 ;; regexp   => "{...,\\\\\\\"field\\\\\\\":\\\\\\\"value\\\\\\\",...}"
 
-(defn re-str-for [field]
+(defn- re-str-for [field]
   (str "\\\\\\\"" field "\\\\\\\":\\\\\\\"[^\\\\]+\\\\\\\""))
 
-(defn replacement-for [field value]
+(defn- replacement-for [field value]
   (str "\\\\\\\"" field "\\\\\\\":\\\\\\\"" value "\\\\\\\""))
 
+#_{:clj-kondo/ignore [:missing-docstring]}
 (defn prepare-replace-args [replacements]
   (reduce
     (fn [acc [type match replacement]]
@@ -37,12 +39,21 @@
     replacements))
 
 (defmacro with-replacements
+  "Executes `body` with the provided `replacements` in the VCR-recorded files.
+
+   Replacements are vectors of one of the following forms:
+   - `[:string-val <match-str> <replacement-str>]`
+     Used for literal global replacements of the recorded file text contents.
+   - `[:json-field <field-match-str> <value-replacement-str>]`
+     Used for surgical replacements of JSON fields' values, e.g. in response.
+
+   Returns whatever the `body` returns."
   [replacements & body]
   `(binding [*replace-args* (into *replace-args*
                                   (prepare-replace-args ~replacements))]
      (do ~@body)))
 
-(defn persist:post-process [resp-str]
+(defn- persist:post-process [resp-str]
   (reduce (fn [acc-str [match replacement]]
             (str/replace acc-str match replacement))
           resp-str
@@ -50,7 +61,7 @@
 
 ;;
 
-(defn stringify [obj pprint?]
+(defn- stringify [obj pprint?]
   (if pprint?
     (with-out-str (fipp/pprint obj))
     (pr-str obj)))
@@ -73,7 +84,7 @@
             message (assoc :ex/message message)
             cause (assoc :ex/cause cause))))
 
-(defn persist:pre-process [response pprint?]
+(defn- persist:pre-process [response pprint?]
   (->> response
        ;; NB: First, prepare the top-level or nested (`:error`) exceptions.
        (walk/postwalk (fn [form]
@@ -99,7 +110,7 @@
 
 ;;; Loading
 
-(defn invoke-ctor [classy & args]
+(defn- invoke-ctor [classy & args]
   (try
     (Reflector/invokeConstructor classy (to-array args))
     (catch Throwable _ nil)))
@@ -119,7 +130,7 @@
           (Throwable/.initCause ex cause-ex))
         ex))))
 
-(defn load:post-process [response]
+(defn- load:post-process [response]
   (walk/prewalk (fn [form]
                   (if (and (map? form) (:ex/class-name form))
                     (map->exception form)
