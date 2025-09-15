@@ -44,10 +44,13 @@ jobs:
         uses: DeLaGuardo/setup-clojure@13.4
         with:
           cli: latest
+          clj-kondo: 2025.07.28
           bb: 1.12.208
 
       - name: Run checks
-        run: bb check
+        run: |
+          bb fmt:install
+          bb check
 
       - name: Run unit tests
         run: bb test:unit
