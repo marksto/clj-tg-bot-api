@@ -52,7 +52,7 @@
 
   lint:splint
   {:doc        "Run 'splint' linter"
-   :extra-deps {io.github.noahtheduke/splint {:mvn/version "1.19.0"}}
+   :extra-deps {io.github.noahtheduke/splint {:mvn/version "1.21.0"}}
    :requires   ([noahtheduke.splint])
    :task       (let [[root-dir] *command-line-args*]
                  (apply noahtheduke.splint/-main

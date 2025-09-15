@@ -1,0 +1,6 @@
+{output                    "full"
+ global                    {:excludes []}
+
+ lint/prefer-method-values {:enabled false}
+ naming/predicate          {:enabled false}
+ style/def-fn              {:enabled false}}
