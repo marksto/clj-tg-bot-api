@@ -2,4 +2,112 @@
 {:paths ["bb" "resources"]
  :deps  {;; Including only the libs that are not built-in into `bb`
          camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
-         org.clj-commons/hickory             {:mvn/version "0.7.7"}}}
+         org.clj-commons/hickory             {:mvn/version "0.7.7"}}
+ :tasks
+ {:requires ([babashka.cli :as cli]
+             [tasks.fs :as t-fs]
+             [tasks.print :as t-print])
+
+  :enter    (t-print/print-public-task :enter)
+  :leave    (t-print/print-public-task :leave)
+
+  ;;; Formatting
+
+  fmt:install
+  {:doc  "Install 'Standard Clojure Style' JS tool globally via NPM"
+   :task (shell "npm install --global @chrisoakman/standard-clojure-style")}
+
+  fmt:check
+  {:doc  "Check formatting of Clojure code and EDN files"
+   :task (let [arg-map (cli/parse-opts *command-line-args*)
+               all-files (t-fs/clj+edn-files arg-map)]
+           (apply shell "npx @chrisoakman/standard-clojure-style check" all-files))}
+
+  fmt:fix
+  {:doc  "Fix formatting of Clojure code and EDN files"
+   :task (let [arg-map (cli/parse-opts *command-line-args*)
+               all-files (t-fs/clj+edn-files arg-map)]
+           (apply shell "npx @chrisoakman/standard-clojure-style fix" all-files))}
+
+  ;;; Linting
+
+  lint:kondo
+  {:doc     "Run 'clj-kondo' in linting mode"
+   :depends [lint:kondo:import-configs]
+   :task    (let [args (or *command-line-args* ["."])]
+              (apply shell "clj-kondo --config=.clj-kondo/config.edn --lint" args))}
+
+  lint:kondo:no-cache
+  {:doc     "Run 'clj-kondo' in linting mode with no cache"
+   :depends [lint:kondo:import-configs]
+   :task    (let [args (or *command-line-args* ["."])]
+              (apply shell "clj-kondo --cache=false --config=.clj-kondo/config.edn --lint" args))}
+
+  lint:kondo:import-configs
+  {:doc  "Copy clj-kondo configs found in library dependencies"
+   :task (let [classpath (with-out-str (clojure "-A:dev:test/unit:test/integration" "-Spath"))]
+           (-> "clj-kondo --lint '%s' --copy-configs --dependencies --parallel --skip-lint"
+             (format classpath)
+             (shell)))}
+
+  lint:splint
+  {:doc        "Run 'splint' linter"
+   :extra-deps {io.github.noahtheduke/splint {:mvn/version "1.19.0"}}
+   :requires   ([noahtheduke.splint])
+   :task       (let [[root-dir] *command-line-args*]
+                 (apply noahtheduke.splint/-main
+                   (t-fs/clj-files {:root root-dir})))}
+
+  lint:all
+  {:doc  "Run all linters"
+   :task (do (run 'lint:kondo)
+             (run 'lint:splint))}
+
+  ;;; Testing
+
+  test
+  {:doc  "Run all the tests"
+   :task (clojure "-T:build" "test")}
+
+  ;;; Building / Deploying
+
+  jar
+  {:doc  "Build the JAR file"
+   :task (clojure "-T:build" "jar")}
+
+  install
+  {:doc  "Install the JAR locally"
+   :task (clojure "-T:build" "install")}
+
+  deploy
+  {:doc  "Deploy the JAR to Clojars"
+   :task (clojure "-T:build" "deploy")}
+
+  release
+  {:doc  "Release a new version of the library"
+   :task (do (run 'fmt:fix)
+             (run 'lint:all)
+             (run 'test)
+             (run 'jar)
+             (run 'install)
+             (run 'deploy))}
+
+  ;;; Dev Workflow
+
+  pre-commit
+  {:doc  "Run a pre-commit routine"
+   :task (do (run 'fmt:fix)
+             (run 'lint:all))}
+
+  pre-push
+  {:doc  "Run a pre-push routine"
+   :task (do (run 'fmt:fix)
+             (run 'lint:all)
+             (run 'test))}
+
+  outdated
+  {:doc      "Check for outdated dependencies"
+   ;; - "bb outdated --upgrade"
+   ;; - "bb outdated --upgrade --force"
+   :requires ([clojure.string :as str])
+   :task     (clojure (str/join " " (cons "-M:outdated" *command-line-args*)))}}}
