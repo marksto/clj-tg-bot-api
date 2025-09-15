@@ -42,13 +42,15 @@
     (when-not (zero? exit)
       (throw (ex-info (format "Tests failed (with alias %s)" test-alias) {})))))
 
-(defn test "Run all the tests." [opts]
+(defn test "Run all the tests." [{:keys [test-type] :as opts}]
   (println "\nRunning tests...")
-  (run-tests :test/unit)
-  (doseq [http-client-alias (supported-http-client-aliases)
-          :let [http-client (name http-client-alias)]]
-    (println (format "\nTesting with '%s' HTTP client..." http-client))
-    (run-tests :test/integration http-client-alias))
+  (when (or (nil? test-type) (= :unit test-type))
+    (run-tests :test/unit))
+  (when (or (nil? test-type) (= :integration test-type))
+    (doseq [http-client-alias (supported-http-client-aliases)
+            :let [http-client (name http-client-alias)]]
+      (println (format "\nTesting with '%s' HTTP client..." http-client))
+      (run-tests :test/integration http-client-alias)))
   opts)
 
 (defn- pom-template [version]

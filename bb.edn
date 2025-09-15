@@ -67,6 +67,14 @@
    :task (do (run 'fmt:check)
              (run 'lint:all))}
 
+  test:unit
+  {:doc  "Run only unit tests"
+   :task (clojure "-T:build" "test" :test-type :unit)}
+
+  test:integration
+  {:doc  "Run only integration tests"
+   :task (clojure "-T:build" "test" :test-type :integration)}
+
   test
   {:doc  "Run all the tests"
    :task (clojure "-T:build" "test")}
