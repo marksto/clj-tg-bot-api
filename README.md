@@ -141,8 +141,8 @@ If you are [using a Local Bot API Server](https://core.telegram.org/bots/api#usi
 #### Rate Limiting
 
 The built-in rate limiter is conservative. It aims to avoid exceeding the API limits as much as possible by following the [Telegram Bot API FAQ](https://core.telegram.org/bots/faq#my-bot-is-hitting-limits-how-do-i-avoid-this) and applying the following defaults:
-- No more than   1 message   per second in a single chat,
-- No more than 20 messages per minute in the same group chat,
+- No more than    1 message   per second in a single chat,
+- No more than 20 messages per minute  in the same group chat,
 - No more than 30 messages per second in total (for broadcasting).
 
 This helps to avoid HTTP 429 "Too many requests, retry after N" error in most cases, though it can feel quite limiting (pun intended), so it can be reconfigured like this:
@@ -215,7 +215,8 @@ Check out the `marksto.clj-tg-bot-api.core-i9n-test` namespace for an example of
 The `make-request!` function supports the following call options:
 - `:on-success` — a unary callback function of a response body containing an `:ok true` entry which indicates that the request was successful; by default, returns `:result` of the response;
 - `:on-failure` — a ternary callback function of `method`, `params`, and  response body containing `:ok false` and `:error` entries indicating that the request was unsuccessful; by default, logs the response and throws an exception; supports `:ignore` value;
-- `:on-error` — a ternary callback function of `method`, `params`, and any exception; by default, logs and rethrows the specified exception; supports `:ignore` value.
+- `:on-error` — a ternary callback function of `method`, `params`, and any exception; by default, logs and rethrows the specified exception; supports `:ignore` value;
+- other entries — HTTP client-specific options for making requests, such as timeouts, redirect policy, etc., that go as is into the request map.
 
 While you can always pass in a custom implementation, the `marksto.clj-tg-bot-api.core` namespace comes with a set of common ones that can be used as any of these callback functions:
 
