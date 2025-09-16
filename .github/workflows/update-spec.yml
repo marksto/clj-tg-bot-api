@@ -8,7 +8,7 @@ on:
   workflow_dispatch: { }
 
 jobs:
-  update-spec-and-commit:
+  update-spec-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Git repo
@@ -36,7 +36,7 @@ jobs:
 
       - name: Update Telegram Bot API spec
         id: update-spec
-        run: bb -f bb/update_spec.clj
+        run: bb update-spec
 
       - name: Run test suite
         if: steps.update-spec.outputs.updated == 'true'

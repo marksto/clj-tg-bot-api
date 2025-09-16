@@ -414,7 +414,7 @@
   (when (= :updated (update-spec!))
     (some-> (System/getenv "GITHUB_OUTPUT")
             (spit "updated=true\n" :append true)))
-  (System/exit 0))
+  #_(System/exit 0))
 
 (when (= *file* (System/getProperty "babashka.file"))
   (apply -main *command-line-args*))

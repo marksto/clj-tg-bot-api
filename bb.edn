@@ -1,4 +1,3 @@
-;; Run with "bb -f bb/update_spec.clj" or "./bb/update_spec.clj"
 {:paths ["bb" "resources"]
  :deps  {;; Including only the libs that are not built-in into `bb`
          camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
@@ -10,6 +9,15 @@
 
   :enter    (t-print/print-public-task :enter)
   :leave    (t-print/print-public-task :leave)
+
+  ;;; Telegram Bot API
+
+  update-spec
+  {:doc  "Update the Telegram Bot API spec"
+   ;; - "bb update-spec"
+   ;; - "bb -f bb/update_spec.clj"
+   ;; - "./bb/update_spec.clj"
+   :task update-spec/-main}
 
   ;;; Formatting
 
