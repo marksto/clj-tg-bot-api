@@ -52,7 +52,11 @@
   (validate-param limiter-opts map-or-nil?)
   (validate-param interceptors sequential-or-nil?)
   (-> (api-martian/build-martian (str server-url bot-token) interceptors)
-      (cond-> responses (mt/respond-with responses))
+      (cond-> responses
+              #_{:splint/disable [lint/thread-macro-one-arg]}
+              (-> (mt/respond-with responses)
+                  ;; TODO: Drop this temp patch when Martian PR #243 is merged.
+                  (update :interceptors vec)))
       (assoc :bot-id (bot/parse-bot-id bot-token)
              :limiter-opts limiter-opts)
       (with-meta {:type ::tg-bot-api-client})))
