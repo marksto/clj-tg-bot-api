@@ -18,7 +18,7 @@
  {:dev
   {:extra-paths ["bb" "build.clj" "dev"]
    :extra-deps  {;; Clojure
-                 org.clojure/clojure         {:mvn/version "1.12.2"}
+                 org.clojure/clojure         {:mvn/version "1.12.3"}
 
                  ;; Repeat built-in libs for in-REPL development
                  babashka/fs                 {:mvn/version "0.5.27"}
