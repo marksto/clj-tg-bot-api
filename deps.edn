@@ -4,10 +4,9 @@
                                               :exclusions  [org.clojure/clojure
                                                             org.clojure/clojurescript]}
          camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
-         ;; TODO: Upgrade Martian to "0.2.1" after it gets released.
-         com.github.oliyh/martian            {:mvn/version "0.2.1-SNAPSHOT"
+         com.github.oliyh/martian            {:mvn/version "0.2.1"
                                               :exclusions  [com.cognitect/transit-cljs]}
-         com.github.oliyh/martian-test       {:mvn/version "0.2.1-SNAPSHOT"}
+         com.github.oliyh/martian-test       {:mvn/version "0.2.1"}
          diehard/diehard                     {:mvn/version "0.12.0"
                                               :exclusions  [org.clojure/clojure]}
          metosin/jsonista                    {:mvn/version "0.3.13"}
@@ -33,16 +32,16 @@
                  io.aviso/pretty             {:mvn/version "1.4.4"}}}
 
   :http/http-kit
-  {:extra-deps {com.github.oliyh/martian-httpkit {:mvn/version "0.2.1-SNAPSHOT"}}}
+  {:extra-deps {com.github.oliyh/martian-httpkit {:mvn/version "0.2.1"}}}
 
   :http/clj-http
-  {:extra-deps {com.github.oliyh/martian-clj-http {:mvn/version "0.2.1-SNAPSHOT"}}}
+  {:extra-deps {com.github.oliyh/martian-clj-http {:mvn/version "0.2.1"}}}
 
   :http/clj-http-lite
-  {:extra-deps {com.github.oliyh/martian-clj-http-lite {:mvn/version "0.2.1-SNAPSHOT"}}}
+  {:extra-deps {com.github.oliyh/martian-clj-http-lite {:mvn/version "0.2.1"}}}
 
   :http/hato
-  {:extra-deps {com.github.oliyh/martian-hato {:mvn/version "0.2.1-SNAPSHOT"}}}
+  {:extra-deps {com.github.oliyh/martian-hato {:mvn/version "0.2.1"}}}
 
   :test/unit
   {:extra-paths ["test/unit"]
@@ -50,7 +49,7 @@
 
   :test/integration
   {:extra-paths ["test/integration" "test-resources/integration"]
-   :extra-deps  {com.github.oliyh/martian-vcr {:mvn/version "0.2.1-SNAPSHOT"}
+   :extra-deps  {com.github.oliyh/martian-vcr {:mvn/version "0.2.1"}
                  nubank/matcher-combinators   {:mvn/version "3.9.2"}}}
 
   ;; Run with "BOT_AUTH_TOKEN=... bb test"
