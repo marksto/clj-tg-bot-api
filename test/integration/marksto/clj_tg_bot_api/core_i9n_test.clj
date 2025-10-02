@@ -94,9 +94,9 @@
       (testing "Client code exception (params coercion)"
         ;; NB: For this one neither `::perform-request` nor VCR will be reached.
         (is (thrown-with-msg?
-              ClassCastException
-              #"class java.lang.String cannot be cast to class java.lang.Number"
-              (sut/make-request! client :send-audio {:chat-id "Oops!"}))))
+              Exception
+              #"Could not coerce value to schema: \{:body \{:audio missing-required-key}}"
+              (sut/make-request! client :send-audio {:chat-id 1}))))
 
       (testing "Network outage (server connection error)"
         (is (thrown-with-msg?
