@@ -1,7 +1,8 @@
 (ns marksto.clj-tg-bot-api.impl.client.rate-limiter
   (:require
    [diehard.core :as dh]
-   [diehard.rate-limiter :as dh.rl]))
+   [diehard.rate-limiter :as dh.rl]
+   [marksto.clj-tg-bot-api.impl.utils :as utils]))
 
 ;; NB: The Bots FAQ on the official Telegram website lists the following limits
 ;;     on server requests.
@@ -41,69 +42,346 @@
 ;;     To overcome the issue with HTTP 429 — "Too many requests, retry after X"
 ;;     error, the Telegram Bot API client implements the following rate limits:
 ;;
-;;     - No more than 1  message  per second in a single chat,
+;;     For "sendMessage" and "editMessageText" (share limits):
+;;     - No more than  1 message  per second in a single chat,
 ;;     - No more than 20 messages per minute in the same group chat,
 ;;     - No more than 30 messages per second in total (for broadcasting).
 
 (defonce
   ^{:doc "An atom that holds a map of the following structure:
-          {<bot-id> {:total    <total bot rate limiter>
-                     <chat-id> <some chat rate limiter>}}"}
+          {<bot-id> {<api-method> {:in-total <in-total-rl>
+                                   <chat-id> <chat-rl>}}}
+          where <in-total-rl> is a rate limiter for all requests of that type,
+          while <chat-rl> is a rate limiter for a specific chat, if supported."}
   *rate-limiters
   (atom {}))
+
+;;
 
 (defn ->rate
   "Calculates a numerical rate value for making `n` calls in `sec` seconds."
   [n sec]
   (/ (double n) sec))
 
-(def default-sleep-fn dh.rl/uninterruptible-sleep)
+(defn group-chat? [chat-id] (neg? chat-id))
 
 (def default-opts
-  {:total {:rate     (->rate 30 1)
-           :sleep-fn default-sleep-fn}
-   :chat  (fn [chat-id]
-            (if-let [_is-group? (neg? chat-id)]
-              {:rate     (->rate 20 60)
-               :sleep-fn default-sleep-fn}
-              {:rate     (->rate 1 1)
-               :sleep-fn default-sleep-fn}))})
+  "Bot API method -> rate limiter opts | base Bot API method"
+  {:send-message      {:in-total {:rate 30}
+                       :per-chat (fn [chat-id]
+                                   (if (group-chat? chat-id)
+                                     {:rate (->rate 20 60)}
+                                     {:rate 1}))}
+   :edit-message-text :send-message})
 
-(defn ->total-rate-limiter [limiter-opts]
-  (dh.rl/rate-limiter (merge (:total default-opts)
-                             (:total limiter-opts))))
-
-(defn ->chat-rate-limiter [limiter-opts chat-id]
-  (dh.rl/rate-limiter (merge ((:chat default-opts) chat-id)
-                             (when-some [custom-fn (:chat limiter-opts)]
-                               (custom-fn chat-id)))))
-
-(defn get-rate-limiter!
-  ([limiter-opts bot-id]
-   (-> *rate-limiters
-       (swap!
-         (fn [rate-limiters]
-           (if (some? (get-in rate-limiters [bot-id :total]))
-             rate-limiters
-             (assoc-in rate-limiters [bot-id :total] (->total-rate-limiter limiter-opts)))))
-       (get-in [bot-id :total])))
-  ([limiter-opts bot-id chat-id]
-   (-> *rate-limiters
-       (swap!
-         (fn [rate-limiters]
-           (if (some? (get-in rate-limiters [bot-id chat-id]))
-             rate-limiters
-             (assoc-in rate-limiters [bot-id chat-id] (->chat-rate-limiter limiter-opts chat-id)))))
-       (get-in [bot-id chat-id]))))
+(defn get-base-limited-method [method]
+  (let [default-method-or-opts (get default-opts method)]
+    (if (keyword? default-method-or-opts) ; base method?
+      default-method-or-opts
+      method)))
 
 ;;
 
+(def default-sleep-fn dh.rl/uninterruptible-sleep)
+
+(defn has-opts-for?
+  [limiter-id method-opts]
+  (contains? method-opts (if (= :in-total limiter-id) :in-total :per-chat)))
+
+(defn get-opts-map
+  [limiter-id method-opts]
+  (if (= :in-total limiter-id)
+    (:in-total method-opts)
+    (utils/apply-if-fn (:per-chat method-opts) limiter-id)))
+
+(defn ->rate-limiter-opts
+  [limiter-id default-method-opts limiter-method-opts]
+  (some-> (if (has-opts-for? limiter-id limiter-method-opts)
+            (some-> (get-opts-map limiter-id limiter-method-opts)
+                    (utils/reverse-merge
+                      (get-opts-map limiter-id default-method-opts)))
+            (get-opts-map limiter-id default-method-opts))
+          (update :sleep-fn #(or % default-sleep-fn))))
+
+(defn ->rate-limiter
+  [limiter-id limiter-opts method]
+  (some-> (->rate-limiter-opts
+            limiter-id (get default-opts method) (get limiter-opts method))
+          (dh.rl/rate-limiter)))
+
+(defn get-rate-limiter!
+  [limiter-id limiter-opts bot-id method]
+  (when (some? limiter-id)
+    (let [method' (get-base-limited-method method)
+          rate-limiter-path [bot-id method' limiter-id]]
+      (-> *rate-limiters
+          (swap!
+            (fn [rate-limiters]
+              (if (contains? rate-limiters rate-limiter-path)
+                rate-limiters
+                (assoc-in rate-limiters
+                          rate-limiter-path
+                          (->rate-limiter limiter-id limiter-opts method')))))
+          (get-in rate-limiter-path)))))
+
+;;
+
+(defmacro -with-rate-limiter
+  [limiter-id limiter-opts bot-id method form]
+  `(let [limiter# (get-rate-limiter! ~limiter-id ~limiter-opts ~bot-id ~method)]
+     (if (some? limiter#)
+       (dh/with-rate-limiter limiter# ~form)
+       ~form)))
+
 (defmacro with-rate-limiter
-  [limiter-opts bot-id chat-id form]
+  "Wraps a call to the given `form`, which is also known to be made by еру bot
+   with the given `bot-id`, to a particular Bot API `method`, w/ `:chat-id` in
+   the parameters (if any), and the given `limiter-opts`, with a corresponding
+   rate limiter.
+
+   The `limiter-opts` is either `nil` (then the rate limiting is bypassed), or
+   a map of the following structure:
+   ```
+   {<api-method> {:in-total <in-total-rl-opts>
+                  <chat-id> <chat-rl-opts-or-fn>}
+    <api-method> <base-api-method>}
+   ```
+   where `<in-total-rl-opts>` is an opts map of a rate limiter for all requests
+   of that type/to that Bot API method, and `<chat-rl-opts-or-fn>` is either an
+   opts map or a unary fn of 'chat-id' that returns an opts map of rate limiter
+   for a specific chat, if supported (by default, only for `:send-message`).
+
+   If the `<api-method> <base-api-method>` entry is present, the limits for the
+   `<api-method>` are shared with the `<base-api-method>` (by default, only for
+   `:edit-message-text` that shares limits with the `:send-message`).
+
+   The `limiter-opts`, only if provided, get deep merged with the default ones.
+
+   See the `diehard.rate-limiter` ns for the supported set of limiters options.
+
+   See https://core.telegram.org/bots/faq"
+  [limiter-opts bot-id method chat-id form]
   `(if (some? ~limiter-opts)
-     (dh/with-rate-limiter (get-rate-limiter! ~limiter-opts ~bot-id)
-       (if (some? ~chat-id)
-         (dh/with-rate-limiter (get-rate-limiter! ~limiter-opts ~bot-id ~chat-id)
-           ~form)
+     (-with-rate-limiter
+       :in-total ~limiter-opts ~bot-id ~method
+       (-with-rate-limiter
+         ~chat-id ~limiter-opts ~bot-id ~method
          ~form))
      ~form))
+
+;;
+
+^:rct/test
+(comment
+  ;; :send-message
+
+  (reset! *rate-limiters {})
+  (get-rate-limiter!
+    :in-total
+    {:send-message {:per-chat {:sleep-fn dh.rl/interruptible-sleep}}}
+    1234567890
+    :send-message)
+  ; =>>
+  ; {:rate     0.03
+  ;  :sleep-fn #(= dh.rl/uninterruptible-sleep %)
+  ;  ...}
+
+  (reset! *rate-limiters {})
+  (get-rate-limiter!
+    :in-total
+    {:send-message {:in-total {:rate 1}}}
+    1234567890
+    :send-message)
+  ; =>>
+  ; {:rate     0.001
+  ;  :sleep-fn #(= dh.rl/uninterruptible-sleep %)
+  ;  ...}
+
+  (reset! *rate-limiters {})
+  (get-rate-limiter!
+    :in-total
+    {:send-message {:in-total nil
+                    :per-chat {:sleep-fn dh.rl/interruptible-sleep}}}
+    1234567890
+    :send-message)
+  ; =>
+  nil
+
+  (reset! *rate-limiters {})
+  (get-rate-limiter!
+    -1
+    {:send-message {:per-chat {:rate 1}}}
+    1234567890
+    :send-message)
+  ; =>>
+  ; {:rate     0.001
+  ;  :sleep-fn #(= dh.rl/uninterruptible-sleep %)
+  ;  ...}
+
+  (reset! *rate-limiters {})
+  (get-rate-limiter!
+    -1
+    {:send-message {:per-chat {:rate     1
+                               :sleep-fn dh.rl/interruptible-sleep}}}
+    1234567890
+    :send-message)
+  ; =>>
+  ; {:rate     0.001
+  ;  :sleep-fn #(= dh.rl/interruptible-sleep %)
+  ;  ...}
+
+  (reset! *rate-limiters {})
+  (get-rate-limiter!
+    -1
+    {:send-message {:per-chat {:sleep-fn dh.rl/interruptible-sleep}}}
+    1234567890
+    :send-message)
+  ; =>>
+  ; {:rate     0.0003333333333333333
+  ;  :sleep-fn #(= dh.rl/interruptible-sleep %)
+  ;  ...}
+
+  ;; :edit-message-text
+
+  (reset! *rate-limiters {})
+  (get-rate-limiter!
+    :in-total
+    {:send-message {:per-chat {:sleep-fn dh.rl/interruptible-sleep}}}
+    1234567890
+    :edit-message-text)
+  ; =>>
+  ; {:rate     0.03
+  ;  :sleep-fn #(= dh.rl/uninterruptible-sleep %)
+  ;  ...}
+
+  (reset! *rate-limiters {})
+  (get-rate-limiter!
+    :in-total
+    {:send-message {:in-total {:rate 1}}}
+    1234567890
+    :edit-message-text)
+  ; =>>
+  ; {:rate     0.001
+  ;  :sleep-fn #(= dh.rl/uninterruptible-sleep %)
+  ;  ...}
+
+  (reset! *rate-limiters {})
+  (get-rate-limiter!
+    :in-total
+    {:send-message {:in-total nil
+                    :per-chat {:sleep-fn dh.rl/interruptible-sleep}}}
+    1234567890
+    :edit-message-text)
+  ; =>
+  nil
+
+  (reset! *rate-limiters {})
+  (get-rate-limiter!
+    -1
+    {:send-message {:per-chat {:rate 1}}}
+    1234567890
+    :edit-message-text)
+  ; =>>
+  ; {:rate     0.001
+  ;  :sleep-fn #(= dh.rl/uninterruptible-sleep %)
+  ;  ...}
+
+  (reset! *rate-limiters {})
+  (get-rate-limiter!
+    -1
+    {:send-message {:per-chat {:rate     1
+                               :sleep-fn dh.rl/interruptible-sleep}}}
+    1234567890
+    :edit-message-text)
+  ; =>>
+  ; {:rate     0.001
+  ;  :sleep-fn #(= dh.rl/interruptible-sleep %)
+  ;  ...}
+
+  (reset! *rate-limiters {})
+  (get-rate-limiter!
+    -1
+    {:send-message {:per-chat {:sleep-fn dh.rl/interruptible-sleep}}}
+    1234567890
+    :edit-message-text)
+  ; =>>
+  ; {:rate     0.0003333333333333333
+  ;  :sleep-fn #(= dh.rl/interruptible-sleep %)
+  ;  ...}
+
+  ;; other methods
+
+  (reset! *rate-limiters {})
+  (get-rate-limiter!
+    :in-total
+    {:send-message    {:in-total nil
+                       :per-chat {:sleep-fn dh.rl/interruptible-sleep}}
+     :set-my-commands {:in-total {:rate 1}}}
+    1234567890
+    :set-my-commands)
+  ; =>>
+  ; {:rate     0.001
+  ;  :sleep-fn #(= dh.rl/uninterruptible-sleep %)
+  ;  ...}
+
+  (reset! *rate-limiters {})
+  (get-rate-limiter!
+    -1
+    {:send-message    {:in-total nil
+                       :per-chat {:sleep-fn dh.rl/interruptible-sleep}}
+     :set-my-commands {:in-total {:rate 1}}}
+    1234567890
+    :set-my-commands)
+  ; =>
+  nil
+
+  (reset! *rate-limiters {})
+  (get-rate-limiter!
+    :in-total
+    {:send-message    {:in-total nil
+                       :per-chat {:sleep-fn dh.rl/interruptible-sleep}}
+     :set-my-commands {:in-total {:rate     1
+                                  :sleep-fn dh.rl/interruptible-sleep}}}
+    1234567890
+    :set-my-commands)
+  ; =>>
+  ; {:rate     0.001
+  ;  :sleep-fn #(= dh.rl/interruptible-sleep %)
+  ;  ...}
+
+  ;; interference
+
+  (reset! *rate-limiters {})
+  (get-rate-limiter!
+    :in-total
+    {:send-message    {:in-total nil}
+     :set-my-commands {:in-total {:rate 1}}}
+    1234567890
+    :send-message)
+  ; =>
+  nil
+
+  (reset! *rate-limiters {})
+  (get-rate-limiter!
+    -1
+    {:send-message    {:per-chat {:rate 1}}
+     :set-my-commands {:in-total {:rate 1}}}
+    1234567890
+    :send-message)
+  ; =>>
+  ; {:rate     0.001
+  ;  :sleep-fn #(= dh.rl/uninterruptible-sleep %)
+  ;  ...}
+
+  (reset! *rate-limiters {})
+  (get-rate-limiter!
+    :in-total
+    {:set-my-commands {:in-total {:rate 1}}}
+    1234567890
+    :send-message)
+  ; =>>
+  ; {:rate     0.03
+  ;  :sleep-fn #(= dh.rl/uninterruptible-sleep %)
+  ;  ...}
+
+  :end/comment)

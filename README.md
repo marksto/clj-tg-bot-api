@@ -140,16 +140,24 @@ If you are [using a Local Bot API Server](https://core.telegram.org/bots/api#usi
 
 #### Rate Limiting
 
-The built-in rate limiter is conservative. It aims to avoid exceeding the API limits as much as possible by following the [Telegram Bot API FAQ](https://core.telegram.org/bots/faq#my-bot-is-hitting-limits-how-do-i-avoid-this) and applying the following defaults:
+The built-in rate limiter is conservative. It aims to avoid exceeding the API limits as much as possible by following the [Telegram Bot API FAQ](https://core.telegram.org/bots/faq#my-bot-is-hitting-limits-how-do-i-avoid-this) and applying the following defaults for "sendMessage" and "editMessageText" (which share limits):
 - No more than    1 message   per second in a single chat,
 - No more than 20 messages per minute  in the same group chat,
 - No more than 30 messages per second in total (for broadcasting).
 
-This helps to avoid HTTP 429 "Too many requests, retry after N" error in most cases, though it can feel quite limiting (pun intended), so it can be reconfigured like this:
+While this helps to avoid HTTP 429 "Too many requests, retry after N" error in some cases, in others it can feel quite or not enough limiting (pun intended), especially if you are good to go with [paid broadcasts](https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once). Therefore, it can be fine-tuned or completely reconfigured as follows:
 
 ```clojure
-(def custom-limiter-opts {:total {:rate ...}
-                          :chat  (fn [chat-id] {:rate ...})})
+;; Example custom limiter opts that get deep merged into the default ones
+
+;; Adding a limit on a certain method (in this case, for "setMyCommands")
+(def custom-limiter-opts {:set-my-commands {:in-total {:rate 1}}})
+
+;; Dropping "30 messages per second in total" limit (for paid broadcasts)
+(def custom-limiter-opts {:send-message {:in-total nil}})
+
+(def client (tg-bot-api/->client {:bot-token    "<TG_BOT_AUTH_TOKEN>"
+                                  :limiter-opts custom-limiter-opts}))
 ```
 
 See the `marksto.clj-tg-bot-api.impl.client.rate-limiter` namespace for default settings and the `diehard.rate-limiter` namespace for the full list of supported rate limiter options.

@@ -25,13 +25,11 @@
                        a unary fn that, given the `ctx`, returns a response; it
                        is used for generating Telegram Bot API server responses,
                        effectively mocking real HTTP requests during tests;
-   - `:limiter-opts` — a map of opts for configuring the built-in rate limiter;
-                       can come with all/any of the following entries (if entry
-                       is absent, its default value will be used):
-                       - `:total` — a map of the bot-wide rate limiter options;
-                       - `:chat`  — a unary fn of 'chat-id' that returns a map
-                                    of chat-specific rate limiter options;
-                       see the `diehard.rate-limiter` ns for supported options;
+   - `:limiter-opts` — a map of opts for configuring the built-in rate limiters;
+                       the default value only specifies limits for 'sendMessage'
+                       and 'editMessageText' methods, publicly available on the
+                       Bots FAQ page (https://core.telegram.org/bots/faq);
+                       see the `with-rate-limiter` macro docstring for details;
                        set to `nil` to bypass the rate limiting (used primarily
                        during tests);
    - `:interceptors` — a sequential coll of custom interceptors to inject into

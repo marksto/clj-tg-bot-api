@@ -79,6 +79,11 @@
                       (transient {}))
            (persistent!)))
 
+(defn reverse-merge
+  [& maps]
+  (when (some identity maps)
+    (reduce #(conj (or %2 {}) %1) maps)))
+
 ;; strings
 
 (defn char-sequence?
@@ -102,10 +107,26 @@
 ;; functions
 
 (defn apply-if-fn
-  [fn-or-val]
-  (if (fn? fn-or-val)
-    (fn-or-val)
-    fn-or-val))
+  ([fn-or-val]
+   (if (fn? fn-or-val)
+     (fn-or-val)
+     fn-or-val))
+  ([fn-or-val x]
+   (if (fn? fn-or-val)
+     (fn-or-val x)
+     fn-or-val))
+  ([fn-or-val x y]
+   (if (fn? fn-or-val)
+     (fn-or-val x y)
+     fn-or-val))
+  ([fn-or-val x y z]
+   (if (fn? fn-or-val)
+     (apply fn-or-val x y z)
+     fn-or-val))
+  ([fn-or-val x y z args]
+   (if (fn? fn-or-val)
+     (apply fn-or-val x y z args)
+     fn-or-val)))
 
 ;; references
 

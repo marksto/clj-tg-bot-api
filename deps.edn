@@ -45,7 +45,9 @@
 
   :test/unit
   {:extra-paths ["test/unit"]
-   :extra-deps  {nubank/matcher-combinators {:mvn/version "3.9.2"}}}
+   :extra-deps  {nubank/matcher-combinators                 {:mvn/version "3.9.2"}
+                 io.github.matthewdowney/rich-comment-tests {:git/tag "v1.0.3"
+                                                             :git/sha "a8711e9"}}}
 
   :test/integration
   {:extra-paths ["test/integration" "test-resources/integration"]
