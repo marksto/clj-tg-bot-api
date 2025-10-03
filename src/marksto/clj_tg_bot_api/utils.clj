@@ -348,14 +348,10 @@
 
 (def parse-mode:md
   "A handy constant for Markdown-style message text entities parsing mode.
-   Pass as a `parse_mode` option to the `build-message-options` fn.
-
    See syntax details: https://core.telegram.org/bots/api#markdownv2-style"
   "MarkdownV2")
 
 (def parse-mode:html
   "A handy constant for HTML-style message text entities parsing mode.
-   Pass as a `parse_mode` option to the `build-message-options` fn.
-
    See supported tags: https://core.telegram.org/bots/api#html-style"
   "HTML")

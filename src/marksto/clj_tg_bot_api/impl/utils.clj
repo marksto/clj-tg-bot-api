@@ -84,26 +84,6 @@
   (when (some identity maps)
     (reduce #(conj (or %2 {}) %1) maps)))
 
-;; strings
-
-(defn char-sequence?
-  [obj]
-  (instance? CharSequence obj))
-
-(defn not-empty?
-  [obj]
-  (and (char-sequence? obj) (not (.isEmpty ^CharSequence obj))))
-
-#_{:splint/disable [style/tostring]}
-(defn truncate
-  ^String [^CharSequence s n]
-  (assert (nat-int? n) "`n` must be a non-negative int")
-  (when s
-    (let [sl (.length s)]
-      (if (< n sl)
-        (subs (.toString s) (- sl n))
-        s))))
-
 ;; functions
 
 (defn apply-if-fn
