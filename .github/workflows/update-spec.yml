@@ -32,7 +32,7 @@ jobs:
         uses: DeLaGuardo/setup-clojure@13.4
         with:
           cli: '1.12.3.1577'
-          bb: '1.12.208'
+          bb: '1.12.209'
 
       - name: Update Telegram Bot API spec
         id: update-spec

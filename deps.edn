@@ -72,6 +72,6 @@
                "--ignore-locals"]}
 
   :build
-  {:deps       {io.github.clojure/tools.build {:mvn/version "0.10.10"}
+  {:deps       {io.github.clojure/tools.build {:mvn/version "0.10.11"}
                 slipset/deps-deploy           {:mvn/version "0.2.2"}}
    :ns-default build}}}
