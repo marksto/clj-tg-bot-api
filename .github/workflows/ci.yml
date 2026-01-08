@@ -19,12 +19,12 @@ jobs:
 
     steps:
       - name: Checkout Git repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0 # full history for version number
 
       - name: Cache dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.m2/repository
@@ -41,9 +41,9 @@ jobs:
       - name: Install Clojure tools
         uses: DeLaGuardo/setup-clojure@13.4
         with:
-          cli: '1.12.3.1577'
-          clj-kondo: '2025.10.23'
-          bb: '1.12.209'
+          cli: '1.12.4.1582'
+          clj-kondo: '2025.12.23'
+          bb: '1.12.213'
 
       - name: Run checks
         run: |
