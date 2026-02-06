@@ -1,10 +1,10 @@
 (ns marksto.clj-tg-bot-api.core-test
   (:require
-   [clojure.test :refer [deftest is testing]]
-   [marksto.clj-tg-bot-api.core :as sut]
-   [matcher-combinators.test])
+    [clojure.test :refer [deftest is testing]]
+    [marksto.clj-tg-bot-api.core :as sut]
+    [matcher-combinators.test])
   (:import
-   (java.net URI)))
+    (java.net URI)))
 
 (def test-bot-id 1234567890)
 (def test-bot-token (format "%s:TEST_pxWA8lDi7uLc3oadqNivHCALHBQ7sM" test-bot-id))
@@ -220,7 +220,20 @@
                         "Accept"       "application/json"}
               :body    "{\"chat_id\":1,\"text\":\"Hello, world!\",\"method\":\"sendMessage\"}"}
              (sut/build-response client :send-message {:chat-id 1
-                                                       :text    "Hello, world!"}))))
+                                                       :text    "Hello, world!"})))
+      (testing "deeply-nested"
+        (is (= {:status  200
+                :headers {"Content-Type" "application/json"
+                          "Accept"       "application/json"}
+                :body    (str "{\"chat_id\":1"
+                              ",\"reply_markup\":\"{\\\"inline_keyboard\\\":[[{\\\"text\\\":\\\"Button\\\",\\\"callback_data\\\":\\\"42\\\"}]]}\""
+                              ",\"text\":\"Hello, world!\""
+                              ",\"method\":\"sendMessage\"}")}
+               (sut/build-response client :send-message
+                                   {:chat-id      1
+                                    :text         "Hello, world!"
+                                    :reply-markup {:inline-keyboard [[{:text          "Button"
+                                                                       :callback-data "42"}]]}})))))
     (testing "JSON-serialized params"
       (is (= {:status  200
               :headers {"Content-Type" "application/json"
