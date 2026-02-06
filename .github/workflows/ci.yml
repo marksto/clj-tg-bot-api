@@ -39,11 +39,11 @@ jobs:
           java-version: '21'
 
       - name: Install Clojure tools
-        uses: DeLaGuardo/setup-clojure@13.4
+        uses: DeLaGuardo/setup-clojure@13.5.2
         with:
-          cli: '1.12.4.1582'
-          clj-kondo: '2025.12.23'
-          bb: '1.12.213'
+          cli: '1.12.4.1602'
+          clj-kondo: '2026.01.19'
+          bb: '1.12.214'
 
       - name: Run checks
         run: |

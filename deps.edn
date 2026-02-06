@@ -4,9 +4,9 @@
                                               :exclusions  [org.clojure/clojure
                                                             org.clojure/clojurescript]}
          camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
-         com.github.oliyh/martian            {:mvn/version "0.2.1"
+         com.github.oliyh/martian            {:mvn/version "0.2.2"
                                               :exclusions  [com.cognitect/transit-cljs]}
-         com.github.oliyh/martian-test       {:mvn/version "0.2.1"}
+         com.github.oliyh/martian-test       {:mvn/version "0.2.2"}
          diehard/diehard                     {:mvn/version "0.12.0"
                                               :exclusions  [org.clojure/clojure]}
          metosin/jsonista                    {:mvn/version "0.3.13"}
@@ -21,7 +21,7 @@
                  org.clojure/clojure         {:mvn/version "1.12.4"}
 
                  ;; Repeat built-in libs for in-REPL development
-                 babashka/fs                 {:mvn/version "0.5.30"}
+                 babashka/fs                 {:mvn/version "0.5.31"}
                  cheshire/cheshire           {:mvn/version "6.1.0"}
                  org.babashka/http-client    {:mvn/version "0.4.23"}
                  org.clj-commons/hickory     {:mvn/version "0.7.7"}
@@ -32,27 +32,27 @@
                  io.aviso/pretty             {:mvn/version "1.4.4"}}}
 
   :http/http-kit
-  {:extra-deps {com.github.oliyh/martian-httpkit {:mvn/version "0.2.1"}}}
+  {:extra-deps {com.github.oliyh/martian-httpkit {:mvn/version "0.2.2"}}}
 
   :http/clj-http
-  {:extra-deps {com.github.oliyh/martian-clj-http {:mvn/version "0.2.1"}}}
+  {:extra-deps {com.github.oliyh/martian-clj-http {:mvn/version "0.2.2"}}}
 
   :http/clj-http-lite
-  {:extra-deps {com.github.oliyh/martian-clj-http-lite {:mvn/version "0.2.1"}}}
+  {:extra-deps {com.github.oliyh/martian-clj-http-lite {:mvn/version "0.2.2"}}}
 
   :http/hato
-  {:extra-deps {com.github.oliyh/martian-hato {:mvn/version "0.2.1"}}}
+  {:extra-deps {com.github.oliyh/martian-hato {:mvn/version "0.2.2"}}}
 
   :test/unit
   {:extra-paths ["test/unit"]
-   :extra-deps  {nubank/matcher-combinators                 {:mvn/version "3.9.2"}
+   :extra-deps  {nubank/matcher-combinators                 {:mvn/version "3.10.0"}
                  io.github.matthewdowney/rich-comment-tests {:git/tag "v1.0.3"
                                                              :git/sha "a8711e9"}}}
 
   :test/integration
   {:extra-paths ["test/integration" "test-resources/integration"]
-   :extra-deps  {com.github.oliyh/martian-vcr {:mvn/version "0.2.1"}
-                 nubank/matcher-combinators   {:mvn/version "3.9.2"}}}
+   :extra-deps  {com.github.oliyh/martian-vcr {:mvn/version "0.2.2"}
+                 nubank/matcher-combinators   {:mvn/version "3.10.0"}}}
 
   ;; Run with "BOT_AUTH_TOKEN=... bb test"
   :test/runner
