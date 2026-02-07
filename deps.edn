@@ -16,7 +16,7 @@
 
  :aliases
  {:dev
-  {:extra-paths ["bb" "build.clj" "dev"]
+  {:extra-paths ["bb" "dev"]
    :extra-deps  {;; Clojure
                  org.clojure/clojure         {:mvn/version "1.12.4"}
 
@@ -72,6 +72,7 @@
                "--ignore-locals"]}
 
   :build
-  {:deps       {io.github.clojure/tools.build {:mvn/version "0.10.12"}
-                slipset/deps-deploy           {:mvn/version "0.2.2"}}
-   :ns-default build}}}
+  {:replace-paths ["."]
+   :replace-deps  {io.github.clojure/tools.build {:mvn/version "0.10.12"}
+                   slipset/deps-deploy           {:mvn/version "0.2.2"}}
+   :ns-default    build}}}
