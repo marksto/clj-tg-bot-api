@@ -110,9 +110,9 @@
      fn-or-val))
   ([fn-or-val x y z]
    (if (fn? fn-or-val)
-     (apply fn-or-val x y z)
+     (fn-or-val x y z)
      fn-or-val))
-  ([fn-or-val x y z args]
+  ([fn-or-val x y z & args]
    (if (fn? fn-or-val)
      (apply fn-or-val x y z args)
      fn-or-val)))
