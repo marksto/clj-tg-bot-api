@@ -1093,7 +1093,7 @@
     }, {
       "name" : "reply_markup",
       "type" : "type/inline-keyboard-markup",
-      "description" : "<em>Optional</em>. Inline keyboard attached to the message. <code>login_url</code> buttons are represented as ordinary <code>url</code> buttons.",
+      "description" : "<em>Optional</em>. <a href=\"/bots/features#inline-keyboards\">Inline keyboard</a> attached to the message. <code>login_url</code> buttons are represented as ordinary <code>url</code> buttons.",
       "required" : false
     } ]
   }, {
@@ -7385,7 +7385,7 @@
     }, {
       "name" : "reply_markup",
       "type" : "type/inline-keyboard-markup",
-      "description" : "<em>Optional</em>. Inline keyboard attached to the message",
+      "description" : "<em>Optional</em>. <a href=\"/bots/features#inline-keyboards\">Inline keyboard</a> attached to the message",
       "required" : false
     }, {
       "name" : "input_message_content",
@@ -9494,7 +9494,7 @@
       "description" : "Score",
       "required" : true
     } ],
-    "notes" : "<hr><p>And that's about all we've got for now.<br>If you've got any questions, please check out our <a href=\"/bots/faq\"><strong>Bot FAQ »</strong></a><br>-</p>"
+    "notes" : "<hr><p>And that's about all we've got for now.<br>If you've got any questions, please check out our <a href=\"/bots/faq\"><strong>Bot FAQ »</strong></a></p>"
   } ],
   "methods" : [ {
     "id" : "method/get-updates",
@@ -11289,7 +11289,7 @@
       "name" : "reply_markup",
       "type" : "type/inline-keyboard-markup",
       "required" : false,
-      "description" : "A JSON-serialized object for an inline keyboard",
+      "description" : "A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>",
       "json_serialized" : true
     } ]
   }, {
@@ -13697,7 +13697,7 @@
       "name" : "reply_markup",
       "type" : "type/inline-keyboard-markup",
       "required" : false,
-      "description" : "A JSON-serialized object for the new inline keyboard for the message",
+      "description" : "A JSON-serialized object for the new <a href=\"/bots/features#inline-keyboards\">inline keyboard</a> for the message",
       "json_serialized" : true
     } ]
   }, {
