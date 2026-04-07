@@ -128,7 +128,7 @@
     }, {
       "name" : "managed_bot",
       "type" : "type/managed-bot-updated",
-      "description" : "<em>Optional</em>. A new bot was created to be managed by the bot or token of a bot was changed",
+      "description" : "<em>Optional</em>. A new bot was created to be managed by the bot, or token or owner of a managed bot was changed",
       "required" : false
     } ]
   }, {
@@ -2558,7 +2558,7 @@
     "id" : "type/managed-bot-updated",
     "name" : "ManagedBotUpdated",
     "kind" : "type",
-    "description" : "<p>This object contains information about the creation or token update of a bot that is managed by the current bot.</p>",
+    "description" : "<p>This object contains information about the creation, token update, or owner update of a bot that is managed by the current bot.</p>",
     "fields" : [ {
       "name" : "user",
       "type" : "type/user",
