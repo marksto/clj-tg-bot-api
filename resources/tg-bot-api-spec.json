@@ -1,10 +1,10 @@
 {
-  "version" : "Bot API 9.6",
+  "version" : "Bot API 10.0",
   "types" : [ {
     "id" : "type/update",
     "name" : "Update",
     "kind" : "type",
-    "description" : "<p>This <a href=\"#available-types\">object</a> represents an incoming update.<br>At most <strong>one</strong> of the optional parameters can be present in any given update.</p>",
+    "description" : "<p>This <a href=\"#available-types\">object</a> represents an incoming update.<br>At most <strong>one</strong> of the optional fields can be present in any given update.</p>",
     "fields" : [ {
       "name" : "update_id",
       "type" : "Integer",
@@ -49,6 +49,11 @@
       "name" : "deleted_business_messages",
       "type" : "type/business-messages-deleted",
       "description" : "<em>Optional</em>. Messages were deleted from a connected business account",
+      "required" : false
+    }, {
+      "name" : "guest_message",
+      "type" : "type/message",
+      "description" : "<em>Optional</em>. New guest message. The bot can use the field <em>Message.guest_query_id</em> and the method <a href=\"#answerguestquery\">answerGuestQuery</a> to send a message in response.",
       "required" : false
     }, {
       "name" : "message_reaction",
@@ -238,6 +243,11 @@
       "description" : "<em>Optional</em>. <em>True</em>, if <a href=\"/bots/features#privacy-mode\">privacy mode</a> is disabled for the bot. Returned only in <a href=\"#getme\">getMe</a>.",
       "required" : false
     }, {
+      "name" : "supports_guest_queries",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. <em>True</em>, if the bot supports guest queries from chats it is not a member of. Returned only in <a href=\"#getme\">getMe</a>.",
+      "required" : false
+    }, {
       "name" : "supports_inline_queries",
       "type" : "Boolean",
       "description" : "<em>Optional</em>. <em>True</em>, if the bot supports inline queries. Returned only in <a href=\"#getme\">getMe</a>.",
@@ -245,7 +255,7 @@
     }, {
       "name" : "can_connect_to_business",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. <em>True</em>, if the bot can be connected to a Telegram Business account to receive its messages. Returned only in <a href=\"#getme\">getMe</a>.",
+      "description" : "<em>Optional</em>. <em>True</em>, if the bot can be connected to a user account to manage it. Returned only in <a href=\"#getme\">getMe</a>.",
       "required" : false
     }, {
       "name" : "has_main_web_app",
@@ -626,6 +636,11 @@
       "description" : "Date the message was sent in Unix time. It is always a positive number, representing a valid date.",
       "required" : true
     }, {
+      "name" : "guest_query_id",
+      "type" : "String",
+      "description" : "<em>Optional</em>. The unique identifier for the guest query. Use this identifier with the method <a href=\"#answerguestquery\">answerGuestQuery</a> to send a response message. If non-empty, the message belongs to the chat where the guest bot was summoned, which may not coincide with other existing bot chats sharing the same identifier.",
+      "required" : false
+    }, {
       "name" : "business_connection_id",
       "type" : "String",
       "description" : "<em>Optional</em>. Unique identifier of the business connection from which the message was received. If non-empty, the message belongs to a chat of the corresponding business account that is independent from any potential bot chat which might share the same identifier.",
@@ -684,6 +699,16 @@
       "name" : "via_bot",
       "type" : "type/user",
       "description" : "<em>Optional</em>. Bot through which the message was sent",
+      "required" : false
+    }, {
+      "name" : "guest_bot_caller_user",
+      "type" : "type/user",
+      "description" : "<em>Optional</em>. For a message sent by a guest bot, this is the user whose original message triggered the bot's response",
+      "required" : false
+    }, {
+      "name" : "guest_bot_caller_chat",
+      "type" : "type/chat",
+      "description" : "<em>Optional</em>. For a message sent by a guest bot, this is the chat whose original message triggered the bot's response",
       "required" : false
     }, {
       "name" : "edit_date",
@@ -759,6 +784,11 @@
       "name" : "document",
       "type" : "type/document",
       "description" : "<em>Optional</em>. Message is a general file, information about the file",
+      "required" : false
+    }, {
+      "name" : "live_photo",
+      "type" : "type/live-photo",
+      "description" : "<em>Optional</em>. Message is a live photo, information about the live photo. For backward compatibility, when this field is set, the <em>photo</em> field will also be set",
       "required" : false
     }, {
       "name" : "paid_media",
@@ -1287,6 +1317,11 @@
       "description" : "<em>Optional</em>. Message is a general file, information about the file",
       "required" : false
     }, {
+      "name" : "live_photo",
+      "type" : "type/live-photo",
+      "description" : "<em>Optional</em>. Message is a live photo, information about the live photo",
+      "required" : false
+    }, {
       "name" : "paid_media",
       "type" : "type/paid-media-info",
       "description" : "<em>Optional</em>. Message contains paid media; information about the paid media",
@@ -1390,7 +1425,7 @@
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
-      "description" : "<em>Optional</em>. If the message to be replied to is from a different chat, unique identifier for the chat or username of the channel (in the format <code>@channelusername</code>). Not supported for messages sent on behalf of a business account and messages from channel direct messages chats.",
+      "description" : "<em>Optional</em>. If the message to be replied to is from a different chat, unique identifier for the chat or username of the bot, supergroup or channel in the format <code>@username</code>. Not supported for messages sent on behalf of a business account and messages from channel direct messages chats.",
       "required" : false
     }, {
       "name" : "allow_sending_without_reply",
@@ -1715,6 +1750,52 @@
       "required" : false
     } ]
   }, {
+    "id" : "type/live-photo",
+    "name" : "LivePhoto",
+    "kind" : "type",
+    "description" : "<p>This object represents a live photo.</p>",
+    "fields" : [ {
+      "name" : "photo",
+      "type" : [ "array", "type/photo-size" ],
+      "description" : "<em>Optional</em>. Available sizes of the corresponding static photo",
+      "required" : false
+    }, {
+      "name" : "file_id",
+      "type" : "String",
+      "description" : "Identifier for the video file which can be used to download or reuse the file",
+      "required" : true
+    }, {
+      "name" : "file_unique_id",
+      "type" : "String",
+      "description" : "Unique identifier for the video file which is supposed to be the same over time and for different bots. Can't be used to download or reuse the file.",
+      "required" : true
+    }, {
+      "name" : "width",
+      "type" : "Integer",
+      "description" : "Video width as defined by the sender",
+      "required" : true
+    }, {
+      "name" : "height",
+      "type" : "Integer",
+      "description" : "Video height as defined by the sender",
+      "required" : true
+    }, {
+      "name" : "duration",
+      "type" : "Integer",
+      "description" : "Duration of the video in seconds as defined by the sender",
+      "required" : true
+    }, {
+      "name" : "mime_type",
+      "type" : "String",
+      "description" : "<em>Optional</em>. MIME type of the file as defined by the sender",
+      "required" : false
+    }, {
+      "name" : "file_size",
+      "type" : "Integer",
+      "description" : "<em>Optional</em>. File size in bytes. It can be bigger than 2^31 and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this value.",
+      "required" : false
+    } ]
+  }, {
     "id" : "type/story",
     "name" : "Story",
     "kind" : "type",
@@ -1920,7 +2001,41 @@
     "name" : "PaidMedia",
     "kind" : "type",
     "description" : "<p>This object describes paid media. Currently, it can be one of</p>",
-    "subtypes" : [ "type/paid-media-preview", "type/paid-media-photo", "type/paid-media-video" ]
+    "subtypes" : [ "type/paid-media-live-photo", "type/paid-media-photo", "type/paid-media-preview", "type/paid-media-video" ]
+  }, {
+    "id" : "type/paid-media-live-photo",
+    "name" : "PaidMediaLivePhoto",
+    "kind" : "type",
+    "description" : "<p>The paid media is a <a href=\"#livephoto\">live photo</a>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the paid media, always “live_photo”",
+      "required" : true,
+      "value" : "live_photo"
+    }, {
+      "name" : "live_photo",
+      "type" : "type/live-photo",
+      "description" : "The photo",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/paid-media-photo",
+    "name" : "PaidMediaPhoto",
+    "kind" : "type",
+    "description" : "<p>The paid media is a photo.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the paid media, always “photo”",
+      "required" : true,
+      "value" : "photo"
+    }, {
+      "name" : "photo",
+      "type" : [ "array", "type/photo-size" ],
+      "description" : "The photo",
+      "required" : true
+    } ]
   }, {
     "id" : "type/paid-media-preview",
     "name" : "PaidMediaPreview",
@@ -1947,23 +2062,6 @@
       "type" : "Integer",
       "description" : "<em>Optional</em>. Duration of the media in seconds as defined by the sender",
       "required" : false
-    } ]
-  }, {
-    "id" : "type/paid-media-photo",
-    "name" : "PaidMediaPhoto",
-    "kind" : "type",
-    "description" : "<p>The paid media is a photo.</p>",
-    "fields" : [ {
-      "name" : "type",
-      "type" : "String",
-      "description" : "Type of the paid media, always “photo”",
-      "required" : true,
-      "value" : "photo"
-    }, {
-      "name" : "photo",
-      "type" : [ "array", "type/photo-size" ],
-      "description" : "The photo",
-      "required" : true
     } ]
   }, {
     "id" : "type/paid-media-video",
@@ -2030,6 +2128,69 @@
       "required" : true
     } ]
   }, {
+    "id" : "type/poll-media",
+    "name" : "PollMedia",
+    "kind" : "type",
+    "description" : "<p>At most <strong>one</strong> of the optional fields can be present in any given object.</p>",
+    "fields" : [ {
+      "name" : "animation",
+      "type" : "type/animation",
+      "description" : "<em>Optional</em>. Media is an animation, information about the animation",
+      "required" : false
+    }, {
+      "name" : "audio",
+      "type" : "type/audio",
+      "description" : "<em>Optional</em>. Media is an audio file, information about the file; currently, can't be received in a poll option",
+      "required" : false
+    }, {
+      "name" : "document",
+      "type" : "type/document",
+      "description" : "<em>Optional</em>. Media is a general file, information about the file; currently, can't be received in a poll option",
+      "required" : false
+    }, {
+      "name" : "live_photo",
+      "type" : "type/live-photo",
+      "description" : "<em>Optional</em>. Media is a live photo, information about the live photo",
+      "required" : false
+    }, {
+      "name" : "location",
+      "type" : "type/location",
+      "description" : "<em>Optional</em>. Media is a shared location, information about the location",
+      "required" : false
+    }, {
+      "name" : "photo",
+      "type" : [ "array", "type/photo-size" ],
+      "description" : "<em>Optional</em>. Media is a photo, available sizes of the photo",
+      "required" : false
+    }, {
+      "name" : "sticker",
+      "type" : "type/sticker",
+      "description" : "<em>Optional</em>. Media is a sticker, information about the sticker; currently, for poll options only",
+      "required" : false
+    }, {
+      "name" : "venue",
+      "type" : "type/venue",
+      "description" : "<em>Optional</em>. Media is a venue, information about the venue",
+      "required" : false
+    }, {
+      "name" : "video",
+      "type" : "type/video",
+      "description" : "<em>Optional</em>. Media is a video, information about the video",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-poll-media",
+    "name" : "InputPollMedia",
+    "kind" : "type",
+    "description" : "<p>This object represents the content of a poll description or a quiz explanation to be sent. It should be one of</p>",
+    "subtypes" : [ "type/input-media-animation", "type/input-media-audio", "type/input-media-document", "type/input-media-live-photo", "type/input-media-location", "type/input-media-photo", "type/input-media-venue", "type/input-media-video" ]
+  }, {
+    "id" : "type/input-poll-option-media",
+    "name" : "InputPollOptionMedia",
+    "kind" : "type",
+    "description" : "<p>This object represents the content of a poll option to be sent. It should be one of</p>",
+    "subtypes" : [ "type/input-media-animation", "type/input-media-live-photo", "type/input-media-location", "type/input-media-photo", "type/input-media-sticker", "type/input-media-venue", "type/input-media-video" ]
+  }, {
     "id" : "type/poll-option",
     "name" : "PollOption",
     "kind" : "type",
@@ -2054,6 +2215,11 @@
       "name" : "text_entities",
       "type" : [ "array", "type/message-entity" ],
       "description" : "<em>Optional</em>. Special entities that appear in the option <em>text</em>. Currently, only custom emoji entities are allowed in poll option texts",
+      "required" : false
+    }, {
+      "name" : "media",
+      "type" : "type/poll-media",
+      "description" : "<em>Optional</em>. Media added to the poll option",
       "required" : false
     }, {
       "name" : "voter_count",
@@ -2103,6 +2269,11 @@
       "description" : "<em>Optional</em>. A JSON-serialized list of special entities that appear in the poll option text. It can be specified instead of <em>text_parse_mode</em>",
       "required" : false,
       "json_serialized" : true
+    }, {
+      "name" : "media",
+      "type" : "type/input-poll-option-media",
+      "description" : "<em>Optional</em>. Media added to the poll option",
+      "required" : false
     } ]
   }, {
     "id" : "type/poll-answer",
@@ -2197,6 +2368,16 @@
       "description" : "<em>True</em>, if the poll allows to change the chosen answer options",
       "required" : true
     }, {
+      "name" : "members_only",
+      "type" : "Boolean",
+      "description" : "<em>True</em> if voting is limited to users who have been members of the chat where the poll was originally sent for more than 24 hours",
+      "required" : true
+    }, {
+      "name" : "country_codes",
+      "type" : [ "array", "String" ],
+      "description" : "<em>Optional</em>. A list of two-letter <a href=\"https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2\">ISO 3166-1 alpha-2</a> country codes indicating the countries from which users can vote in the poll. If omitted, then users from any country can participate in the poll.",
+      "required" : false
+    }, {
       "name" : "correct_option_ids",
       "type" : [ "array", "Integer" ],
       "description" : "<em>Optional</em>. Array of 0-based identifiers of the correct answer options. Available only for polls in quiz mode which are closed or were sent (not forwarded) by the bot or to the private chat with the bot.",
@@ -2218,6 +2399,11 @@
       "description" : "<em>Optional</em>. Special entities like usernames, URLs, bot commands, etc. that appear in the <em>explanation</em>",
       "required" : false
     }, {
+      "name" : "explanation_media",
+      "type" : "type/poll-media",
+      "description" : "<em>Optional</em>. Media added to the quiz explanation",
+      "required" : false
+    }, {
       "name" : "open_period",
       "type" : "Integer",
       "description" : "<em>Optional</em>. Amount of time in seconds the poll will be active after creation",
@@ -2236,6 +2422,11 @@
       "name" : "description_entities",
       "type" : [ "array", "type/message-entity" ],
       "description" : "<em>Optional</em>. Special entities like usernames, URLs, bot commands, etc. that appear in the description",
+      "required" : false
+    }, {
+      "name" : "media",
+      "type" : "type/poll-media",
+      "description" : "<em>Optional</em>. Media added to the poll description; for polls inside the <a href=\"#message\">Message</a> object only",
       "required" : false
     } ]
   }, {
@@ -3474,7 +3665,7 @@
     "id" : "type/reply-keyboard-markup",
     "name" : "ReplyKeyboardMarkup",
     "kind" : "type",
-    "description" : "<p>This object represents a <a href=\"/bots/features#keyboards\">custom keyboard</a> with reply options (see <a href=\"/bots/features#keyboards\">Introduction to bots</a> for details and examples). Not supported in channels and for messages sent on behalf of a Telegram Business account.</p>",
+    "description" : "<p>This object represents a <a href=\"/bots/features#keyboards\">custom keyboard</a> with reply options (see <a href=\"/bots/features#keyboards\">Introduction to bots</a> for details and examples). Not supported in channels and for messages sent on behalf of a business account.</p>",
     "fields" : [ {
       "name" : "keyboard",
       "type" : [ "array", [ "array", "type/keyboard-button" ] ],
@@ -3708,7 +3899,7 @@
     "id" : "type/reply-keyboard-remove",
     "name" : "ReplyKeyboardRemove",
     "kind" : "type",
-    "description" : "<p>Upon receiving a message with this object, Telegram clients will remove the current custom keyboard and display the default letter-keyboard. By default, custom keyboards are displayed until a new keyboard is sent by a bot. An exception is made for one-time keyboards that are hidden immediately after the user presses a button (see <a href=\"#replykeyboardmarkup\">ReplyKeyboardMarkup</a>). Not supported in channels and for messages sent on behalf of a Telegram Business account.</p>",
+    "description" : "<p>Upon receiving a message with this object, Telegram clients will remove the current custom keyboard and display the default letter-keyboard. By default, custom keyboards are displayed until a new keyboard is sent by a bot. An exception is made for one-time keyboards that are hidden immediately after the user presses a button (see <a href=\"#replykeyboardmarkup\">ReplyKeyboardMarkup</a>). Not supported in channels and for messages sent on behalf of a business account.</p>",
     "fields" : [ {
       "name" : "remove_keyboard",
       "type" : "True",
@@ -3764,7 +3955,7 @@
     }, {
       "name" : "web_app",
       "type" : "type/web-app-info",
-      "description" : "<em>Optional</em>. Description of the <a href=\"/bots/webapps\">Web App</a> that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method <a href=\"#answerwebappquery\">answerWebAppQuery</a>. Available only in private chats between a user and the bot. Not supported for messages sent on behalf of a Telegram Business account.",
+      "description" : "<em>Optional</em>. Description of the <a href=\"/bots/webapps\">Web App</a> that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method <a href=\"#answerwebappquery\">answerWebAppQuery</a>. Available only in private chats between a user and the bot. Not supported for messages sent on behalf of a business account.",
       "required" : false
     }, {
       "name" : "login_url",
@@ -3774,17 +3965,17 @@
     }, {
       "name" : "switch_inline_query",
       "type" : "String",
-      "description" : "<em>Optional</em>. If set, pressing the button will prompt the user to select one of their chats, open that chat and insert the bot's username and the specified inline query in the input field. May be empty, in which case just the bot's username will be inserted. Not supported for messages sent in channel direct messages chats and on behalf of a Telegram Business account.",
+      "description" : "<em>Optional</em>. If set, pressing the button will prompt the user to select one of their chats, open that chat and insert the bot's username and the specified inline query in the input field. May be empty, in which case just the bot's username will be inserted. Not supported for messages sent in channel direct messages chats and on behalf of a business account.",
       "required" : false
     }, {
       "name" : "switch_inline_query_current_chat",
       "type" : "String",
-      "description" : "<em>Optional</em>. If set, pressing the button will insert the bot's username and the specified inline query in the current chat's input field. May be empty, in which case only the bot's username will be inserted.<br><br>This offers a quick way for the user to open your bot in inline mode in the same chat - good for selecting something from multiple options. Not supported in channels and for messages sent in channel direct messages chats and on behalf of a Telegram Business account.",
+      "description" : "<em>Optional</em>. If set, pressing the button will insert the bot's username and the specified inline query in the current chat's input field. May be empty, in which case only the bot's username will be inserted.<br><br>This offers a quick way for the user to open your bot in inline mode in the same chat - good for selecting something from multiple options. Not supported in channels and for messages sent in channel direct messages chats and on behalf of a business account.",
       "required" : false
     }, {
       "name" : "switch_inline_query_chosen_chat",
       "type" : "type/switch-inline-query-chosen-chat",
-      "description" : "<em>Optional</em>. If set, pressing the button will prompt the user to select one of their chats of the specified type, open that chat and insert the bot's username and the specified inline query in the input field. Not supported for messages sent in channel direct messages chats and on behalf of a Telegram Business account.",
+      "description" : "<em>Optional</em>. If set, pressing the button will prompt the user to select one of their chats of the specified type, open that chat and insert the bot's username and the specified inline query in the input field. Not supported for messages sent in channel direct messages chats and on behalf of a business account.",
       "required" : false
     }, {
       "name" : "copy_text",
@@ -3922,7 +4113,7 @@
     "id" : "type/force-reply",
     "name" : "ForceReply",
     "kind" : "type",
-    "description" : "<p>Upon receiving a message with this object, Telegram clients will display a reply interface to the user (act as if the user has selected the bot's message and tapped 'Reply'). This can be extremely useful if you want to create user-friendly step-by-step interfaces without having to sacrifice <a href=\"/bots/features#privacy-mode\">privacy mode</a>. Not supported in channels and for messages sent on behalf of a Telegram Business account.</p>",
+    "description" : "<p>Upon receiving a message with this object, Telegram clients will display a reply interface to the user (act as if the user has selected the bot's message and tapped 'Reply'). This can be extremely useful if you want to create user-friendly step-by-step interfaces without having to sacrifice <a href=\"/bots/features#privacy-mode\">privacy mode</a>. Not supported in channels and for messages sent on behalf of a user account.</p>",
     "fields" : [ {
       "name" : "force_reply",
       "type" : "True",
@@ -4419,6 +4610,11 @@
       "description" : "<em>True</em>, if the user is allowed to add web page previews to their messages",
       "required" : true
     }, {
+      "name" : "can_react_to_messages",
+      "type" : "Boolean",
+      "description" : "<em>True</em>, if the user is allowed to react to messages",
+      "required" : true
+    }, {
       "name" : "can_edit_tag",
       "type" : "Boolean",
       "description" : "<em>True</em>, if the user is allowed to edit their own tag",
@@ -4580,9 +4776,14 @@
       "description" : "<em>Optional</em>. <em>True</em>, if the user is allowed to add web page previews to their messages",
       "required" : false
     }, {
+      "name" : "can_react_to_messages",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. <em>True</em>, if the user is allowed to react to messages. If omitted, defaults to the value of <em>can_send_messages</em>.",
+      "required" : false
+    }, {
       "name" : "can_edit_tag",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. <em>True</em>, if the user is allowed to edit their own tag",
+      "description" : "<em>Optional</em>. <em>True</em>, if the user is allowed to edit their own tag. If omitted, defaults to the value of <em>can_pin_messages</em>.",
       "required" : false
     }, {
       "name" : "can_change_info",
@@ -5666,6 +5867,22 @@
       "required" : false
     } ]
   }, {
+    "id" : "type/bot-access-settings",
+    "name" : "BotAccessSettings",
+    "kind" : "type",
+    "description" : "<p>This object describes the access settings of a bot.</p>",
+    "fields" : [ {
+      "name" : "is_access_restricted",
+      "type" : "Boolean",
+      "description" : "<em>True</em>, if only selected users can access the bot. The bot's owner can always access it.",
+      "required" : true
+    }, {
+      "name" : "added_users",
+      "type" : [ "array", "type/user" ],
+      "description" : "<em>Optional</em>. The list of other users who have access to the bot if the access is restricted",
+      "required" : false
+    } ]
+  }, {
     "id" : "type/accepted-gift-types",
     "name" : "AcceptedGiftTypes",
     "kind" : "type",
@@ -5808,7 +6025,7 @@
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>). Channel direct messages chats and channel chats aren't supported.",
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>. Channel direct messages chats and channel chats aren't supported.",
       "required" : true
     } ]
   }, {
@@ -5825,7 +6042,7 @@
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>). Channel direct messages chats and channel chats aren't supported.",
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>. Channel direct messages chats and channel chats aren't supported.",
       "required" : true
     } ]
   }, {
@@ -5842,7 +6059,7 @@
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>). Channel direct messages chats and channel chats aren't supported.",
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>. Channel direct messages chats and channel chats aren't supported.",
       "required" : true
     }, {
       "name" : "user_id",
@@ -6084,7 +6301,7 @@
     "fields" : [ {
       "name" : "new_owner",
       "type" : "type/user",
-      "description" : "<em>Optional</em>. The user which will be the new owner of the chat if the previous owner does not return to the chat",
+      "description" : "<em>Optional</em>. The user who will become the new owner of the chat if the previous owner does not return to the chat",
       "required" : false
     } ]
   }, {
@@ -6254,6 +6471,17 @@
       "required" : false
     } ]
   }, {
+    "id" : "type/sent-guest-message",
+    "name" : "SentGuestMessage",
+    "kind" : "type",
+    "description" : "<p>Describes an inline message sent by a guest bot.</p>",
+    "fields" : [ {
+      "name" : "inline_message_id",
+      "type" : "String",
+      "description" : "Identifier of the sent inline message",
+      "required" : true
+    } ]
+  }, {
     "id" : "type/prepared-inline-message",
     "name" : "PreparedInlineMessage",
     "kind" : "type",
@@ -6301,140 +6529,7 @@
     "name" : "InputMedia",
     "kind" : "type",
     "description" : "<p>This object represents the content of a media message to be sent. It should be one of</p>",
-    "subtypes" : [ "type/input-media-animation", "type/input-media-document", "type/input-media-audio", "type/input-media-photo", "type/input-media-video" ]
-  }, {
-    "id" : "type/input-media-photo",
-    "name" : "InputMediaPhoto",
-    "kind" : "type",
-    "description" : "<p>Represents a photo to be sent.</p>",
-    "fields" : [ {
-      "name" : "type",
-      "type" : "String",
-      "description" : "Type of the result, must be <em>photo</em>",
-      "required" : true,
-      "value" : "photo"
-    }, {
-      "name" : "media",
-      "type" : "String",
-      "description" : "File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass “attach://&lt;file_attach_name&gt;” to upload a new one using multipart/form-data under &lt;file_attach_name&gt; name. <a href=\"#sending-files\">More information on Sending Files »</a>",
-      "required" : true
-    }, {
-      "name" : "caption",
-      "type" : "String",
-      "description" : "<em>Optional</em>. Caption of the photo to be sent, 0-1024 characters after entities parsing",
-      "required" : false,
-      "constraints" : {
-        "string" : {
-          "from" : 0,
-          "to" : 1024,
-          "after_entities_parsing" : true
-        }
-      }
-    }, {
-      "name" : "parse_mode",
-      "type" : "String",
-      "description" : "<em>Optional</em>. Mode for parsing entities in the photo caption. See <a href=\"#formatting-options\">formatting options</a> for more details.",
-      "required" : false
-    }, {
-      "name" : "caption_entities",
-      "type" : [ "array", "type/message-entity" ],
-      "description" : "<em>Optional</em>. List of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
-      "required" : false
-    }, {
-      "name" : "show_caption_above_media",
-      "type" : "Boolean",
-      "description" : "<em>Optional</em>. Pass <em>True</em>, if the caption must be shown above the message media",
-      "required" : false
-    }, {
-      "name" : "has_spoiler",
-      "type" : "Boolean",
-      "description" : "<em>Optional</em>. Pass <em>True</em> if the photo needs to be covered with a spoiler animation",
-      "required" : false
-    } ]
-  }, {
-    "id" : "type/input-media-video",
-    "name" : "InputMediaVideo",
-    "kind" : "type",
-    "description" : "<p>Represents a video to be sent.</p>",
-    "fields" : [ {
-      "name" : "type",
-      "type" : "String",
-      "description" : "Type of the result, must be <em>video</em>",
-      "required" : true,
-      "value" : "video"
-    }, {
-      "name" : "media",
-      "type" : "String",
-      "description" : "File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass “attach://&lt;file_attach_name&gt;” to upload a new one using multipart/form-data under &lt;file_attach_name&gt; name. <a href=\"#sending-files\">More information on Sending Files »</a>",
-      "required" : true
-    }, {
-      "name" : "thumbnail",
-      "type" : "String",
-      "description" : "<em>Optional</em>. Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused and can be only uploaded as a new file, so you can pass “attach://&lt;file_attach_name&gt;” if the thumbnail was uploaded using multipart/form-data under &lt;file_attach_name&gt;. <a href=\"#sending-files\">More information on Sending Files »</a>",
-      "required" : false
-    }, {
-      "name" : "cover",
-      "type" : "String",
-      "description" : "<em>Optional</em>. Cover for the video in the message. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass “attach://&lt;file_attach_name&gt;” to upload a new one using multipart/form-data under &lt;file_attach_name&gt; name. <a href=\"#sending-files\">More information on Sending Files »</a>",
-      "required" : false
-    }, {
-      "name" : "start_timestamp",
-      "type" : "Integer",
-      "description" : "<em>Optional</em>. Start timestamp for the video in the message",
-      "required" : false
-    }, {
-      "name" : "caption",
-      "type" : "String",
-      "description" : "<em>Optional</em>. Caption of the video to be sent, 0-1024 characters after entities parsing",
-      "required" : false,
-      "constraints" : {
-        "string" : {
-          "from" : 0,
-          "to" : 1024,
-          "after_entities_parsing" : true
-        }
-      }
-    }, {
-      "name" : "parse_mode",
-      "type" : "String",
-      "description" : "<em>Optional</em>. Mode for parsing entities in the video caption. See <a href=\"#formatting-options\">formatting options</a> for more details.",
-      "required" : false
-    }, {
-      "name" : "caption_entities",
-      "type" : [ "array", "type/message-entity" ],
-      "description" : "<em>Optional</em>. List of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
-      "required" : false
-    }, {
-      "name" : "show_caption_above_media",
-      "type" : "Boolean",
-      "description" : "<em>Optional</em>. Pass <em>True</em>, if the caption must be shown above the message media",
-      "required" : false
-    }, {
-      "name" : "width",
-      "type" : "Integer",
-      "description" : "<em>Optional</em>. Video width",
-      "required" : false
-    }, {
-      "name" : "height",
-      "type" : "Integer",
-      "description" : "<em>Optional</em>. Video height",
-      "required" : false
-    }, {
-      "name" : "duration",
-      "type" : "Integer",
-      "description" : "<em>Optional</em>. Video duration in seconds",
-      "required" : false
-    }, {
-      "name" : "supports_streaming",
-      "type" : "Boolean",
-      "description" : "<em>Optional</em>. Pass <em>True</em> if the uploaded video is suitable for streaming",
-      "required" : false
-    }, {
-      "name" : "has_spoiler",
-      "type" : "Boolean",
-      "description" : "<em>Optional</em>. Pass <em>True</em> if the video needs to be covered with a spoiler animation",
-      "required" : false
-    } ]
+    "subtypes" : [ "type/input-media-animation", "type/input-media-audio", "type/input-media-document", "type/input-media-live-photo", "type/input-media-photo", "type/input-media-video" ]
   }, {
     "id" : "type/input-media-animation",
     "name" : "InputMediaAnimation",
@@ -6613,6 +6708,294 @@
       "required" : false
     } ]
   }, {
+    "id" : "type/input-media-live-photo",
+    "name" : "InputMediaLivePhoto",
+    "kind" : "type",
+    "description" : "<p>Represents a live photo to be sent.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the result, must be <em>live_photo</em>",
+      "required" : true,
+      "value" : "live_photo"
+    }, {
+      "name" : "media",
+      "type" : "String",
+      "description" : "Video of the live photo to send. Pass a file_id to send a file that exists on the Telegram servers (recommended) or pass “attach://&lt;file_attach_name&gt;” to upload a new one using multipart/form-data under &lt;file_attach_name&gt; name. <a href=\"#sending-files\">More information on Sending Files »</a>. Sending live photos by a URL is currently unsupported.",
+      "required" : true
+    }, {
+      "name" : "photo",
+      "type" : "String",
+      "description" : "The static photo to send. Pass a file_id to send a file that exists on the Telegram servers (recommended) or pass “attach://&lt;file_attach_name&gt;” to upload a new one using multipart/form-data under &lt;file_attach_name&gt; name. <a href=\"#sending-files\">More information on Sending Files »</a>. Sending live photos by a URL is currently unsupported.",
+      "required" : true
+    }, {
+      "name" : "caption",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Caption of the live photo to be sent, 0-1024 characters after entities parsing",
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 1024,
+          "after_entities_parsing" : true
+        }
+      }
+    }, {
+      "name" : "parse_mode",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Mode for parsing entities in the live photo caption. See <a href=\"#formatting-options\">formatting options</a> for more details.",
+      "required" : false
+    }, {
+      "name" : "caption_entities",
+      "type" : [ "array", "type/message-entity" ],
+      "description" : "<em>Optional</em>. List of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
+      "required" : false
+    }, {
+      "name" : "show_caption_above_media",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. Pass <em>True</em>, if the caption must be shown above the message media",
+      "required" : false
+    }, {
+      "name" : "has_spoiler",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the live photo needs to be covered with a spoiler animation",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-media-location",
+    "name" : "InputMediaLocation",
+    "kind" : "type",
+    "description" : "<p>Represents a location to be sent.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the result, must be <em>location</em>",
+      "required" : true,
+      "value" : "location"
+    }, {
+      "name" : "latitude",
+      "type" : "Float",
+      "description" : "Latitude of the location",
+      "required" : true
+    }, {
+      "name" : "longitude",
+      "type" : "Float",
+      "description" : "Longitude of the location",
+      "required" : true
+    }, {
+      "name" : "horizontal_accuracy",
+      "type" : "Float",
+      "description" : "<em>Optional</em>. The radius of uncertainty for the location, measured in meters; 0-1500",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-media-photo",
+    "name" : "InputMediaPhoto",
+    "kind" : "type",
+    "description" : "<p>Represents a photo to be sent.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the result, must be <em>photo</em>",
+      "required" : true,
+      "value" : "photo"
+    }, {
+      "name" : "media",
+      "type" : "String",
+      "description" : "File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass “attach://&lt;file_attach_name&gt;” to upload a new one using multipart/form-data under &lt;file_attach_name&gt; name. <a href=\"#sending-files\">More information on Sending Files »</a>",
+      "required" : true
+    }, {
+      "name" : "caption",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Caption of the photo to be sent, 0-1024 characters after entities parsing",
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 1024,
+          "after_entities_parsing" : true
+        }
+      }
+    }, {
+      "name" : "parse_mode",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Mode for parsing entities in the photo caption. See <a href=\"#formatting-options\">formatting options</a> for more details.",
+      "required" : false
+    }, {
+      "name" : "caption_entities",
+      "type" : [ "array", "type/message-entity" ],
+      "description" : "<em>Optional</em>. List of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
+      "required" : false
+    }, {
+      "name" : "show_caption_above_media",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. Pass <em>True</em>, if the caption must be shown above the message media",
+      "required" : false
+    }, {
+      "name" : "has_spoiler",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the photo needs to be covered with a spoiler animation",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-media-sticker",
+    "name" : "InputMediaSticker",
+    "kind" : "type",
+    "description" : "<p>Represents a sticker file to be sent.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the result, must be <em>sticker</em>",
+      "required" : true,
+      "value" : "sticker"
+    }, {
+      "name" : "media",
+      "type" : "String",
+      "description" : "File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a .WEBP sticker from the Internet, or pass “attach://&lt;file_attach_name&gt;” to upload a new .WEBP, .TGS, or .WEBM sticker using multipart/form-data under &lt;file_attach_name&gt; name. <a href=\"#sending-files\">More information on Sending Files »</a>",
+      "required" : true
+    }, {
+      "name" : "emoji",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Emoji associated with the sticker; only for just uploaded stickers",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-media-venue",
+    "name" : "InputMediaVenue",
+    "kind" : "type",
+    "description" : "<p>Represents a venue to be sent.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the result, must be <em>venue</em>",
+      "required" : true,
+      "value" : "venue"
+    }, {
+      "name" : "latitude",
+      "type" : "Float",
+      "description" : "Latitude of the location",
+      "required" : true
+    }, {
+      "name" : "longitude",
+      "type" : "Float",
+      "description" : "Longitude of the location",
+      "required" : true
+    }, {
+      "name" : "title",
+      "type" : "String",
+      "description" : "Name of the venue",
+      "required" : true
+    }, {
+      "name" : "address",
+      "type" : "String",
+      "description" : "Address of the venue",
+      "required" : true
+    }, {
+      "name" : "foursquare_id",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Foursquare identifier of the venue",
+      "required" : false
+    }, {
+      "name" : "foursquare_type",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Foursquare type of the venue, if known. (For example, “arts_entertainment/default”, “arts_entertainment/aquarium” or “food/icecream”.)",
+      "required" : false
+    }, {
+      "name" : "google_place_id",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Google Places identifier of the venue",
+      "required" : false
+    }, {
+      "name" : "google_place_type",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Google Places type of the venue. (See <a href=\"https://developers.google.com/places/web-service/supported_types\">supported types</a>.)",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-media-video",
+    "name" : "InputMediaVideo",
+    "kind" : "type",
+    "description" : "<p>Represents a video to be sent.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the result, must be <em>video</em>",
+      "required" : true,
+      "value" : "video"
+    }, {
+      "name" : "media",
+      "type" : "String",
+      "description" : "File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass “attach://&lt;file_attach_name&gt;” to upload a new one using multipart/form-data under &lt;file_attach_name&gt; name. <a href=\"#sending-files\">More information on Sending Files »</a>",
+      "required" : true
+    }, {
+      "name" : "thumbnail",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side. The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be reused and can be only uploaded as a new file, so you can pass “attach://&lt;file_attach_name&gt;” if the thumbnail was uploaded using multipart/form-data under &lt;file_attach_name&gt;. <a href=\"#sending-files\">More information on Sending Files »</a>",
+      "required" : false
+    }, {
+      "name" : "cover",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Cover for the video in the message. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass “attach://&lt;file_attach_name&gt;” to upload a new one using multipart/form-data under &lt;file_attach_name&gt; name. <a href=\"#sending-files\">More information on Sending Files »</a>",
+      "required" : false
+    }, {
+      "name" : "start_timestamp",
+      "type" : "Integer",
+      "description" : "<em>Optional</em>. Start timestamp for the video in the message",
+      "required" : false
+    }, {
+      "name" : "caption",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Caption of the video to be sent, 0-1024 characters after entities parsing",
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 1024,
+          "after_entities_parsing" : true
+        }
+      }
+    }, {
+      "name" : "parse_mode",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Mode for parsing entities in the video caption. See <a href=\"#formatting-options\">formatting options</a> for more details.",
+      "required" : false
+    }, {
+      "name" : "caption_entities",
+      "type" : [ "array", "type/message-entity" ],
+      "description" : "<em>Optional</em>. List of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
+      "required" : false
+    }, {
+      "name" : "show_caption_above_media",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. Pass <em>True</em>, if the caption must be shown above the message media",
+      "required" : false
+    }, {
+      "name" : "width",
+      "type" : "Integer",
+      "description" : "<em>Optional</em>. Video width",
+      "required" : false
+    }, {
+      "name" : "height",
+      "type" : "Integer",
+      "description" : "<em>Optional</em>. Video height",
+      "required" : false
+    }, {
+      "name" : "duration",
+      "type" : "Integer",
+      "description" : "<em>Optional</em>. Video duration in seconds",
+      "required" : false
+    }, {
+      "name" : "supports_streaming",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the uploaded video is suitable for streaming",
+      "required" : false
+    }, {
+      "name" : "has_spoiler",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the video needs to be covered with a spoiler animation",
+      "required" : false
+    } ]
+  }, {
     "id" : "type/input-file",
     "name" : "InputFile",
     "kind" : "type",
@@ -6622,7 +7005,29 @@
     "name" : "InputPaidMedia",
     "kind" : "type",
     "description" : "<p>This object describes the paid media to be sent. Currently, it can be one of</p>",
-    "subtypes" : [ "type/input-paid-media-photo", "type/input-paid-media-video" ]
+    "subtypes" : [ "type/input-paid-media-live-photo", "type/input-paid-media-photo", "type/input-paid-media-video" ]
+  }, {
+    "id" : "type/input-paid-media-live-photo",
+    "name" : "InputPaidMediaLivePhoto",
+    "kind" : "type",
+    "description" : "<p>The paid media to send is a live photo.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the media, must be <em>live_photo</em>",
+      "required" : true,
+      "value" : "live_photo"
+    }, {
+      "name" : "media",
+      "type" : "String",
+      "description" : "Video of the live photo to send. Pass a file_id to send a file that exists on the Telegram servers (recommended) or pass “attach://&lt;file_attach_name&gt;” to upload a new one using multipart/form-data under &lt;file_attach_name&gt; name. <a href=\"#sending-files\">More information on Sending Files »</a>. Sending live photos by a URL is currently unsupported.",
+      "required" : true
+    }, {
+      "name" : "photo",
+      "type" : "String",
+      "description" : "The static photo to send. Pass a file_id to send a file that exists on the Telegram servers (recommended) or pass “attach://&lt;file_attach_name&gt;” to upload a new one using multipart/form-data under &lt;file_attach_name&gt; name. <a href=\"#sending-files\">More information on Sending Files »</a>. Sending live photos by a URL is currently unsupported.",
+      "required" : true
+    } ]
   }, {
     "id" : "type/input-paid-media-photo",
     "name" : "InputPaidMediaPhoto",
@@ -9852,7 +10257,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -9903,7 +10308,7 @@
       "name" : "allow_paid_broadcast",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance"
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
     }, {
       "name" : "message_effect_id",
       "type" : "String",
@@ -9936,7 +10341,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -9951,7 +10356,7 @@
       "name" : "from_chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the chat where the original message was sent (or channel username in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the chat where the original message was sent (or username of the target bot, supergroup or channel in the format <code>@username</code>)"
     }, {
       "name" : "video_start_timestamp",
       "type" : "Integer",
@@ -9993,7 +10398,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -10008,7 +10413,7 @@
       "name" : "from_chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the chat where the original messages were sent (or channel username in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the chat where the original messages were sent (or username of the target bot, supergroup or channel in the format <code>@username</code>)"
     }, {
       "name" : "message_ids",
       "type" : [ "array", "Integer" ],
@@ -10035,7 +10440,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -10050,7 +10455,7 @@
       "name" : "from_chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the chat where the original message was sent (or channel username in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the chat where the original message was sent (or username of the target bot, supergroup or channel in the format <code>@username</code>)"
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -10101,7 +10506,7 @@
       "name" : "allow_paid_broadcast",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance"
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
     }, {
       "name" : "message_effect_id",
       "type" : "String",
@@ -10134,7 +10539,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -10149,7 +10554,7 @@
       "name" : "from_chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the chat where the original messages were sent (or channel username in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the chat where the original messages were sent (or username of the target bot, supergroup or channel in the format <code>@username</code>)"
     }, {
       "name" : "message_ids",
       "type" : [ "array", "Integer" ],
@@ -10186,7 +10591,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -10247,7 +10652,7 @@
       "name" : "allow_paid_broadcast",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance"
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
     }, {
       "name" : "message_effect_id",
       "type" : "String",
@@ -10272,6 +10677,110 @@
       "json_serialized" : true
     } ]
   }, {
+    "id" : "method/send-live-photo",
+    "name" : "sendLivePhoto",
+    "kind" : "method",
+    "description" : "<p>Use this method to send live photos. On success, the sent <a href=\"#message\">Message</a> is returned.</p>",
+    "params" : [ {
+      "name" : "business_connection_id",
+      "type" : "String",
+      "required" : false,
+      "description" : "Unique identifier of the business connection on behalf of which the message will be sent"
+    }, {
+      "name" : "chat_id",
+      "type" : [ "or", [ "Integer", "String" ] ],
+      "required" : true,
+      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+    }, {
+      "name" : "message_thread_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only"
+    }, {
+      "name" : "direct_messages_topic_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
+    }, {
+      "name" : "live_photo",
+      "type" : [ "or", [ "type/input-file", "String" ] ],
+      "required" : true,
+      "description" : "Live photo video to send. The video must be no longer than 10 seconds and must not exceed 10 MB in size. Pass a file_id as String to send a video that exists on the Telegram servers (recommended) or upload a new video using multipart/form-data. <a href=\"#sending-files\">More information on Sending Files »</a>. Sending live photos by a URL is currently unsupported."
+    }, {
+      "name" : "photo",
+      "type" : [ "or", [ "type/input-file", "String" ] ],
+      "required" : true,
+      "description" : "The static photo to send. Pass a file_id as String to send a photo that exists on the Telegram servers (recommended) or upload a new video using multipart/form-data. <a href=\"#sending-files\">More information on Sending Files »</a>. Sending live photos by a URL is currently unsupported."
+    }, {
+      "name" : "caption",
+      "type" : "String",
+      "required" : false,
+      "description" : "Video caption (may also be used when resending videos by <em>file_id</em>), 0-1024 characters after entities parsing",
+      "[:constraints :string]" : {
+        "from" : 0,
+        "to" : 1024,
+        "after_entities_parsing" : true
+      }
+    }, {
+      "name" : "parse_mode",
+      "type" : "String",
+      "required" : false,
+      "description" : "Mode for parsing entities in the video caption. See <a href=\"#formatting-options\">formatting options</a> for more details."
+    }, {
+      "name" : "caption_entities",
+      "type" : [ "array", "type/message-entity" ],
+      "required" : false,
+      "description" : "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
+      "json_serialized" : true
+    }, {
+      "name" : "show_caption_above_media",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Pass <em>True</em>, if the caption must be shown above the message media"
+    }, {
+      "name" : "has_spoiler",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Pass <em>True</em> if the video needs to be covered with a spoiler animation"
+    }, {
+      "name" : "disable_notification",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Sends the message <a href=\"https://telegram.org/blog/channels-2-0#silent-messages\">silently</a>. Users will receive a notification with no sound."
+    }, {
+      "name" : "protect_content",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Protects the contents of the sent message from forwarding and saving"
+    }, {
+      "name" : "allow_paid_broadcast",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
+    }, {
+      "name" : "message_effect_id",
+      "type" : "String",
+      "required" : false,
+      "description" : "Unique identifier of the message effect to be added to the message; for private chats only"
+    }, {
+      "name" : "suggested_post_parameters",
+      "type" : "type/suggested-post-parameters",
+      "required" : false,
+      "description" : "A JSON-serialized object containing the parameters of the suggested post to send; for direct messages chats only. If the message is sent as a reply to another suggested post, then that suggested post is automatically declined.",
+      "json_serialized" : true
+    }, {
+      "name" : "reply_parameters",
+      "type" : "type/reply-parameters",
+      "required" : false,
+      "description" : "Description of the message to reply to"
+    }, {
+      "name" : "reply_markup",
+      "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
+      "required" : false,
+      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
+      "json_serialized" : true
+    } ]
+  }, {
     "id" : "method/send-audio",
     "name" : "sendAudio",
     "kind" : "method",
@@ -10285,7 +10794,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -10356,7 +10865,7 @@
       "name" : "allow_paid_broadcast",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance"
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
     }, {
       "name" : "message_effect_id",
       "type" : "String",
@@ -10394,7 +10903,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -10455,7 +10964,7 @@
       "name" : "allow_paid_broadcast",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance"
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
     }, {
       "name" : "message_effect_id",
       "type" : "String",
@@ -10493,7 +11002,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -10589,7 +11098,7 @@
       "name" : "allow_paid_broadcast",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance"
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
     }, {
       "name" : "message_effect_id",
       "type" : "String",
@@ -10627,7 +11136,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -10708,7 +11217,7 @@
       "name" : "allow_paid_broadcast",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance"
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
     }, {
       "name" : "message_effect_id",
       "type" : "String",
@@ -10746,7 +11255,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -10802,7 +11311,7 @@
       "name" : "allow_paid_broadcast",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance"
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
     }, {
       "name" : "message_effect_id",
       "type" : "String",
@@ -10840,7 +11349,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -10885,7 +11394,7 @@
       "name" : "allow_paid_broadcast",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance"
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
     }, {
       "name" : "message_effect_id",
       "type" : "String",
@@ -10923,7 +11432,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>). If the chat is a channel, all Telegram Star proceeds from this media will be credited to the chat's balance. Otherwise, they will be credited to the bot's balance."
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>. If the chat is a channel, all Telegram Star proceeds from this media will be credited to the chat's balance. Otherwise, they will be credited to the bot's balance."
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -10990,7 +11499,7 @@
       "name" : "allow_paid_broadcast",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance"
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
     }, {
       "name" : "suggested_post_parameters",
       "type" : "type/suggested-post-parameters",
@@ -11013,7 +11522,7 @@
     "id" : "method/send-media-group",
     "name" : "sendMediaGroup",
     "kind" : "method",
-    "description" : "<p>Use this method to send a group of photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of <a href=\"#message\">Message</a> objects that were sent is returned.</p>",
+    "description" : "<p>Use this method to send a group of photos, live photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of <a href=\"#message\">Message</a> objects that were sent is returned.</p>",
     "params" : [ {
       "name" : "business_connection_id",
       "type" : "String",
@@ -11023,7 +11532,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -11036,7 +11545,7 @@
       "description" : "Identifier of the direct messages topic to which the messages will be sent; required if the messages are sent to a direct messages chat"
     }, {
       "name" : "media",
-      "type" : [ "array", [ "or", [ "type/input-media-audio", "type/input-media-document", "type/input-media-photo", "type/input-media-video" ] ] ],
+      "type" : [ "array", [ "or", [ "type/input-media-audio", "type/input-media-document", "type/input-media-live-photo", "type/input-media-photo", "type/input-media-video" ] ] ],
       "required" : true,
       "description" : "A JSON-serialized array describing messages to be sent, must include 2-10 items",
       "json_serialized" : true
@@ -11054,7 +11563,7 @@
       "name" : "allow_paid_broadcast",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance"
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
     }, {
       "name" : "message_effect_id",
       "type" : "String",
@@ -11080,7 +11589,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -11135,7 +11644,7 @@
       "name" : "allow_paid_broadcast",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance"
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
     }, {
       "name" : "message_effect_id",
       "type" : "String",
@@ -11173,7 +11682,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -11238,7 +11747,7 @@
       "name" : "allow_paid_broadcast",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance"
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
     }, {
       "name" : "message_effect_id",
       "type" : "String",
@@ -11276,7 +11785,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -11321,7 +11830,7 @@
       "name" : "allow_paid_broadcast",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance"
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
     }, {
       "name" : "message_effect_id",
       "type" : "String",
@@ -11359,7 +11868,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>). Polls can't be sent to channel direct messages chats."
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>. Polls can't be sent to channel direct messages chats."
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -11389,7 +11898,7 @@
       "name" : "options",
       "type" : [ "array", "type/input-poll-option" ],
       "required" : true,
-      "description" : "A JSON-serialized list of 2-12 answer options",
+      "description" : "A JSON-serialized list of 1-12 answer options",
       "json_serialized" : true
     }, {
       "name" : "is_anonymous",
@@ -11427,6 +11936,17 @@
       "required" : false,
       "description" : "Pass <em>True</em>, if poll results must be shown only after the poll closes"
     }, {
+      "name" : "members_only",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Pass <em>True</em>, if voting is limited to users who have been members of the chat where the poll is being sent for more than 24 hours; for channel chats only"
+    }, {
+      "name" : "country_codes",
+      "type" : [ "array", "String" ],
+      "required" : false,
+      "description" : "A JSON-serialized list of 0-12 two-letter <a href=\"https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2\">ISO 3166-1 alpha-2</a> country codes indicating the countries from which users can vote in the poll; for channel chats only. If omitted or empty, then users from any country can participate in the poll.",
+      "json_serialized" : true
+    }, {
       "name" : "correct_option_ids",
       "type" : [ "array", "Integer" ],
       "required" : false,
@@ -11453,6 +11973,11 @@
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in the poll explanation. It can be specified instead of <em>explanation_parse_mode</em>",
       "json_serialized" : true
+    }, {
+      "name" : "explanation_media",
+      "type" : "type/input-poll-media",
+      "required" : false,
+      "description" : "Media added to the quiz explanation"
     }, {
       "name" : "open_period",
       "type" : "Integer",
@@ -11490,6 +12015,11 @@
       "description" : "A JSON-serialized list of special entities that appear in the poll description, which can be specified instead of <em>description_parse_mode</em>",
       "json_serialized" : true
     }, {
+      "name" : "media",
+      "type" : "type/input-poll-media",
+      "required" : false,
+      "description" : "Media added to the poll description"
+    }, {
       "name" : "disable_notification",
       "type" : "Boolean",
       "required" : false,
@@ -11503,7 +12033,7 @@
       "name" : "allow_paid_broadcast",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance"
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
     }, {
       "name" : "message_effect_id",
       "type" : "String",
@@ -11533,9 +12063,9 @@
       "description" : "Unique identifier of the business connection on behalf of which the message will be sent"
     }, {
       "name" : "chat_id",
-      "type" : "Integer",
+      "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat"
+      "description" : "Unique identifier for the target chat or username of the target bot in the format <code>@username</code>"
     }, {
       "name" : "checklist",
       "type" : "type/input-checklist",
@@ -11584,7 +12114,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -11614,7 +12144,7 @@
       "name" : "allow_paid_broadcast",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance"
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
     }, {
       "name" : "message_effect_id",
       "type" : "String",
@@ -11642,7 +12172,7 @@
     "id" : "method/send-message-draft",
     "name" : "sendMessageDraft",
     "kind" : "method",
-    "description" : "<p>Use this method to stream a partial message to a user while the message is being generated. Returns <em>True</em> on success.</p>",
+    "description" : "<p>Use this method to stream a partial message to a user while the message is being generated. Note that the streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is finalized, you <strong>must</strong> call <a href=\"#sendmessage\">sendMessage</a> with the complete message to persist it in the user's chat. Returns <em>True</em> on success.</p>",
     "params" : [ {
       "name" : "chat_id",
       "type" : "Integer",
@@ -11657,14 +12187,14 @@
       "name" : "draft_id",
       "type" : "Integer",
       "required" : true,
-      "description" : "Unique identifier of the message draft; must be non-zero. Changes of drafts with the same identifier are animated"
+      "description" : "Unique identifier of the message draft; must be non-zero. Changes of drafts with the same identifier are animated."
     }, {
       "name" : "text",
       "type" : "String",
-      "required" : true,
-      "description" : "Text of the message to be sent, 1-4096 characters after entities parsing",
+      "required" : false,
+      "description" : "Text of the message to be sent, 0-4096 characters after entities parsing. Pass an empty text to show a “Thinking…” placeholder.",
       "[:constraints :string]" : {
-        "from" : 1,
+        "from" : 0,
         "to" : 4096,
         "after_entities_parsing" : true
       }
@@ -11694,7 +12224,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>). Channel chats and channel direct messages chats aren't supported."
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>. Channel chats and channel direct messages chats aren't supported."
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -11715,7 +12245,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -11817,7 +12347,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target group or username of the target supergroup or channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target group or username of the target supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "user_id",
       "type" : "Integer",
@@ -11843,7 +12373,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target group or username of the target supergroup or channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target group or username of the target supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "user_id",
       "type" : "Integer",
@@ -11864,7 +12394,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
     }, {
       "name" : "user_id",
       "type" : "Integer",
@@ -11896,7 +12426,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target channel in the format <code>@username</code>"
     }, {
       "name" : "user_id",
       "type" : "Integer",
@@ -11997,7 +12527,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
     }, {
       "name" : "user_id",
       "type" : "Integer",
@@ -12022,7 +12552,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
     }, {
       "name" : "user_id",
       "type" : "Integer",
@@ -12047,7 +12577,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target channel in the format <code>@username</code>"
     }, {
       "name" : "sender_chat_id",
       "type" : "Integer",
@@ -12063,7 +12593,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target channel in the format <code>@username</code>"
     }, {
       "name" : "sender_chat_id",
       "type" : "Integer",
@@ -12079,7 +12609,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
     }, {
       "name" : "permissions",
       "type" : "type/chat-permissions",
@@ -12101,7 +12631,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target channel in the format <code>@username</code>"
     } ],
     "notes" : "<blockquote><p>Note: Each administrator in a chat generates their own invite links. Bots can't use invite links generated by other administrators. If you want your bot to work with invite links, it will need to generate its own link using <a href=\"#exportchatinvitelink\">exportChatInviteLink</a> or by calling the <a href=\"#getchat\">getChat</a> method. If your bot needs to generate a new primary invite link replacing its previous one, use <a href=\"#exportchatinvitelink\">exportChatInviteLink</a> again.</p></blockquote>"
   }, {
@@ -12113,7 +12643,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target channel in the format <code>@username</code>"
     }, {
       "name" : "name",
       "type" : "String",
@@ -12148,7 +12678,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target channel in the format <code>@username</code>"
     }, {
       "name" : "invite_link",
       "type" : "String",
@@ -12188,7 +12718,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target channel chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target channel chat or username of the target channel in the format <code>@username</code>"
     }, {
       "name" : "name",
       "type" : "String",
@@ -12218,7 +12748,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target channel in the format <code>@username</code>"
     }, {
       "name" : "invite_link",
       "type" : "String",
@@ -12243,7 +12773,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier of the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier of the target chat or username of the target channel in the format <code>@username</code>"
     }, {
       "name" : "invite_link",
       "type" : "String",
@@ -12259,7 +12789,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target channel in the format <code>@username</code>"
     }, {
       "name" : "user_id",
       "type" : "Integer",
@@ -12275,7 +12805,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target channel in the format <code>@username</code>"
     }, {
       "name" : "user_id",
       "type" : "Integer",
@@ -12291,7 +12821,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target channel in the format <code>@username</code>"
     }, {
       "name" : "photo",
       "type" : "type/input-file",
@@ -12307,7 +12837,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target channel in the format <code>@username</code>"
     } ]
   }, {
     "id" : "method/set-chat-title",
@@ -12318,7 +12848,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target channel in the format <code>@username</code>"
     }, {
       "name" : "title",
       "type" : "String",
@@ -12338,7 +12868,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target channel in the format <code>@username</code>"
     }, {
       "name" : "description",
       "type" : "String",
@@ -12363,7 +12893,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target channel in the format <code>@username</code>"
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -12389,7 +12919,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target channel in the format <code>@username</code>"
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -12405,7 +12935,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target channel in the format <code>@username</code>"
     } ]
   }, {
     "id" : "method/leave-chat",
@@ -12416,7 +12946,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup or channel (in the format <code>@channelusername</code>). Channel direct messages chats aren't supported; leave the corresponding channel instead."
+      "description" : "Unique identifier for the target chat or username of the target supergroup or channel in the format <code>@username</code>. Channel direct messages chats aren't supported; leave the corresponding channel instead."
     } ]
   }, {
     "id" : "method/get-chat",
@@ -12427,18 +12957,23 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup or channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup or channel in the format <code>@username</code>"
     } ]
   }, {
     "id" : "method/get-chat-administrators",
     "name" : "getChatAdministrators",
     "kind" : "method",
-    "description" : "<p>Use this method to get a list of administrators in a chat, which aren't bots. Returns an Array of <a href=\"#chatmember\">ChatMember</a> objects.</p>",
+    "description" : "<p>Use this method to get a list of administrators in a chat. Returns an Array of <a href=\"#chatmember\">ChatMember</a> objects.</p>",
     "params" : [ {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup or channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup or channel in the format <code>@username</code>"
+    }, {
+      "name" : "return_bots",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Pass <em>True</em> to additionally receive all bots that are administrators of the chat. By default, bots other than the current bot are omitted."
     } ]
   }, {
     "id" : "method/get-chat-member-count",
@@ -12449,7 +12984,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup or channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup or channel in the format <code>@username</code>"
     } ]
   }, {
     "id" : "method/get-chat-member",
@@ -12460,12 +12995,28 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup or channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "user_id",
       "type" : "Integer",
       "required" : true,
       "description" : "Unique identifier of the target user"
+    } ]
+  }, {
+    "id" : "method/get-user-personal-chat-messages",
+    "name" : "getUserPersonalChatMessages",
+    "kind" : "method",
+    "description" : "<p>Use this method to get the last messages from the personal chat (i.e., the chat currently added to their profile) of a given user. On success, an array of <a href=\"#message\">Message</a> objects is returned.</p>",
+    "params" : [ {
+      "name" : "user_id",
+      "type" : "Integer",
+      "required" : true,
+      "description" : "Unique identifier for the target user"
+    }, {
+      "name" : "limit",
+      "type" : "Integer",
+      "required" : true,
+      "description" : "The maximum number of messages to return; 1-20"
     } ]
   }, {
     "id" : "method/set-chat-sticker-set",
@@ -12476,7 +13027,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
     }, {
       "name" : "sticker_set_name",
       "type" : "String",
@@ -12492,7 +13043,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
     } ]
   }, {
     "id" : "method/get-forum-topic-icon-stickers",
@@ -12508,7 +13059,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
     }, {
       "name" : "name",
       "type" : "String",
@@ -12538,7 +13089,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -12568,7 +13119,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -12584,7 +13135,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -12600,7 +13151,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -12616,7 +13167,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -12632,7 +13183,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
     }, {
       "name" : "name",
       "type" : "String",
@@ -12652,7 +13203,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
     } ]
   }, {
     "id" : "method/reopen-general-forum-topic",
@@ -12663,7 +13214,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
     } ]
   }, {
     "id" : "method/hide-general-forum-topic",
@@ -12674,7 +13225,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
     } ]
   }, {
     "id" : "method/unhide-general-forum-topic",
@@ -12685,7 +13236,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
     } ]
   }, {
     "id" : "method/unpin-all-general-forum-topic-messages",
@@ -12696,7 +13247,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@supergroupusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
     } ]
   }, {
     "id" : "method/answer-callback-query",
@@ -12734,6 +13285,23 @@
       "description" : "The maximum amount of time in seconds that the result of the callback query may be cached client-side. Telegram apps will support caching starting in version 3.14. Defaults to 0."
     } ]
   }, {
+    "id" : "method/answer-guest-query",
+    "name" : "answerGuestQuery",
+    "kind" : "method",
+    "description" : "<p>Use this method to reply to a received guest message. On success, a <a href=\"#sentguestmessage\">SentGuestMessage</a> object is returned.</p>",
+    "params" : [ {
+      "name" : "guest_query_id",
+      "type" : "String",
+      "required" : true,
+      "description" : "Unique identifier for the query to be answered"
+    }, {
+      "name" : "result",
+      "type" : "type/inline-query-result",
+      "required" : true,
+      "description" : "A JSON-serialized object describing the message to be sent",
+      "json_serialized" : true
+    } ]
+  }, {
     "id" : "method/get-user-chat-boosts",
     "name" : "getUserChatBoosts",
     "kind" : "method",
@@ -12742,7 +13310,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the chat or username of the channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the chat or username of the channel in the format <code>@username</code>"
     }, {
       "name" : "user_id",
       "type" : "Integer",
@@ -12781,6 +13349,39 @@
       "type" : "Integer",
       "required" : true,
       "description" : "User identifier of the managed bot whose token will be replaced"
+    } ]
+  }, {
+    "id" : "method/get-managed-bot-access-settings",
+    "name" : "getManagedBotAccessSettings",
+    "kind" : "method",
+    "description" : "<p>Use this method to get the access settings of a managed bot. Returns a <a href=\"#botaccesssettings\">BotAccessSettings</a> object on success.</p>",
+    "params" : [ {
+      "name" : "user_id",
+      "type" : "Integer",
+      "required" : true,
+      "description" : "User identifier of the managed bot whose access settings will be returned"
+    } ]
+  }, {
+    "id" : "method/set-managed-bot-access-settings",
+    "name" : "setManagedBotAccessSettings",
+    "kind" : "method",
+    "description" : "<p>Use this method to change the access settings of a managed bot. Returns <em>True</em> on success.</p>",
+    "params" : [ {
+      "name" : "user_id",
+      "type" : "Integer",
+      "required" : true,
+      "description" : "User identifier of the managed bot whose access settings will be changed"
+    }, {
+      "name" : "is_access_restricted",
+      "type" : "Boolean",
+      "required" : true,
+      "description" : "Pass <em>True</em>, if only selected users can access the bot. The bot's owner can always access it."
+    }, {
+      "name" : "added_user_ids",
+      "type" : [ "array", "Integer" ],
+      "required" : false,
+      "description" : "A JSON-serialized list of up to 10 identifiers of users who will have access to the bot in addition to its owner. Ignored if <em>is_access_restricted</em> is false.",
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/set-my-commands",
@@ -13023,7 +13624,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : false,
-      "description" : "Required if <em>user_id</em> is not specified. Unique identifier for the chat or username of the channel (in the format <code>@channelusername</code>) that will receive the gift."
+      "description" : "Required if <em>user_id</em> is not specified. Unique identifier for the chat or username of the channel (in the format <code>@username</code>) that will receive the gift."
     }, {
       "name" : "gift_id",
       "type" : "String",
@@ -13125,7 +13726,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>). Channel direct messages chats can't be verified."
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>. Channel direct messages chats can't be verified."
     }, {
       "name" : "custom_description",
       "type" : "String",
@@ -13156,7 +13757,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot or channel in the format <code>@username</code>"
     } ]
   }, {
     "id" : "method/read-business-message",
@@ -13471,7 +14072,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target channel in the format <code>@username</code>"
     }, {
       "name" : "exclude_unsaved",
       "type" : "Boolean",
@@ -13834,7 +14435,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>."
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -13892,7 +14493,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>."
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -13940,7 +14541,7 @@
     "id" : "method/edit-message-media",
     "name" : "editMessageMedia",
     "kind" : "method",
-    "description" : "<p>Use this method to edit animation, audio, document, photo, or video messages, or to add media to text messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited <a href=\"#message\">Message</a> is returned, otherwise <em>True</em> is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within <strong>48 hours</strong> from the time they were sent.</p>",
+    "description" : "<p>Use this method to edit animation, audio, document, live photo, photo, or video messages, or to add media to text messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo, a live photo, or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited <a href=\"#message\">Message</a> is returned, otherwise <em>True</em> is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within <strong>48 hours</strong> from the time they were sent.</p>",
     "params" : [ {
       "name" : "business_connection_id",
       "type" : "String",
@@ -13950,7 +14551,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>."
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -13988,7 +14589,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>."
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -14050,7 +14651,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>."
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -14080,9 +14681,9 @@
       "description" : "Unique identifier of the business connection on behalf of which the message will be sent"
     }, {
       "name" : "chat_id",
-      "type" : "Integer",
+      "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat"
+      "description" : "Unique identifier for the target chat or username of the target bot in the format <code>@username</code>"
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -14115,7 +14716,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>."
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -14147,7 +14748,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -14215,7 +14816,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -14231,13 +14832,60 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_ids",
       "type" : [ "array", "Integer" ],
       "required" : true,
       "description" : "A JSON-serialized list of 1-100 identifiers of messages to delete. See <a href=\"#deletemessage\">deleteMessage</a> for limitations on which messages can be deleted",
       "json_serialized" : true
+    } ]
+  }, {
+    "id" : "method/delete-message-reaction",
+    "name" : "deleteMessageReaction",
+    "kind" : "method",
+    "description" : "<p>Use this method to remove a reaction from a message in a group or a supergroup chat. The bot must have the 'can_delete_messages' administrator right in the chat. Returns <em>True</em> on success.</p>",
+    "params" : [ {
+      "name" : "chat_id",
+      "type" : [ "or", [ "Integer", "String" ] ],
+      "required" : true,
+      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@username</code>)"
+    }, {
+      "name" : "message_id",
+      "type" : "Integer",
+      "required" : true,
+      "description" : "Identifier of the target message"
+    }, {
+      "name" : "user_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "Identifier of the user whose reaction will be removed, if the reaction was added by a user"
+    }, {
+      "name" : "actor_chat_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "Identifier of the chat whose reaction will be removed, if the reaction was added by a chat"
+    } ]
+  }, {
+    "id" : "method/delete-all-message-reactions",
+    "name" : "deleteAllMessageReactions",
+    "kind" : "method",
+    "description" : "<p>Use this method to remove up to 10000 recent reactions in a group or a supergroup chat added by a given user or chat. The bot must have the 'can_delete_messages' administrator right in the chat. Returns <em>True</em> on success.</p>",
+    "params" : [ {
+      "name" : "chat_id",
+      "type" : [ "or", [ "Integer", "String" ] ],
+      "required" : true,
+      "description" : "Unique identifier for the target chat or username of the target supergroup (in the format <code>@username</code>)"
+    }, {
+      "name" : "user_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "Identifier of the user whose reactions will be removed, if the reactions were added by a user"
+    }, {
+      "name" : "actor_chat_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "Identifier of the chat whose reactions will be removed, if the reactions were added by a chat"
     } ]
   }, {
     "id" : "method/send-sticker",
@@ -14253,7 +14901,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -14288,7 +14936,7 @@
       "name" : "allow_paid_broadcast",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance"
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
     }, {
       "name" : "message_effect_id",
       "type" : "String",
@@ -14651,7 +15299,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -14792,7 +15440,7 @@
       "name" : "allow_paid_broadcast",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance"
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
     }, {
       "name" : "message_effect_id",
       "type" : "String",
@@ -15078,9 +15726,9 @@
       "description" : "Unique identifier of the business connection on behalf of which the message will be sent"
     }, {
       "name" : "chat_id",
-      "type" : "Integer",
+      "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat. Games can't be sent to channel direct messages chats and channel chats."
+      "description" : "Unique identifier for the target chat or username of the target bot in the format <code>@username</code>. Games can't be sent to channel direct messages chats and channel chats."
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -15105,7 +15753,7 @@
       "name" : "allow_paid_broadcast",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance"
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
     }, {
       "name" : "message_effect_id",
       "type" : "String",
