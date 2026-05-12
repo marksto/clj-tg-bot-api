@@ -83,12 +83,12 @@
     }, {
       "name" : "shipping_query",
       "type" : "type/shipping-query",
-      "description" : "<em>Optional</em>. New incoming shipping query. Only for invoices with flexible price",
+      "description" : "<em>Optional</em>. New incoming shipping query. Only for invoices with flexible price.",
       "required" : false
     }, {
       "name" : "pre_checkout_query",
       "type" : "type/pre-checkout-query",
-      "description" : "<em>Optional</em>. New incoming pre-checkout query. Contains full information about checkout",
+      "description" : "<em>Optional</em>. New incoming pre-checkout query. Contains full information about checkout.",
       "required" : false
     }, {
       "name" : "purchased_paid_media",
@@ -98,7 +98,7 @@
     }, {
       "name" : "poll",
       "type" : "type/poll",
-      "description" : "<em>Optional</em>. New poll state. Bots receive only updates about manually stopped polls and polls, which are sent by the bot",
+      "description" : "<em>Optional</em>. New poll state. Bots receive only updates about manually stopped polls and polls, which are sent by the bot.",
       "required" : false
     }, {
       "name" : "poll_answer",
@@ -184,7 +184,7 @@
     }, {
       "name" : "allowed_updates",
       "type" : [ "array", "String" ],
-      "description" : "<em>Optional</em>. A list of update types the bot is subscribed to. Defaults to all update types except <em>chat_member</em>",
+      "description" : "<em>Optional</em>. A list of update types the bot is subscribed to. Defaults to all update types except <em>chat_member</em>.",
       "required" : false
     } ]
   }, {
@@ -593,7 +593,7 @@
     "fields" : [ {
       "name" : "message_id",
       "type" : "Integer",
-      "description" : "Unique message identifier inside this chat. In specific instances (e.g., message containing a video sent to a big chat), the server might automatically schedule a message instead of sending it immediately. In such cases, this field will be 0 and the relevant message will be unusable until it is actually sent",
+      "description" : "Unique message identifier inside this chat. In specific instances (e.g., message containing a video sent to a big chat), the server might automatically schedule a message instead of sending it immediately. In such cases, this field will be 0 and the relevant message will be unusable until it is actually sent.",
       "required" : true
     }, {
       "name" : "message_thread_id",
@@ -608,7 +608,7 @@
     }, {
       "name" : "from",
       "type" : "type/user",
-      "description" : "<em>Optional</em>. Sender of the message; may be empty for messages sent to channels. For backward compatibility, if the message was sent on behalf of a chat, the field contains a fake sender user in non-channel chats",
+      "description" : "<em>Optional</em>. Sender of the message; may be empty for messages sent to channels. For backward compatibility, if the message was sent on behalf of a chat, the field contains a fake sender user in non-channel chats.",
       "required" : false
     }, {
       "name" : "sender_chat",
@@ -773,7 +773,7 @@
     }, {
       "name" : "animation",
       "type" : "type/animation",
-      "description" : "<em>Optional</em>. Message is an animation, information about the animation. For backward compatibility, when this field is set, the <em>document</em> field will also be set",
+      "description" : "<em>Optional</em>. Message is an animation, information about the animation. For backward compatibility, when this field is set, the <em>document</em> field will also be set.",
       "required" : false
     }, {
       "name" : "audio",
@@ -788,7 +788,7 @@
     }, {
       "name" : "live_photo",
       "type" : "type/live-photo",
-      "description" : "<em>Optional</em>. Message is a live photo, information about the live photo. For backward compatibility, when this field is set, the <em>photo</em> field will also be set",
+      "description" : "<em>Optional</em>. Message is a live photo, information about the live photo. For backward compatibility, when this field is set, the <em>photo</em> field will also be set.",
       "required" : false
     }, {
       "name" : "paid_media",
@@ -873,7 +873,7 @@
     }, {
       "name" : "venue",
       "type" : "type/venue",
-      "description" : "<em>Optional</em>. Message is a venue, information about the venue. For backward compatibility, when this field is set, the <em>location</em> field will also be set",
+      "description" : "<em>Optional</em>. Message is a venue, information about the venue. For backward compatibility, when this field is set, the <em>location</em> field will also be set.",
       "required" : false
     }, {
       "name" : "location",
@@ -1169,7 +1169,7 @@
     "fields" : [ {
       "name" : "message_id",
       "type" : "Integer",
-      "description" : "Unique message identifier. In specific instances (e.g., message containing a video sent to a big chat), the server might automatically schedule a message instead of sending it immediately. In such cases, this field will be 0 and the relevant message will be unusable until it is actually sent",
+      "description" : "Unique message identifier. In specific instances (e.g., message containing a video sent to a big chat), the server might automatically schedule a message instead of sending it immediately. In such cases, this field will be 0 and the relevant message will be unusable until it is actually sent.",
       "required" : true
     } ]
   }, {
@@ -1207,7 +1207,7 @@
     "fields" : [ {
       "name" : "type",
       "type" : "String",
-      "description" : "Type of the entity. Currently, can be “mention” (<code>@username</code>), “hashtag” (<code>#hashtag</code> or <code>#hashtag@chatusername</code>), “cashtag” (<code>$USD</code> or <code>$USD@chatusername</code>), “bot_command” (<code>/start@jobs_bot</code>), “url” (<code>https://telegram.org</code>), “email” (<code>do-not-reply@telegram.org</code>), “phone_number” (<code>+1-212-555-0123</code>), “bold” (<strong>bold text</strong>), “italic” (<em>italic text</em>), “underline” (underlined text), “strikethrough” (strikethrough text), “spoiler” (spoiler message), “blockquote” (block quotation), “expandable_blockquote” (collapsed-by-default block quotation), “code” (monowidth string), “pre” (monowidth block), “text_link” (for clickable text URLs), “text_mention” (for users <a href=\"https://telegram.org/blog/edit#new-mentions\">without usernames</a>), “custom_emoji” (for inline custom emoji stickers), or “date_time” (for formatted date and time)",
+      "description" : "Type of the entity. Currently, can be “mention” (<code>@username</code>), “hashtag” (<code>#hashtag</code> or <code>#hashtag@chatusername</code>), “cashtag” (<code>$USD</code> or <code>$USD@chatusername</code>), “bot_command” (<code>/start@jobs_bot</code>), “url” (<code>https://telegram.org</code>), “email” (<code>do-not-reply@telegram.org</code>), “phone_number” (<code>+1-212-555-0123</code>), “bold” (<strong>bold text</strong>), “italic” (<em>italic text</em>), “underline” (underlined text), “strikethrough” (strikethrough text), “spoiler” (spoiler message), “blockquote” (block quotation), “expandable_blockquote” (collapsed-by-default block quotation), “code” (monowidth string), “pre” (monowidth block), “text_link” (for clickable text URLs), “text_mention” (for users <a href=\"https://telegram.org/blog/edit#new-mentions\">without usernames</a>), “custom_emoji” (for inline custom emoji stickers), or “date_time” (for formatted date and time).",
       "required" : true
     }, {
       "name" : "offset",
@@ -1237,7 +1237,7 @@
     }, {
       "name" : "custom_emoji_id",
       "type" : "String",
-      "description" : "<em>Optional</em>. For “custom_emoji” only, unique identifier of the custom emoji. Use <a href=\"#getcustomemojistickers\">getCustomEmojiStickers</a> to get full information about the sticker",
+      "description" : "<em>Optional</em>. For “custom_emoji” only, unique identifier of the custom emoji. Use <a href=\"#getcustomemojistickers\">getCustomEmojiStickers</a> to get full information about the sticker.",
       "required" : false
     }, {
       "name" : "unix_time",
@@ -2261,12 +2261,12 @@
     }, {
       "name" : "text_parse_mode",
       "type" : "String",
-      "description" : "<em>Optional</em>. Mode for parsing entities in the text. See <a href=\"#formatting-options\">formatting options</a> for more details. Currently, only custom emoji entities are allowed",
+      "description" : "<em>Optional</em>. Mode for parsing entities in the text. See <a href=\"#formatting-options\">formatting options</a> for more details. Currently, only custom emoji entities are allowed.",
       "required" : false
     }, {
       "name" : "text_entities",
       "type" : [ "array", "type/message-entity" ],
-      "description" : "<em>Optional</em>. A JSON-serialized list of special entities that appear in the poll option text. It can be specified instead of <em>text_parse_mode</em>",
+      "description" : "<em>Optional</em>. A JSON-serialized list of special entities that appear in the poll option text. It can be specified instead of <em>text_parse_mode</em>.",
       "required" : false,
       "json_serialized" : true
     }, {
@@ -2375,7 +2375,7 @@
     }, {
       "name" : "country_codes",
       "type" : [ "array", "String" ],
-      "description" : "<em>Optional</em>. A list of two-letter <a href=\"https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2\">ISO 3166-1 alpha-2</a> country codes indicating the countries from which users can vote in the poll. If omitted, then users from any country can participate in the poll.",
+      "description" : "<em>Optional</em>. A list of two-letter <a href=\"https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2\">ISO 3166-1 alpha-2</a> country codes indicating the countries from which users can vote in the poll. The country code “FT” is used for users with anonymous numbers. If omitted, then users from any country can participate in the poll.",
       "required" : false
     }, {
       "name" : "correct_option_ids",
@@ -2653,7 +2653,7 @@
     "fields" : [ {
       "name" : "location",
       "type" : "type/location",
-      "description" : "Venue location. Can't be a live location",
+      "description" : "Venue location. Can't be a live location.",
       "required" : true
     }, {
       "name" : "title",
@@ -2980,7 +2980,7 @@
     }, {
       "name" : "is_inverted",
       "type" : "True",
-      "description" : "<em>Optional</em>. <em>True</em>, if the background fill must be applied only to the pattern itself. All other pixels are black in this case. For dark themes only",
+      "description" : "<em>Optional</em>. <em>True</em>, if the background fill must be applied only to the pattern itself. All other pixels are black in this case. For dark themes only.",
       "required" : false
     }, {
       "name" : "is_moving",
@@ -3122,7 +3122,7 @@
     }, {
       "name" : "users",
       "type" : [ "array", "type/shared-user" ],
-      "description" : "Information about users shared with the bot.",
+      "description" : "Information about users shared with the bot",
       "required" : true
     } ]
   }, {
@@ -3143,12 +3143,12 @@
     }, {
       "name" : "title",
       "type" : "String",
-      "description" : "<em>Optional</em>. Title of the chat, if the title was requested by the bot.",
+      "description" : "<em>Optional</em>. Title of the chat, if the title was requested by the bot",
       "required" : false
     }, {
       "name" : "username",
       "type" : "String",
-      "description" : "<em>Optional</em>. Username of the chat, if the username was requested by the bot and available.",
+      "description" : "<em>Optional</em>. Username of the chat, if the username was requested by the bot and available",
       "required" : false
     }, {
       "name" : "photo",
@@ -3308,7 +3308,7 @@
     }, {
       "name" : "currency",
       "type" : "String",
-      "description" : "Currency in which the payment was made. Currently, one of “XTR” for Telegram Stars or “TON” for toncoins",
+      "description" : "Currency in which the payment was made. Currently, one of “XTR” for Telegram Stars or “TON” for toncoins.",
       "required" : true
     }, {
       "name" : "amount",
@@ -3504,7 +3504,7 @@
     }, {
       "name" : "url",
       "type" : "String",
-      "description" : "<em>Optional</em>. URL to use for the link preview. If empty, then the first URL found in the message text will be used",
+      "description" : "<em>Optional</em>. URL to use for the link preview. If empty, then the first URL found in the message text will be used.",
       "required" : false
     }, {
       "name" : "prefer_small_media",
@@ -3530,7 +3530,7 @@
     "fields" : [ {
       "name" : "currency",
       "type" : "String",
-      "description" : "Currency in which the post will be paid. Currently, must be one of “XTR” for Telegram Stars or “TON” for toncoins",
+      "description" : "Currency in which the post will be paid. Currently, must be one of “XTR” for Telegram Stars or “TON” for toncoins.",
       "required" : true
     }, {
       "name" : "amount",
@@ -3588,9 +3588,8 @@
     }, {
       "name" : "user",
       "type" : "type/user",
-      "description" : "<em>Optional</em>. Information about the user that created the topic. Currently, it is always present",
-      "required" : false,
-      "value" : "present"
+      "description" : "<em>Optional</em>. Information about the user that created the topic. Currently, it is always present.",
+      "required" : false
     } ]
   }, {
     "id" : "type/user-profile-photos",
@@ -3711,7 +3710,7 @@
     "fields" : [ {
       "name" : "text",
       "type" : "String",
-      "description" : "Text of the button. If none of the fields other than <em>text</em>, <em>icon_custom_emoji_id</em>, and <em>style</em> are used, it will be sent as a message when the button is pressed",
+      "description" : "Text of the button. If none of the fields other than <em>text</em>, <em>icon_custom_emoji_id</em>, and <em>style</em> are used, it will be sent as a message when the button is pressed.",
       "required" : true
     }, {
       "name" : "icon_custom_emoji_id",
@@ -3767,7 +3766,7 @@
     "fields" : [ {
       "name" : "request_id",
       "type" : "Integer",
-      "description" : "Signed 32-bit identifier of the request that will be received back in the <a href=\"#usersshared\">UsersShared</a> object. Must be unique within the message",
+      "description" : "Signed 32-bit identifier of the request that will be received back in the <a href=\"#usersshared\">UsersShared</a> object. Must be unique within the message.",
       "required" : true
     }, {
       "name" : "user_is_bot",
@@ -3808,12 +3807,12 @@
     "fields" : [ {
       "name" : "request_id",
       "type" : "Integer",
-      "description" : "Signed 32-bit identifier of the request, which will be received back in the <a href=\"#chatshared\">ChatShared</a> object. Must be unique within the message",
+      "description" : "Signed 32-bit identifier of the request, which will be received back in the <a href=\"#chatshared\">ChatShared</a> object. Must be unique within the message.",
       "required" : true
     }, {
       "name" : "chat_is_channel",
       "type" : "Boolean",
-      "description" : "Pass <em>True</em> to request a channel chat, pass <em>False</em> to request a group or a supergroup chat.",
+      "description" : "Pass <em>True</em> to request a channel chat, pass <em>False</em> to request a group or a supergroup chat",
       "required" : true
     }, {
       "name" : "chat_is_forum",
@@ -3871,7 +3870,7 @@
     "fields" : [ {
       "name" : "request_id",
       "type" : "Integer",
-      "description" : "Signed 32-bit identifier of the request. Must be unique within the message",
+      "description" : "Signed 32-bit identifier of the request. Must be unique within the message.",
       "required" : true
     }, {
       "name" : "suggested_name",
@@ -3980,7 +3979,7 @@
     }, {
       "name" : "copy_text",
       "type" : "type/copy-text-button",
-      "description" : "<em>Optional</em>. Description of the button that copies the specified text to the clipboard.",
+      "description" : "<em>Optional</em>. Description of the button that copies the specified text to the clipboard",
       "required" : false
     }, {
       "name" : "callback_game",
@@ -4006,7 +4005,7 @@
     }, {
       "name" : "forward_text",
       "type" : "String",
-      "description" : "<em>Optional</em>. New text of the button in forwarded messages.",
+      "description" : "<em>Optional</em>. New text of the button in forwarded messages",
       "required" : false
     }, {
       "name" : "bot_username",
@@ -4016,7 +4015,7 @@
     }, {
       "name" : "request_write_access",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. Pass <em>True</em> to request the permission for your bot to send messages to the user.",
+      "description" : "<em>Optional</em>. Pass <em>True</em> to request the permission for your bot to send messages to the user",
       "required" : false
     } ]
   }, {
@@ -4027,7 +4026,7 @@
     "fields" : [ {
       "name" : "query",
       "type" : "String",
-      "description" : "<em>Optional</em>. The default inline query to be inserted in the input field. If left empty, only the bot's username will be inserted",
+      "description" : "<em>Optional</em>. The default inline query to be inserted in the input field. If left empty, only the bot's username will be inserted.",
       "required" : false
     }, {
       "name" : "allow_user_chats",
@@ -4090,7 +4089,7 @@
     }, {
       "name" : "inline_message_id",
       "type" : "String",
-      "description" : "<em>Optional</em>. Identifier of the message sent via the bot in inline mode, that originated the query.",
+      "description" : "<em>Optional</em>. Identifier of the message sent via the bot in inline mode, that originated the query",
       "required" : false
     }, {
       "name" : "chat_instance",
@@ -4348,7 +4347,7 @@
     }, {
       "name" : "invite_link",
       "type" : "type/chat-invite-link",
-      "description" : "<em>Optional</em>. Chat invite link, which was used by the user to join the chat; for joining by invite link events only.",
+      "description" : "<em>Optional</em>. Chat invite link, which was used by the user to join the chat; for joining by invite link events only",
       "required" : false
     }, {
       "name" : "via_join_request",
@@ -4642,7 +4641,7 @@
     }, {
       "name" : "until_date",
       "type" : "Integer",
-      "description" : "Date when restrictions will be lifted for this user; Unix time. If 0, then the user is restricted forever",
+      "description" : "Date when restrictions will be lifted for this user; Unix time. If 0, then the user is restricted forever.",
       "required" : true
     } ]
   }, {
@@ -4681,7 +4680,7 @@
     }, {
       "name" : "until_date",
       "type" : "Integer",
-      "description" : "Date when restrictions will be lifted for this user; Unix time. If 0, then the user is banned forever",
+      "description" : "Date when restrictions will be lifted for this user; Unix time. If 0, then the user is banned forever.",
       "required" : true
     } ]
   }, {
@@ -4712,7 +4711,7 @@
     }, {
       "name" : "bio",
       "type" : "String",
-      "description" : "<em>Optional</em>. Bio of the user.",
+      "description" : "<em>Optional</em>. Bio of the user",
       "required" : false
     }, {
       "name" : "invite_link",
@@ -4788,7 +4787,7 @@
     }, {
       "name" : "can_change_info",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. <em>True</em>, if the user is allowed to change the chat title, photo and other settings. Ignored in public supergroups",
+      "description" : "<em>Optional</em>. <em>True</em>, if the user is allowed to change the chat title, photo and other settings. Ignored in public supergroups.",
       "required" : false
     }, {
       "name" : "can_invite_users",
@@ -4798,12 +4797,12 @@
     }, {
       "name" : "can_pin_messages",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. <em>True</em>, if the user is allowed to pin messages. Ignored in public supergroups",
+      "description" : "<em>Optional</em>. <em>True</em>, if the user is allowed to pin messages. Ignored in public supergroups.",
       "required" : false
     }, {
       "name" : "can_manage_topics",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. <em>True</em>, if the user is allowed to create forum topics. If omitted defaults to the value of can_pin_messages",
+      "description" : "<em>Optional</em>. <em>True</em>, if the user is allowed to create forum topics. If omitted defaults to the value of can_pin_messages.",
       "required" : false
     } ]
   }, {
@@ -5163,7 +5162,7 @@
     }, {
       "name" : "emoji",
       "type" : "String",
-      "description" : "Reaction emoji. Currently, it can be one of &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/E29DA4.png\" width=\"20\" height=\"20\" alt=\"❤\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F918D.png\" width=\"20\" height=\"20\" alt=\"👍\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F918E.png\" width=\"20\" height=\"20\" alt=\"👎\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F94A5.png\" width=\"20\" height=\"20\" alt=\"🔥\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA5B0.png\" width=\"20\" height=\"20\" alt=\"🥰\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F918F.png\" width=\"20\" height=\"20\" alt=\"👏\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9881.png\" width=\"20\" height=\"20\" alt=\"😁\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA494.png\" width=\"20\" height=\"20\" alt=\"🤔\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4AF.png\" width=\"20\" height=\"20\" alt=\"🤯\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F98B1.png\" width=\"20\" height=\"20\" alt=\"😱\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4AC.png\" width=\"20\" height=\"20\" alt=\"🤬\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F98A2.png\" width=\"20\" height=\"20\" alt=\"😢\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8E89.png\" width=\"20\" height=\"20\" alt=\"🎉\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4A9.png\" width=\"20\" height=\"20\" alt=\"🤩\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4AE.png\" width=\"20\" height=\"20\" alt=\"🤮\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F92A9.png\" width=\"20\" height=\"20\" alt=\"💩\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F998F.png\" width=\"20\" height=\"20\" alt=\"🙏\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F918C.png\" width=\"20\" height=\"20\" alt=\"👌\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F958A.png\" width=\"20\" height=\"20\" alt=\"🕊\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4A1.png\" width=\"20\" height=\"20\" alt=\"🤡\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA5B1.png\" width=\"20\" height=\"20\" alt=\"🥱\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA5B4.png\" width=\"20\" height=\"20\" alt=\"🥴\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F988D.png\" width=\"20\" height=\"20\" alt=\"😍\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F90B3.png\" width=\"20\" height=\"20\" alt=\"🐳\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/E29DA4E2808DF09F94A5.png\" width=\"20\" height=\"20\" alt=\"❤‍🔥\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8C9A.png\" width=\"20\" height=\"20\" alt=\"🌚\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8CAD.png\" width=\"20\" height=\"20\" alt=\"🌭\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F92AF.png\" width=\"20\" height=\"20\" alt=\"💯\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4A3.png\" width=\"20\" height=\"20\" alt=\"🤣\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/E29AA1.png\" width=\"20\" height=\"20\" alt=\"⚡\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8D8C.png\" width=\"20\" height=\"20\" alt=\"🍌\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8F86.png\" width=\"20\" height=\"20\" alt=\"🏆\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9294.png\" width=\"20\" height=\"20\" alt=\"💔\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4A8.png\" width=\"20\" height=\"20\" alt=\"🤨\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9890.png\" width=\"20\" height=\"20\" alt=\"😐\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8D93.png\" width=\"20\" height=\"20\" alt=\"🍓\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8DBE.png\" width=\"20\" height=\"20\" alt=\"🍾\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F928B.png\" width=\"20\" height=\"20\" alt=\"💋\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9695.png\" width=\"20\" height=\"20\" alt=\"🖕\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9888.png\" width=\"20\" height=\"20\" alt=\"😈\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F98B4.png\" width=\"20\" height=\"20\" alt=\"😴\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F98AD.png\" width=\"20\" height=\"20\" alt=\"😭\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA493.png\" width=\"20\" height=\"20\" alt=\"🤓\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F91BB.png\" width=\"20\" height=\"20\" alt=\"👻\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F91A8E2808DF09F92BB.png\" width=\"20\" height=\"20\" alt=\"👨‍💻\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9180.png\" width=\"20\" height=\"20\" alt=\"👀\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8E83.png\" width=\"20\" height=\"20\" alt=\"🎃\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9988.png\" width=\"20\" height=\"20\" alt=\"🙈\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9887.png\" width=\"20\" height=\"20\" alt=\"😇\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F98A8.png\" width=\"20\" height=\"20\" alt=\"😨\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA49D.png\" width=\"20\" height=\"20\" alt=\"🤝\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/E29C8D.png\" width=\"20\" height=\"20\" alt=\"✍\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA497.png\" width=\"20\" height=\"20\" alt=\"🤗\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FABA1.png\" width=\"20\" height=\"20\" alt=\"🫡\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8E85.png\" width=\"20\" height=\"20\" alt=\"🎅\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8E84.png\" width=\"20\" height=\"20\" alt=\"🎄\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/E29883.png\" width=\"20\" height=\"20\" alt=\"☃\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9285.png\" width=\"20\" height=\"20\" alt=\"💅\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4AA.png\" width=\"20\" height=\"20\" alt=\"🤪\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F97BF.png\" width=\"20\" height=\"20\" alt=\"🗿\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8692.png\" width=\"20\" height=\"20\" alt=\"🆒\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9298.png\" width=\"20\" height=\"20\" alt=\"💘\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9989.png\" width=\"20\" height=\"20\" alt=\"🙉\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA684.png\" width=\"20\" height=\"20\" alt=\"🦄\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9898.png\" width=\"20\" height=\"20\" alt=\"😘\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F928A.png\" width=\"20\" height=\"20\" alt=\"💊\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F998A.png\" width=\"20\" height=\"20\" alt=\"🙊\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F988E.png\" width=\"20\" height=\"20\" alt=\"😎\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F91BE.png\" width=\"20\" height=\"20\" alt=\"👾\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4B7E2808DE29982.png\" width=\"20\" height=\"20\" alt=\"🤷‍♂\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4B7.png\" width=\"20\" height=\"20\" alt=\"🤷\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4B7E2808DE29980.png\" width=\"20\" height=\"20\" alt=\"🤷‍♀\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F98A1.png\" width=\"20\" height=\"20\" alt=\"😡\">&quot;",
+      "description" : "Reaction emoji. Currently, it can be one of &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/E29DA4.png\" width=\"20\" height=\"20\" alt=\"❤\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F918D.png\" width=\"20\" height=\"20\" alt=\"👍\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F918E.png\" width=\"20\" height=\"20\" alt=\"👎\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F94A5.png\" width=\"20\" height=\"20\" alt=\"🔥\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA5B0.png\" width=\"20\" height=\"20\" alt=\"🥰\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F918F.png\" width=\"20\" height=\"20\" alt=\"👏\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9881.png\" width=\"20\" height=\"20\" alt=\"😁\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA494.png\" width=\"20\" height=\"20\" alt=\"🤔\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4AF.png\" width=\"20\" height=\"20\" alt=\"🤯\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F98B1.png\" width=\"20\" height=\"20\" alt=\"😱\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4AC.png\" width=\"20\" height=\"20\" alt=\"🤬\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F98A2.png\" width=\"20\" height=\"20\" alt=\"😢\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8E89.png\" width=\"20\" height=\"20\" alt=\"🎉\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4A9.png\" width=\"20\" height=\"20\" alt=\"🤩\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4AE.png\" width=\"20\" height=\"20\" alt=\"🤮\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F92A9.png\" width=\"20\" height=\"20\" alt=\"💩\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F998F.png\" width=\"20\" height=\"20\" alt=\"🙏\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F918C.png\" width=\"20\" height=\"20\" alt=\"👌\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F958A.png\" width=\"20\" height=\"20\" alt=\"🕊\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4A1.png\" width=\"20\" height=\"20\" alt=\"🤡\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA5B1.png\" width=\"20\" height=\"20\" alt=\"🥱\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA5B4.png\" width=\"20\" height=\"20\" alt=\"🥴\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F988D.png\" width=\"20\" height=\"20\" alt=\"😍\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F90B3.png\" width=\"20\" height=\"20\" alt=\"🐳\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/E29DA4E2808DF09F94A5.png\" width=\"20\" height=\"20\" alt=\"❤‍🔥\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8C9A.png\" width=\"20\" height=\"20\" alt=\"🌚\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8CAD.png\" width=\"20\" height=\"20\" alt=\"🌭\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F92AF.png\" width=\"20\" height=\"20\" alt=\"💯\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4A3.png\" width=\"20\" height=\"20\" alt=\"🤣\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/E29AA1.png\" width=\"20\" height=\"20\" alt=\"⚡\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8D8C.png\" width=\"20\" height=\"20\" alt=\"🍌\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8F86.png\" width=\"20\" height=\"20\" alt=\"🏆\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9294.png\" width=\"20\" height=\"20\" alt=\"💔\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4A8.png\" width=\"20\" height=\"20\" alt=\"🤨\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9890.png\" width=\"20\" height=\"20\" alt=\"😐\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8D93.png\" width=\"20\" height=\"20\" alt=\"🍓\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8DBE.png\" width=\"20\" height=\"20\" alt=\"🍾\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F928B.png\" width=\"20\" height=\"20\" alt=\"💋\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9695.png\" width=\"20\" height=\"20\" alt=\"🖕\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9888.png\" width=\"20\" height=\"20\" alt=\"😈\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F98B4.png\" width=\"20\" height=\"20\" alt=\"😴\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F98AD.png\" width=\"20\" height=\"20\" alt=\"😭\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA493.png\" width=\"20\" height=\"20\" alt=\"🤓\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F91BB.png\" width=\"20\" height=\"20\" alt=\"👻\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F91A8E2808DF09F92BB.png\" width=\"20\" height=\"20\" alt=\"👨‍💻\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9180.png\" width=\"20\" height=\"20\" alt=\"👀\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8E83.png\" width=\"20\" height=\"20\" alt=\"🎃\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9988.png\" width=\"20\" height=\"20\" alt=\"🙈\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9887.png\" width=\"20\" height=\"20\" alt=\"😇\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F98A8.png\" width=\"20\" height=\"20\" alt=\"😨\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA49D.png\" width=\"20\" height=\"20\" alt=\"🤝\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/E29C8D.png\" width=\"20\" height=\"20\" alt=\"✍\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA497.png\" width=\"20\" height=\"20\" alt=\"🤗\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FABA1.png\" width=\"20\" height=\"20\" alt=\"🫡\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8E85.png\" width=\"20\" height=\"20\" alt=\"🎅\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8E84.png\" width=\"20\" height=\"20\" alt=\"🎄\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/E29883.png\" width=\"20\" height=\"20\" alt=\"☃\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9285.png\" width=\"20\" height=\"20\" alt=\"💅\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4AA.png\" width=\"20\" height=\"20\" alt=\"🤪\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F97BF.png\" width=\"20\" height=\"20\" alt=\"🗿\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8692.png\" width=\"20\" height=\"20\" alt=\"🆒\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9298.png\" width=\"20\" height=\"20\" alt=\"💘\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9989.png\" width=\"20\" height=\"20\" alt=\"🙉\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA684.png\" width=\"20\" height=\"20\" alt=\"🦄\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F9898.png\" width=\"20\" height=\"20\" alt=\"😘\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F928A.png\" width=\"20\" height=\"20\" alt=\"💊\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F998A.png\" width=\"20\" height=\"20\" alt=\"🙊\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F988E.png\" width=\"20\" height=\"20\" alt=\"😎\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F91BE.png\" width=\"20\" height=\"20\" alt=\"👾\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4B7E2808DE29982.png\" width=\"20\" height=\"20\" alt=\"🤷‍♂\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4B7.png\" width=\"20\" height=\"20\" alt=\"🤷\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09FA4B7E2808DE29980.png\" width=\"20\" height=\"20\" alt=\"🤷‍♀\">&quot;, &quot;<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F98A1.png\" width=\"20\" height=\"20\" alt=\"😡\">&quot;.",
       "required" : true
     } ]
   }, {
@@ -5560,7 +5559,7 @@
     }, {
       "name" : "name",
       "type" : "String",
-      "description" : "Unique name of the gift. This name can be used in <code>https://t.me/nft/...</code> links and story areas",
+      "description" : "Unique name of the gift. This name can be used in <code>https://t.me/nft/...</code> links and story areas.",
       "required" : true
     }, {
       "name" : "number",
@@ -5661,7 +5660,7 @@
     }, {
       "name" : "unique_gift_number",
       "type" : "Integer",
-      "description" : "<em>Optional</em>. Unique number reserved for this gift when upgraded. See the <em>number</em> field in <a href=\"#uniquegift\">UniqueGift</a>",
+      "description" : "<em>Optional</em>. Unique number reserved for this gift when upgraded. See the <em>number</em> field in <a href=\"#uniquegift\">UniqueGift</a>.",
       "required" : false
     } ]
   }, {
@@ -5677,7 +5676,7 @@
     }, {
       "name" : "origin",
       "type" : "String",
-      "description" : "Origin of the gift. Currently, either “upgrade” for gifts upgraded from regular gifts, “transfer” for gifts transferred from other users or channels, “resale” for gifts bought from other users, “gifted_upgrade” for upgrades purchased after the gift was sent, or “offer” for gifts bought or sold through gift purchase offers",
+      "description" : "Origin of the gift. Currently, either “upgrade” for gifts upgraded from regular gifts, “transfer” for gifts transferred from other users or channels, “resale” for gifts bought from other users, “gifted_upgrade” for upgrades purchased after the gift was sent, or “offer” for gifts bought or sold through gift purchase offers.",
       "required" : true
     }, {
       "name" : "last_resale_currency",
@@ -5702,7 +5701,7 @@
     }, {
       "name" : "next_transfer_date",
       "type" : "Integer",
-      "description" : "<em>Optional</em>. Point in time (Unix timestamp) when the gift can be transferred. If it is in the past, then the gift can be transferred now",
+      "description" : "<em>Optional</em>. Point in time (Unix timestamp) when the gift can be transferred. If it is in the past, then the gift can be transferred now.",
       "required" : false
     } ]
   }, {
@@ -5790,7 +5789,7 @@
     }, {
       "name" : "unique_gift_number",
       "type" : "Integer",
-      "description" : "<em>Optional</em>. Unique number reserved for this gift when upgraded. See the <em>number</em> field in <a href=\"#uniquegift\">UniqueGift</a>",
+      "description" : "<em>Optional</em>. Unique number reserved for this gift when upgraded. See the <em>number</em> field in <a href=\"#uniquegift\">UniqueGift</a>.",
       "required" : false
     } ]
   }, {
@@ -5842,7 +5841,7 @@
     }, {
       "name" : "next_transfer_date",
       "type" : "Integer",
-      "description" : "<em>Optional</em>. Point in time (Unix timestamp) when the gift can be transferred. If it is in the past, then the gift can be transferred now",
+      "description" : "<em>Optional</em>. Point in time (Unix timestamp) when the gift can be transferred. If it is in the past, then the gift can be transferred now.",
       "required" : false
     } ]
   }, {
@@ -5863,7 +5862,7 @@
     }, {
       "name" : "next_offset",
       "type" : "String",
-      "description" : "<em>Optional</em>. Offset for the next request. If empty, then there are no more results",
+      "description" : "<em>Optional</em>. Offset for the next request. If empty, then there are no more results.",
       "required" : false
     } ]
   }, {
@@ -5948,7 +5947,7 @@
     }, {
       "name" : "description",
       "type" : "String",
-      "description" : "Description of the command; 1-256 characters.",
+      "description" : "Description of the command; 1-256 characters",
       "required" : true,
       "constraints" : {
         "string" : {
@@ -6494,7 +6493,7 @@
     }, {
       "name" : "expiration_date",
       "type" : "Integer",
-      "description" : "Expiration date of the prepared message, in Unix time. Expired prepared messages can no longer be used",
+      "description" : "Expiration date of the prepared message, in Unix time. Expired prepared messages can no longer be used.",
       "required" : true
     } ]
   }, {
@@ -7404,7 +7403,7 @@
     }, {
       "name" : "chat_type",
       "type" : "String",
-      "description" : "<em>Optional</em>. Type of the chat from which the inline query was sent. Can be either “sender” for a private chat with the inline query sender, “private”, “group”, “supergroup”, or “channel”. The chat type should be always known for requests sent from official clients and most third-party clients, unless the request was sent from a secret chat",
+      "description" : "<em>Optional</em>. Type of the chat from which the inline query was sent. Can be either “sender” for a private chat with the inline query sender, “private”, “group”, “supergroup”, or “channel”. The chat type should be always known for requests sent from official clients and most third-party clients, unless the request was sent from a secret chat.",
       "required" : false
     }, {
       "name" : "location",
@@ -7522,7 +7521,7 @@
     }, {
       "name" : "photo_url",
       "type" : "String",
-      "description" : "A valid URL of the photo. Photo must be in <strong>JPEG</strong> format. Photo size must not exceed 5MB",
+      "description" : "A valid URL of the photo. Photo must be in <strong>JPEG</strong> format. Photo size must not exceed 5MB.",
       "required" : true
     }, {
       "name" : "thumbnail_url",
@@ -7631,7 +7630,7 @@
     }, {
       "name" : "thumbnail_mime_type",
       "type" : "String",
-      "description" : "<em>Optional</em>. MIME type of the thumbnail, must be one of “image/jpeg”, “image/gif”, or “video/mp4”. Defaults to “image/jpeg”",
+      "description" : "<em>Optional</em>. MIME type of the thumbnail, must be one of “image/jpeg”, “image/gif”, or “video/mp4”. Defaults to “image/jpeg”.",
       "required" : false
     }, {
       "name" : "title",
@@ -7720,7 +7719,7 @@
     }, {
       "name" : "thumbnail_mime_type",
       "type" : "String",
-      "description" : "<em>Optional</em>. MIME type of the thumbnail, must be one of “image/jpeg”, “image/gif”, or “video/mp4”. Defaults to “image/jpeg”",
+      "description" : "<em>Optional</em>. MIME type of the thumbnail, must be one of “image/jpeg”, “image/gif”, or “video/mp4”. Defaults to “image/jpeg”.",
       "required" : false
     }, {
       "name" : "title",
@@ -8115,7 +8114,7 @@
     }, {
       "name" : "live_period",
       "type" : "Integer",
-      "description" : "<em>Optional</em>. Period in seconds during which the location can be updated, should be between 60 and 86400, or 0x7FFFFFFF for live locations that can be edited indefinitely.",
+      "description" : "<em>Optional</em>. Period in seconds during which the location can be updated, must be between 60 and 86400, or 0x7FFFFFFF for live locations that can be edited indefinitely",
       "required" : false
     }, {
       "name" : "heading",
@@ -8860,7 +8859,7 @@
     }, {
       "name" : "live_period",
       "type" : "Integer",
-      "description" : "<em>Optional</em>. Period in seconds during which the location can be updated, should be between 60 and 86400, or 0x7FFFFFFF for live locations that can be edited indefinitely.",
+      "description" : "<em>Optional</em>. Period in seconds during which the location can be updated, must be between 60 and 86400, or 0x7FFFFFFF for live locations that can be edited indefinitely",
       "required" : false
     }, {
       "name" : "heading",
@@ -9292,7 +9291,7 @@
     "fields" : [ {
       "name" : "currency",
       "type" : "String",
-      "description" : "Three-letter ISO 4217 <a href=\"/bots/payments#supported-currencies\">currency</a> code, or “XTR” for payments in <a href=\"https://t.me/BotNews/90\">Telegram Stars</a>. Currently, always “XTR”",
+      "description" : "Three-letter ISO 4217 <a href=\"/bots/payments#supported-currencies\">currency</a> code, or “XTR” for payments in <a href=\"https://t.me/BotNews/90\">Telegram Stars</a>. Currently, always “XTR”.",
       "required" : true
     }, {
       "name" : "total_amount",
@@ -9674,12 +9673,12 @@
     }, {
       "name" : "source",
       "type" : "type/transaction-partner",
-      "description" : "<em>Optional</em>. Source of an incoming transaction (e.g., a user purchasing goods or services, Fragment refunding a failed withdrawal). Only for incoming transactions",
+      "description" : "<em>Optional</em>. Source of an incoming transaction (e.g., a user purchasing goods or services, Fragment refunding a failed withdrawal). Only for incoming transactions.",
       "required" : false
     }, {
       "name" : "receiver",
       "type" : "type/transaction-partner",
-      "description" : "<em>Optional</em>. Receiver of an outgoing transaction (e.g., a user for a purchase refund, Fragment for a withdrawal). Only for outgoing transactions",
+      "description" : "<em>Optional</em>. Receiver of an outgoing transaction (e.g., a user for a purchase refund, Fragment for a withdrawal). Only for outgoing transactions.",
       "required" : false
     } ]
   }, {
@@ -10085,7 +10084,7 @@
     }, {
       "name" : "photo",
       "type" : [ "array", "type/photo-size" ],
-      "description" : "Photo that will be displayed in the game message in chats.",
+      "description" : "Photo that will be displayed in the game message in chats",
       "required" : true
     }, {
       "name" : "text",
@@ -10106,7 +10105,7 @@
     }, {
       "name" : "animation",
       "type" : "type/animation",
-      "description" : "<em>Optional</em>. Animation that will be displayed in the game message in chats. Upload via <a href=\"https://t.me/botfather\">BotFather</a>",
+      "description" : "<em>Optional</em>. Animation that will be displayed in the game message in chats. Upload via <a href=\"https://t.me/botfather\">BotFather</a>.",
       "required" : false
     } ]
   }, {
@@ -10174,7 +10173,7 @@
       "name" : "url",
       "type" : "String",
       "required" : true,
-      "description" : "HTTPS URL to send updates to. Use an empty string to remove webhook integration"
+      "description" : "HTTPS URL to send updates to. Use an empty string to remove webhook integration."
     }, {
       "name" : "certificate",
       "type" : "type/input-file",
@@ -10329,7 +10328,7 @@
       "name" : "reply_markup",
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
-      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
+      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
       "json_serialized" : true
     } ]
   }, {
@@ -10470,7 +10469,7 @@
       "name" : "caption",
       "type" : "String",
       "required" : false,
-      "description" : "New caption for media, 0-1024 characters after entities parsing. If not specified, the original caption is kept",
+      "description" : "New caption for media, 0-1024 characters after entities parsing. If not specified, the original caption is kept.",
       "[:constraints :string]" : {
         "from" : 0,
         "to" : 1024,
@@ -10527,7 +10526,7 @@
       "name" : "reply_markup",
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
-      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
+      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
       "json_serialized" : true
     } ]
   }, {
@@ -10673,7 +10672,7 @@
       "name" : "reply_markup",
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
-      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
+      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
       "json_serialized" : true
     } ]
   }, {
@@ -10886,7 +10885,7 @@
       "name" : "reply_markup",
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
-      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
+      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
       "json_serialized" : true
     } ]
   }, {
@@ -10985,7 +10984,7 @@
       "name" : "reply_markup",
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
-      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
+      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
       "json_serialized" : true
     } ]
   }, {
@@ -11119,7 +11118,7 @@
       "name" : "reply_markup",
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
-      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
+      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
       "json_serialized" : true
     } ]
   }, {
@@ -11238,7 +11237,7 @@
       "name" : "reply_markup",
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
-      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
+      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
       "json_serialized" : true
     } ]
   }, {
@@ -11332,7 +11331,7 @@
       "name" : "reply_markup",
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
-      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
+      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
       "json_serialized" : true
     } ]
   }, {
@@ -11364,7 +11363,7 @@
       "name" : "video_note",
       "type" : [ "or", [ "type/input-file", "String" ] ],
       "required" : true,
-      "description" : "Video note to send. Pass a file_id as String to send a video note that exists on the Telegram servers (recommended) or upload a new video using multipart/form-data. <a href=\"#sending-files\">More information on Sending Files »</a>. Sending video notes by a URL is currently unsupported"
+      "description" : "Video note to send. Pass a file_id as String to send a video note that exists on the Telegram servers (recommended) or upload a new video using multipart/form-data. <a href=\"#sending-files\">More information on Sending Files »</a>. Sending video notes by a URL is currently unsupported."
     }, {
       "name" : "duration",
       "type" : "Integer",
@@ -11415,7 +11414,7 @@
       "name" : "reply_markup",
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
-      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
+      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
       "json_serialized" : true
     } ]
   }, {
@@ -11515,7 +11514,7 @@
       "name" : "reply_markup",
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
-      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
+      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
       "json_serialized" : true
     } ]
   }, {
@@ -11619,7 +11618,7 @@
       "name" : "live_period",
       "type" : "Integer",
       "required" : false,
-      "description" : "Period in seconds during which the location will be updated (see <a href=\"https://telegram.org/blog/live-locations\">Live Locations</a>, should be between 60 and 86400, or 0x7FFFFFFF for live locations that can be edited indefinitely."
+      "description" : "Period in seconds during which the location will be updated (see <a href=\"https://telegram.org/blog/live-locations\">Live Locations</a>, should be between 60 and 86400, or 0x7FFFFFFF for live locations that can be edited indefinitely"
     }, {
       "name" : "heading",
       "type" : "Integer",
@@ -11665,7 +11664,7 @@
       "name" : "reply_markup",
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
-      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
+      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
       "json_serialized" : true
     } ]
   }, {
@@ -11768,7 +11767,7 @@
       "name" : "reply_markup",
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
-      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
+      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
       "json_serialized" : true
     } ]
   }, {
@@ -11851,7 +11850,7 @@
       "name" : "reply_markup",
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
-      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
+      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
       "json_serialized" : true
     } ]
   }, {
@@ -11887,12 +11886,12 @@
       "name" : "question_parse_mode",
       "type" : "String",
       "required" : false,
-      "description" : "Mode for parsing entities in the question. See <a href=\"#formatting-options\">formatting options</a> for more details. Currently, only custom emoji entities are allowed"
+      "description" : "Mode for parsing entities in the question. See <a href=\"#formatting-options\">formatting options</a> for more details. Currently, only custom emoji entities are allowed."
     }, {
       "name" : "question_entities",
       "type" : [ "array", "type/message-entity" ],
       "required" : false,
-      "description" : "A JSON-serialized list of special entities that appear in the poll question. It can be specified instead of <em>question_parse_mode</em>",
+      "description" : "A JSON-serialized list of special entities that appear in the poll question. It can be specified instead of <em>question_parse_mode</em>.",
       "json_serialized" : true
     }, {
       "name" : "options",
@@ -11944,7 +11943,7 @@
       "name" : "country_codes",
       "type" : [ "array", "String" ],
       "required" : false,
-      "description" : "A JSON-serialized list of 0-12 two-letter <a href=\"https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2\">ISO 3166-1 alpha-2</a> country codes indicating the countries from which users can vote in the poll; for channel chats only. If omitted or empty, then users from any country can participate in the poll.",
+      "description" : "A JSON-serialized list of 0-12 two-letter <a href=\"https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2\">ISO 3166-1 alpha-2</a> country codes indicating the countries from which users can vote in the poll; for channel chats only. Use “FT” as a country code to allow users with anonymous numbers to vote. If omitted or empty, then users from any country can participate in the poll.",
       "json_serialized" : true
     }, {
       "name" : "correct_option_ids",
@@ -11971,7 +11970,7 @@
       "name" : "explanation_entities",
       "type" : [ "array", "type/message-entity" ],
       "required" : false,
-      "description" : "A JSON-serialized list of special entities that appear in the poll explanation. It can be specified instead of <em>explanation_parse_mode</em>",
+      "description" : "A JSON-serialized list of special entities that appear in the poll explanation. It can be specified instead of <em>explanation_parse_mode</em>.",
       "json_serialized" : true
     }, {
       "name" : "explanation_media",
@@ -12048,7 +12047,7 @@
       "name" : "reply_markup",
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
-      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
+      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
       "json_serialized" : true
     } ]
   }, {
@@ -12129,7 +12128,7 @@
       "name" : "emoji",
       "type" : "String",
       "required" : false,
-      "description" : "Emoji on which the dice throw animation is based. Currently, must be one of “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8EB2.png\" width=\"20\" height=\"20\" alt=\"🎲\">”, “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8EAF.png\" width=\"20\" height=\"20\" alt=\"🎯\">”, “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8F80.png\" width=\"20\" height=\"20\" alt=\"🏀\">”, “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/E29ABD.png\" width=\"20\" height=\"20\" alt=\"⚽\">”, “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8EB3.png\" width=\"20\" height=\"20\" alt=\"🎳\">”, or “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8EB0.png\" width=\"20\" height=\"20\" alt=\"🎰\">”. Dice can have values 1-6 for “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8EB2.png\" width=\"20\" height=\"20\" alt=\"🎲\">”, “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8EAF.png\" width=\"20\" height=\"20\" alt=\"🎯\">” and “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8EB3.png\" width=\"20\" height=\"20\" alt=\"🎳\">”, values 1-5 for “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8F80.png\" width=\"20\" height=\"20\" alt=\"🏀\">” and “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/E29ABD.png\" width=\"20\" height=\"20\" alt=\"⚽\">”, and values 1-64 for “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8EB0.png\" width=\"20\" height=\"20\" alt=\"🎰\">”. Defaults to “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8EB2.png\" width=\"20\" height=\"20\" alt=\"🎲\">”"
+      "description" : "Emoji on which the dice throw animation is based. Currently, must be one of “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8EB2.png\" width=\"20\" height=\"20\" alt=\"🎲\">”, “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8EAF.png\" width=\"20\" height=\"20\" alt=\"🎯\">”, “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8F80.png\" width=\"20\" height=\"20\" alt=\"🏀\">”, “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/E29ABD.png\" width=\"20\" height=\"20\" alt=\"⚽\">”, “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8EB3.png\" width=\"20\" height=\"20\" alt=\"🎳\">”, or “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8EB0.png\" width=\"20\" height=\"20\" alt=\"🎰\">”. Dice can have values 1-6 for “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8EB2.png\" width=\"20\" height=\"20\" alt=\"🎲\">”, “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8EAF.png\" width=\"20\" height=\"20\" alt=\"🎯\">” and “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8EB3.png\" width=\"20\" height=\"20\" alt=\"🎳\">”, values 1-5 for “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8F80.png\" width=\"20\" height=\"20\" alt=\"🏀\">” and “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/E29ABD.png\" width=\"20\" height=\"20\" alt=\"⚽\">”, and values 1-64 for “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8EB0.png\" width=\"20\" height=\"20\" alt=\"🎰\">”. Defaults to “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/F09F8EB2.png\" width=\"20\" height=\"20\" alt=\"🎲\">”."
     }, {
       "name" : "disable_notification",
       "type" : "Boolean",
@@ -12165,7 +12164,7 @@
       "name" : "reply_markup",
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
-      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
+      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
       "json_serialized" : true
     } ]
   }, {
@@ -12415,7 +12414,7 @@
       "name" : "until_date",
       "type" : "Integer",
       "required" : false,
-      "description" : "Date when restrictions will be lifted for the user; Unix time. If user is restricted for more than 366 days or less than 30 seconds from the current time, they are considered to be restricted forever"
+      "description" : "Date when restrictions will be lifted for the user; Unix time. If user is restricted for more than 366 days or less than 30 seconds from the current time, they are considered to be restricted forever."
     } ]
   }, {
     "id" : "method/promote-chat-member",
@@ -12456,7 +12455,7 @@
       "name" : "can_restrict_members",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> if the administrator can restrict, ban or unban chat members, or access supergroup statistics. For backward compatibility, defaults to <em>True</em> for promotions of channel administrators"
+      "description" : "Pass <em>True</em> if the administrator can restrict, ban or unban chat members, or access supergroup statistics. For backward compatibility, defaults to <em>True</em> for promotions of channel administrators."
     }, {
       "name" : "can_promote_members",
       "type" : "Boolean",
@@ -12667,7 +12666,7 @@
       "name" : "creates_join_request",
       "type" : "Boolean",
       "required" : false,
-      "description" : "<em>True</em>, if users joining the chat via the link need to be approved by chat administrators. If <em>True</em>, <em>member_limit</em> can't be specified"
+      "description" : "<em>True</em>, if users joining the chat via the link need to be approved by chat administrators. If <em>True</em>, <em>member_limit</em> can't be specified."
     } ]
   }, {
     "id" : "method/edit-chat-invite-link",
@@ -12707,7 +12706,7 @@
       "name" : "creates_join_request",
       "type" : "Boolean",
       "required" : false,
-      "description" : "<em>True</em>, if users joining the chat via the link need to be approved by chat administrators. If <em>True</em>, <em>member_limit</em> can't be specified"
+      "description" : "<em>True</em>, if users joining the chat via the link need to be approved by chat administrators. If <em>True</em>, <em>member_limit</em> can't be specified."
     } ]
   }, {
     "id" : "method/create-chat-subscription-invite-link",
@@ -13073,7 +13072,7 @@
       "name" : "icon_color",
       "type" : "Integer",
       "required" : false,
-      "description" : "Color of the topic icon in RGB format. Currently, must be one of 7322096 (0x6FB9F0), 16766590 (0xFFD67E), 13338331 (0xCB86DB), 9367192 (0x8EEE98), 16749490 (0xFF93B2), or 16478047 (0xFB6F5F)"
+      "description" : "Color of the topic icon in RGB format. Currently, must be one of 7322096 (0x6FB9F0), 16766590 (0xFFD67E), 13338331 (0xCB86DB), 9367192 (0x8EEE98), 16749490 (0xFF93B2), or 16478047 (0xFB6F5F)."
     }, {
       "name" : "icon_custom_emoji_id",
       "type" : "String",
@@ -13099,7 +13098,7 @@
       "name" : "name",
       "type" : "String",
       "required" : false,
-      "description" : "New topic name, 0-128 characters. If not specified or empty, the current name of the topic will be kept",
+      "description" : "New topic name, 0-128 characters. If not specified or empty, the current name of the topic will be kept.",
       "[:constraints :string]" : {
         "from" : 0,
         "to" : 128
@@ -13108,7 +13107,7 @@
       "name" : "icon_custom_emoji_id",
       "type" : "String",
       "required" : false,
-      "description" : "New unique identifier of the custom emoji shown as the topic icon. Use <a href=\"#getforumtopiciconstickers\">getForumTopicIconStickers</a> to get all allowed custom emoji identifiers. Pass an empty string to remove the icon. If not specified, the current icon will be kept"
+      "description" : "New unique identifier of the custom emoji shown as the topic icon. Use <a href=\"#getforumtopiciconstickers\">getForumTopicIconStickers</a> to get all allowed custom emoji identifiers. Pass an empty string to remove the icon. If not specified, the current icon will be kept."
     } ]
   }, {
     "id" : "method/close-forum-topic",
@@ -13263,7 +13262,7 @@
       "name" : "text",
       "type" : "String",
       "required" : false,
-      "description" : "Text of the notification. If not specified, nothing will be shown to the user, 0-200 characters",
+      "description" : "Text of the notification. If not specified, nothing will be shown to the user, 0-200 characters.",
       "[:constraints :string]" : {
         "from" : 0,
         "to" : 200
@@ -13404,7 +13403,7 @@
       "name" : "language_code",
       "type" : "String",
       "required" : false,
-      "description" : "A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope, for whose language there are no dedicated commands"
+      "description" : "A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope, for whose language there are no dedicated commands."
     } ]
   }, {
     "id" : "method/delete-my-commands",
@@ -13421,7 +13420,7 @@
       "name" : "language_code",
       "type" : "String",
       "required" : false,
-      "description" : "A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope, for whose language there are no dedicated commands"
+      "description" : "A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given scope, for whose language there are no dedicated commands."
     } ]
   }, {
     "id" : "method/get-my-commands",
@@ -13558,12 +13557,12 @@
       "name" : "chat_id",
       "type" : "Integer",
       "required" : false,
-      "description" : "Unique identifier for the target private chat. If not specified, default bot's menu button will be changed"
+      "description" : "Unique identifier for the target private chat. If not specified, default bot's menu button will be changed."
     }, {
       "name" : "menu_button",
       "type" : "type/menu-button",
       "required" : false,
-      "description" : "A JSON-serialized object for the bot's new menu button. Defaults to <a href=\"#menubuttondefault\">MenuButtonDefault</a>",
+      "description" : "A JSON-serialized object for the bot's new menu button. Defaults to <a href=\"#menubuttondefault\">MenuButtonDefault</a>.",
       "json_serialized" : true
     } ]
   }, {
@@ -13575,7 +13574,7 @@
       "name" : "chat_id",
       "type" : "Integer",
       "required" : false,
-      "description" : "Unique identifier for the target private chat. If not specified, default bot's menu button will be returned"
+      "description" : "Unique identifier for the target private chat. If not specified, default bot's menu button will be returned."
     } ]
   }, {
     "id" : "method/set-my-default-administrator-rights",
@@ -13794,7 +13793,7 @@
       "name" : "message_ids",
       "type" : [ "array", "Integer" ],
       "required" : true,
-      "description" : "A JSON-serialized list of 1-100 identifiers of messages to delete. All messages must be from the same chat. See <a href=\"#deletemessage\">deleteMessage</a> for limitations on which messages can be deleted",
+      "description" : "A JSON-serialized list of 1-100 identifiers of messages to delete. All messages must be from the same chat. See <a href=\"#deletemessage\">deleteMessage</a> for limitations on which messages can be deleted.",
       "json_serialized" : true
     } ]
   }, {
@@ -14010,7 +14009,7 @@
       "name" : "limit",
       "type" : "Integer",
       "required" : false,
-      "description" : "The maximum number of gifts to be returned; 1-100. Defaults to 100"
+      "description" : "The maximum number of gifts to be returned; 1-100. Defaults to 100."
     } ]
   }, {
     "id" : "method/get-user-gifts",
@@ -14061,7 +14060,7 @@
       "name" : "limit",
       "type" : "Integer",
       "required" : false,
-      "description" : "The maximum number of gifts to be returned; 1-100. Defaults to 100"
+      "description" : "The maximum number of gifts to be returned; 1-100. Defaults to 100."
     } ]
   }, {
     "id" : "method/get-chat-gifts",
@@ -14122,7 +14121,7 @@
       "name" : "limit",
       "type" : "Integer",
       "required" : false,
-      "description" : "The maximum number of gifts to be returned; 1-100. Defaults to 100"
+      "description" : "The maximum number of gifts to be returned; 1-100. Defaults to 100."
     } ]
   }, {
     "id" : "method/convert-gift-to-stars",
@@ -14418,7 +14417,7 @@
       "name" : "button",
       "type" : "type/keyboard-button",
       "required" : true,
-      "description" : "A JSON-serialized object describing the button to be saved. The button must be of the type <em>request_users</em>, <em>request_chat</em>, or <em>request_managed_bot</em>",
+      "description" : "A JSON-serialized object describing the button to be saved. The button must be of the type <em>request_users</em>, <em>request_chat</em>, or <em>request_managed_bot</em>.",
       "json_serialized" : true
     } ]
   }, {
@@ -14440,12 +14439,12 @@
       "name" : "message_id",
       "type" : "Integer",
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit"
+      "description" : "Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit."
     }, {
       "name" : "inline_message_id",
       "type" : "String",
       "required" : false,
-      "description" : "Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message"
+      "description" : "Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message."
     }, {
       "name" : "text",
       "type" : "String",
@@ -14476,7 +14475,7 @@
       "name" : "reply_markup",
       "type" : "type/inline-keyboard-markup",
       "required" : false,
-      "description" : "A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>.",
+      "description" : "A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>",
       "json_serialized" : true
     } ]
   }, {
@@ -14498,12 +14497,12 @@
       "name" : "message_id",
       "type" : "Integer",
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit"
+      "description" : "Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit."
     }, {
       "name" : "inline_message_id",
       "type" : "String",
       "required" : false,
-      "description" : "Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message"
+      "description" : "Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message."
     }, {
       "name" : "caption",
       "type" : "String",
@@ -14534,7 +14533,7 @@
       "name" : "reply_markup",
       "type" : "type/inline-keyboard-markup",
       "required" : false,
-      "description" : "A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>.",
+      "description" : "A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>",
       "json_serialized" : true
     } ]
   }, {
@@ -14556,12 +14555,12 @@
       "name" : "message_id",
       "type" : "Integer",
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit"
+      "description" : "Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit."
     }, {
       "name" : "inline_message_id",
       "type" : "String",
       "required" : false,
-      "description" : "Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message"
+      "description" : "Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message."
     }, {
       "name" : "media",
       "type" : "type/input-media",
@@ -14572,7 +14571,7 @@
       "name" : "reply_markup",
       "type" : "type/inline-keyboard-markup",
       "required" : false,
-      "description" : "A JSON-serialized object for a new <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>.",
+      "description" : "A JSON-serialized object for a new <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>",
       "json_serialized" : true
     } ]
   }, {
@@ -14594,12 +14593,12 @@
       "name" : "message_id",
       "type" : "Integer",
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit"
+      "description" : "Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit."
     }, {
       "name" : "inline_message_id",
       "type" : "String",
       "required" : false,
-      "description" : "Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message"
+      "description" : "Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message."
     }, {
       "name" : "latitude",
       "type" : "Float",
@@ -14614,7 +14613,7 @@
       "name" : "live_period",
       "type" : "Integer",
       "required" : false,
-      "description" : "New period in seconds during which the location can be updated, starting from the message send date. If 0x7FFFFFFF is specified, then the location can be updated forever. Otherwise, the new value must not exceed the current <em>live_period</em> by more than a day, and the live location expiration date must remain within the next 90 days. If not specified, then <em>live_period</em> remains unchanged"
+      "description" : "New period in seconds during which the location can be updated, starting from the message send date. If 0x7FFFFFFF is specified, then the location can be updated forever. Otherwise, the new value must not exceed the current <em>live_period</em> by more than a day, and the live location expiration date must remain within the next 90 days. If not specified, then <em>live_period</em> remains unchanged."
     }, {
       "name" : "horizontal_accuracy",
       "type" : "Float",
@@ -14634,7 +14633,7 @@
       "name" : "reply_markup",
       "type" : "type/inline-keyboard-markup",
       "required" : false,
-      "description" : "A JSON-serialized object for a new <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>.",
+      "description" : "A JSON-serialized object for a new <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>",
       "json_serialized" : true
     } ]
   }, {
@@ -14656,17 +14655,17 @@
       "name" : "message_id",
       "type" : "Integer",
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Identifier of the message with live location to stop"
+      "description" : "Required if <em>inline_message_id</em> is not specified. Identifier of the message with live location to stop."
     }, {
       "name" : "inline_message_id",
       "type" : "String",
       "required" : false,
-      "description" : "Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message"
+      "description" : "Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message."
     }, {
       "name" : "reply_markup",
       "type" : "type/inline-keyboard-markup",
       "required" : false,
-      "description" : "A JSON-serialized object for a new <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>.",
+      "description" : "A JSON-serialized object for a new <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>",
       "json_serialized" : true
     } ]
   }, {
@@ -14721,17 +14720,17 @@
       "name" : "message_id",
       "type" : "Integer",
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit"
+      "description" : "Required if <em>inline_message_id</em> is not specified. Identifier of the message to edit."
     }, {
       "name" : "inline_message_id",
       "type" : "String",
       "required" : false,
-      "description" : "Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message"
+      "description" : "Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message."
     }, {
       "name" : "reply_markup",
       "type" : "type/inline-keyboard-markup",
       "required" : false,
-      "description" : "A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>.",
+      "description" : "A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>",
       "json_serialized" : true
     } ]
   }, {
@@ -14758,7 +14757,7 @@
       "name" : "reply_markup",
       "type" : "type/inline-keyboard-markup",
       "required" : false,
-      "description" : "A JSON-serialized object for a new message <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>.",
+      "description" : "A JSON-serialized object for a new message <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>",
       "json_serialized" : true
     } ]
   }, {
@@ -14780,7 +14779,7 @@
       "name" : "send_date",
       "type" : "Integer",
       "required" : false,
-      "description" : "Point in time (Unix timestamp) when the post is expected to be published; omit if the date has already been specified when the suggested post was created. If specified, then the date must be not more than 2678400 seconds (30 days) in the future"
+      "description" : "Point in time (Unix timestamp) when the post is expected to be published; omit if the date has already been specified when the suggested post was created. If specified, then the date must be not more than 2678400 seconds (30 days) in the future."
     } ]
   }, {
     "id" : "method/decline-suggested-post",
@@ -14837,7 +14836,7 @@
       "name" : "message_ids",
       "type" : [ "array", "Integer" ],
       "required" : true,
-      "description" : "A JSON-serialized list of 1-100 identifiers of messages to delete. See <a href=\"#deletemessage\">deleteMessage</a> for limitations on which messages can be deleted",
+      "description" : "A JSON-serialized list of 1-100 identifiers of messages to delete. See <a href=\"#deletemessage\">deleteMessage</a> for limitations on which messages can be deleted.",
       "json_serialized" : true
     } ]
   }, {
@@ -14957,7 +14956,7 @@
       "name" : "reply_markup",
       "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
       "required" : false,
-      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user",
+      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
       "json_serialized" : true
     } ]
   }, {
@@ -15239,7 +15238,7 @@
       "name" : "custom_emoji_id",
       "type" : "String",
       "required" : false,
-      "description" : "Custom emoji identifier of a sticker from the sticker set; pass an empty string to drop the thumbnail and use the first sticker as the thumbnail."
+      "description" : "Custom emoji identifier of a sticker from the sticker set; pass an empty string to drop the thumbnail and use the first sticker as the thumbnail"
     } ]
   }, {
     "id" : "method/delete-sticker-set",
@@ -15364,7 +15363,7 @@
       "name" : "start_parameter",
       "type" : "String",
       "required" : false,
-      "description" : "Unique deep-linking parameter. If left empty, <strong>forwarded copies</strong> of the sent message will have a <em>Pay</em> button, allowing multiple users to pay directly from the forwarded message, using the same invoice. If non-empty, forwarded copies of the sent message will have a <em>URL</em> button with a deep link to the bot (instead of a <em>Pay</em> button), with the value used as the start parameter"
+      "description" : "Unique deep-linking parameter. If left empty, <strong>forwarded copies</strong> of the sent message will have a <em>Pay</em> button, allowing multiple users to pay directly from the forwarded message, using the same invoice. If non-empty, forwarded copies of the sent message will have a <em>URL</em> button with a deep link to the bot (instead of a <em>Pay</em> button), with the value used as the start parameter."
     }, {
       "name" : "provider_data",
       "type" : "String",
@@ -15790,7 +15789,7 @@
       "name" : "force",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em> if the high score is allowed to decrease. This can be useful when fixing mistakes or banning cheaters"
+      "description" : "Pass <em>True</em> if the high score is allowed to decrease. This can be useful when fixing mistakes or banning cheaters."
     }, {
       "name" : "disable_edit_message",
       "type" : "Boolean",
@@ -15800,17 +15799,17 @@
       "name" : "chat_id",
       "type" : "Integer",
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat"
+      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat."
     }, {
       "name" : "message_id",
       "type" : "Integer",
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Identifier of the sent message"
+      "description" : "Required if <em>inline_message_id</em> is not specified. Identifier of the sent message."
     }, {
       "name" : "inline_message_id",
       "type" : "String",
       "required" : false,
-      "description" : "Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message"
+      "description" : "Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message."
     } ]
   }, {
     "id" : "method/get-game-high-scores",
@@ -15826,17 +15825,17 @@
       "name" : "chat_id",
       "type" : "Integer",
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat"
+      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat."
     }, {
       "name" : "message_id",
       "type" : "Integer",
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Identifier of the sent message"
+      "description" : "Required if <em>inline_message_id</em> is not specified. Identifier of the sent message."
     }, {
       "name" : "inline_message_id",
       "type" : "String",
       "required" : false,
-      "description" : "Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message"
+      "description" : "Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message."
     } ]
   } ]
 }
