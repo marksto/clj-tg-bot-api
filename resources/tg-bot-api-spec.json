@@ -582,7 +582,7 @@
     }, {
       "name" : "paid_message_star_count",
       "type" : "Integer",
-      "description" : "<em>Optional</em>. The number of Telegram Stars a general user have to pay to send a message to the chat",
+      "description" : "<em>Optional</em>. The number of Telegram Stars a general user has to pay to send a message to the chat",
       "required" : false
     } ]
   }, {
