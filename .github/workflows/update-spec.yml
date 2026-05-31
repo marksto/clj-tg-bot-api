@@ -47,8 +47,10 @@ jobs:
       - name: Commit and push when changed
         if: steps.update-spec.outputs.updated == 'true'
         run: |
-          git add resources/tg-bot-api-spec.json
-          if [ -f resources/.tg-bot-api-etag ]; then git add resources/.tg-bot-api-etag; fi
+          git add modules/core/resources/tg-bot-api-spec.json
+          if [ -f modules/core/resources/.tg-bot-api-etag ]; then
+            git add modules/core/resources/.tg-bot-api-etag
+          fi
           git commit -m "Update Telegram Bot API spec [skip ci]"
           git push
 

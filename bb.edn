@@ -77,32 +77,36 @@
 
   test:unit
   {:doc  "Run only unit tests"
-   :task (clojure "-T:build" "test" :test-type :unit)}
+   :task (apply clojure "-T:build" "test" :test-type :unit *command-line-args*)}
 
   test:integration
   {:doc  "Run only integration tests"
-   :task (clojure "-T:build" "test" :test-type :integration)}
+   :task (apply clojure "-T:build" "test" :test-type :integration *command-line-args*)}
 
   test
   {:doc  "Run all the tests"
-   :task (clojure "-T:build" "test")}
+   ;; - "bb test"
+   ;; - "bb test :module core"
+   :task (apply clojure "-T:build" "test" *command-line-args*)}
 
   ;;; Building / Deploying
 
   jar
-  {:doc  "Build the JAR file"
-   :task (clojure "-T:build" "jar")}
+  {:doc  "Build the JAR file(s)"
+   ;; - "bb jar"
+   ;; - "bb jar :module core"
+   :task (apply clojure "-T:build" "jar" *command-line-args*)}
 
   install
-  {:doc  "Install the JAR locally"
-   :task (clojure "-T:build" "install")}
+  {:doc  "Install the JAR file(s) locally"
+   :task (apply clojure "-T:build" "install" *command-line-args*)}
 
   deploy
-  {:doc  "Deploy the JAR to Clojars"
-   :task (clojure "-T:build" "deploy")}
+  {:doc  "Deploy the JAR file(s) to Clojars"
+   :task (apply clojure "-T:build" "deploy" *command-line-args*)}
 
   release
-  {:doc  "Release a new version of the library"
+  {:doc  "Release a new version of all modules"
    :task (do (run 'check)
              (run 'test)
              (run 'jar)

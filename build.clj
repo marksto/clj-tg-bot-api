@@ -8,8 +8,23 @@
    [clojure.tools.deps :as t]
    [deps-deploy.deps-deploy :as dd]))
 
-(def lib 'com.github.marksto/clj-tg-bot-api)
 (def version (format "1.1.%s" (b/git-count-revs nil)))
+
+(def modules
+  [{:id 'core
+    :dir "modules/core"
+    :lib 'com.github.marksto/clj-tg-bot-api
+    :description "The latest Telegram Bot API specification and client lib for Clojure-based apps."}])
+
+(def module-by-id
+  (into {} (map (juxt :id identity)) modules))
+
+(defn- selected-modules [{:keys [module]}]
+  (if (nil? module)
+    modules ; no module specified => all modules, in order
+    (or (some-> (module-by-id module) (vector))
+        (throw (ex-info "Unknown module" {:module module})))))
+
 (def class-dir "target/classes")
 
 (defn- read-deps-edn []
@@ -53,8 +68,9 @@
       (run-tests :test/integration http-client-alias)))
   opts)
 
-(defn- pom-template [version]
-  [[:description "The latest Telegram Bot API specification and client lib for Clojure-based apps."]
+(defn- pom-template
+  [version description]
+  [[:description description]
    [:url "https://github.com/marksto/clj-tg-bot-api"]
    [:licenses
     [:license
@@ -69,35 +85,61 @@
     [:developerConnection "scm:git:ssh:git@github.com:marksto/clj-tg-bot-api.git"]
     [:tag (str "v" version)]]])
 
-(defn- jar-opts [opts]
+(defn- basis []
+  (let [module-overrides (reduce (fn [deps {:keys [lib]}]
+                                   (assoc deps lib {:mvn/version version}))
+                                 {}
+                                 modules)]
+    (b/create-basis
+      {:aliases [:mvn/overrides]
+       :extra   {:aliases {:mvn/overrides {:override-deps module-overrides}}}})))
+
+(defn- jar-opts
+  [opts {:keys [lib description] :as _module}]
   (assoc opts
     :lib lib :version version
     :jar-file (format "target/%s-%s.jar" lib version)
-    :basis (b/create-basis {})
+    :basis (basis)
     :class-dir class-dir
     :target "target"
     :src-dirs ["src"]
-    :pom-data (pom-template version)))
+    :pom-data (pom-template version description)))
 
-(defn jar "Builds the JAR file." [opts]
+(defn- jar-module [opts module]
   (b/delete {:path "target"})
-  (let [opts (jar-opts opts)]
+  (let [opts (jar-opts opts module)]
+    (println (format "\nBuilding '%s'..." (:lib module)))
     (println "\nWriting pom.xml...")
     (b/write-pom opts)
     (println "\nCopying source...")
     (b/copy-dir {:src-dirs ["resources" "src"] :target-dir class-dir})
     (println "\nBuilding JAR...")
-    (b/jar opts))
+    (b/jar opts)))
+
+(defn jar "Build JAR file(s)." [opts]
+  (doseq [module (selected-modules opts)]
+    (b/with-project-root (:dir module)
+      (jar-module opts module)))
   opts)
 
-(defn install "Install the JAR locally." [opts]
-  (let [opts (jar-opts opts)]
-    (b/install opts))
+(defn- install-module [opts module]
+  (let [opts (jar-opts opts module)]
+    (b/install opts)))
+
+(defn install "Install JAR file(s) locally." [opts]
+  (doseq [module (selected-modules opts)]
+    (b/with-project-root (:dir module)
+      (install-module opts module)))
   opts)
 
-(defn deploy "Deploy the JAR to Clojars." [opts]
-  (let [{:keys [jar-file] :as opts} (jar-opts opts)]
+(defn- deploy-module [opts module]
+  (let [{:keys [jar-file] :as opts} (jar-opts opts module)]
     (dd/deploy {:installer :remote
                 :artifact  (b/resolve-path jar-file)
-                :pom-file  (b/pom-path (select-keys opts [:lib :class-dir]))}))
+                :pom-file  (b/pom-path (select-keys opts [:lib :class-dir]))})))
+
+(defn deploy "Deploy JAR file(s) to Clojars." [opts]
+  (doseq [module (selected-modules opts)]
+    (b/with-project-root (:dir module)
+      (deploy-module opts module)))
   opts)

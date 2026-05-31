@@ -1,18 +1,6 @@
-{:paths ["src" "resources"]
+{:paths []
 
- :deps  {aysylu/loom                         {:mvn/version "1.0.2"
-                                              :exclusions  [org.clojure/clojure
-                                                            org.clojure/clojurescript]}
-         camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
-         com.github.oliyh/martian            {:mvn/version "0.2.3"
-                                              :exclusions  [com.cognitect/transit-cljs]}
-         com.github.oliyh/martian-test       {:mvn/version "0.2.3"}
-         diehard/diehard                     {:mvn/version "0.12.0"
-                                              :exclusions  [org.clojure/clojure]}
-         metosin/jsonista                    {:mvn/version "1.0.0"}
-         org.clojure/tools.logging           {:mvn/version "1.3.1"}
-         org.flatland/ordered                {:mvn/version "1.15.12"
-                                              :exclusions  [org.clojure/clojure]}}
+ :deps  {com.github.marksto/clj-tg-bot-api {:local/root "modules/core"}}
 
  :aliases
  {:dev
@@ -44,13 +32,14 @@
   {:extra-deps {com.github.oliyh/martian-hato {:mvn/version "0.2.3"}}}
 
   :test/unit
-  {:extra-paths ["test/unit"]
+  {:extra-paths ["modules/core/test/unit"]
    :extra-deps  {nubank/matcher-combinators                 {:mvn/version "3.10.0"}
                  io.github.matthewdowney/rich-comment-tests {:git/tag "v1.0.3"
                                                              :git/sha "a8711e9"}}}
 
   :test/integration
-  {:extra-paths ["test/integration" "test-resources/integration"]
+  {:extra-paths ["modules/core/test/integration"
+                 "modules/core/test-resources/integration"]
    :extra-deps  {com.github.oliyh/martian-vcr {:mvn/version "0.2.3"}
                  nubank/matcher-combinators   {:mvn/version "3.10.0"}}}
 
@@ -72,7 +61,6 @@
                "--ignore-locals"]}
 
   :build
-  {:replace-paths ["."]
-   :replace-deps  {io.github.clojure/tools.build {:mvn/version "0.10.13"}
-                   slipset/deps-deploy           {:mvn/version "0.2.3"}}
-   :ns-default    build}}}
+  {:replace-deps {io.github.clojure/tools.build {:mvn/version "0.10.13"}
+                  slipset/deps-deploy           {:mvn/version "0.2.3"}}
+   :ns-default   build}}}

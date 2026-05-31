@@ -48,9 +48,9 @@
 
 ;;; Files
 
-(def etag-file (fs/file "resources/.tg-bot-api-etag"))
+(def etag-file (fs/file "modules/core/resources/.tg-bot-api-etag"))
 
-(def spec-file (fs/file "resources/tg-bot-api-spec.json"))
+(def spec-file (fs/file "modules/core/resources/tg-bot-api-spec.json"))
 
 ;;; Fetching
 
