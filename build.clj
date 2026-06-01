@@ -3,7 +3,6 @@
   (:require
    [clojure.edn :as edn]
    [clojure.java.io :as io]
-   [clojure.string :as str]
    [clojure.tools.build.api :as b]
    [clojure.tools.deps :as t]
    [deps-deploy.deps-deploy :as dd]))
@@ -31,28 +30,25 @@
   (edn/read-string (slurp (io/file "deps.edn"))))
 
 (defn supported-http-client-aliases []
-  (filter #(= "http" (namespace %)) (keys (:aliases (read-deps-edn)))))
+  (filter #(= (name :http) (namespace %)) (keys (:aliases (read-deps-edn)))))
 
-(defn- get-test-dir
-  [test-alias combined-aliases]
-  (let [extra-paths (:extra-paths combined-aliases)]
-    (or (when-some [test-dir (first extra-paths)]
-          (when (str/starts-with? test-dir "test/")
-            test-dir))
-        (throw (ex-info "No test path in alias" {:alias test-alias
-                                                 :paths extra-paths})))))
+(defn- get-extra-paths
+  [test-alias {:keys [extra-paths] :as _combined-aliases}]
+  (or extra-paths
+      (throw (ex-info "No test path in alias" {:alias test-alias
+                                               :paths extra-paths}))))
 
 (defn- run-tests
   [test-alias & extra-aliases]
   (let [all-aliases (into [test-alias :test/runner] extra-aliases)
         basis (b/create-basis {:aliases all-aliases})
         combined (t/combine-aliases basis all-aliases)
-        test-dir (get-test-dir test-alias combined)
+        dir-args (mapcat #(do ["-d" %]) (get-extra-paths test-alias combined))
         command (b/java-command
                   {:basis     basis
                    :java-opts (:jvm-opts combined)
                    :main      'clojure.main
-                   :main-args ["-m" "cognitect.test-runner" "-d" test-dir]})
+                   :main-args (into ["-m" "cognitect.test-runner"] dir-args)})
         {:keys [exit]} (b/process command)]
     (when-not (zero? exit)
       (throw (ex-info (format "Tests failed (with alias %s)" test-alias) {})))))

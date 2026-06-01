@@ -1,5 +1,6 @@
 (ns marksto.clj-tg-bot-api.core-i9n-test
   (:require
+   [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.test :refer [deftest is testing use-fixtures]]
    [marksto.clj-tg-bot-api.core :as sut]
@@ -35,7 +36,7 @@
   (str/replace (namespace perform-request-interceptor-name) "martian." ""))
 
 (def vcr-root-dir
-  (str "test-resources/integration/" used-http-client))
+  (io/as-file (io/resource used-http-client)))
 
 (def vcr-opts
   {:store {:kind     :prepared-file
