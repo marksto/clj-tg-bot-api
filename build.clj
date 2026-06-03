@@ -7,7 +7,7 @@
    [clojure.tools.deps :as t]
    [deps-deploy.deps-deploy :as dd]))
 
-(def version (format "1.1.%s" (b/git-count-revs nil)))
+(def version (format "1.2.%s" (b/git-count-revs nil)))
 
 (def modules
   [{:id 'core
