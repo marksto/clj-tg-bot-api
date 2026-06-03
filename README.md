@@ -28,13 +28,15 @@ It exposes a uniform interface with just [3 primary functions](#basics) and uses
   - auto-conversion of dashes to underscores in param keys
 * **Does things at the right level of abstraction**
   - it's a simple API client library, not an opinionated framework
-  - has zero "moving parts" — even [an HTTP client is pluggable](#supported-http-clients)!
-  - leaves the execution/concurrency model up to your discretion
+  - modular from the ground up — choose and use only what you need
+  - `core` has zero "moving parts" — even [an HTTP client is pluggable](#supported-http-clients)!
+  - `core` leaves the execution/concurrency model up to your discretion
 * **Built on top of [Martian](https://github.com/oliyh/martian) for the best possible feature set**
   - highly configurable via interceptor chain with reasonable defaults
   - superior testing experience — without brittle global mocks
   - recording and playing back responses in a VCR style
 * **Production-ready built-in essentials**
+  - `updates` module — to uniformly set up and tear down [updates retrieval](#getting-updates)
   - [rate limiting](#rate-limiting) — with conservative defaults, yet re-configurable
   - support for multipart requests and JSON-serialized params
   - HTTP response maps — for [replying to incoming updates](https://core.telegram.org/bots/api#making-requests-when-getting-updates)
@@ -45,21 +47,25 @@ It exposes a uniform interface with just [3 primary functions](#basics) and uses
 
 Add the following dependencies to your `deps.edn` or `project.clj` file:
 
-1. the latest version of the library itself
-2. any supported HTTP client of your choice via a Martian module (see below)
-
 ### Latest version
 
-[![Clojars Project](http://clojars.org/com.github.marksto/clj-tg-bot-api/latest-version.svg)](http://clojars.org/com.github.marksto/clj-tg-bot-api)
+Add the required dependency to the `core` module. Other modules are optional.
+
+| Module    | Project dependency                                                                                                                                          |
+|-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `core`    | [![Clojars](https://img.shields.io/clojars/v/com.github.marksto/clj-tg-bot-api.svg)](https://clojars.org/com.github.marksto/clj-tg-bot-api)                 |
+| `updates` | [![Clojars](https://img.shields.io/clojars/v/com.github.marksto/clj-tg-bot-api.updates.svg)](https://clojars.org/com.github.marksto/clj-tg-bot-api.updates) |
 
 ### Supported HTTP clients
 
-| Target HTTP client | Extra project dependency                                                                                                                                  |
-|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `http-kit`         | [![Clojars](https://img.shields.io/clojars/v/com.github.oliyh/martian-httpkit.svg)](https://clojars.org/com.github.oliyh/martian-httpkit)           |
-| `clj-http`         | [![Clojars](https://img.shields.io/clojars/v/com.github.oliyh/martian-clj-http.svg)](https://clojars.org/com.github.oliyh/martian-clj-http)         |
+Add any supported HTTP client of your choice via a Martian module.
+
+| Target HTTP client | Extra project dependency                                                                                                                              |
+|--------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `http-kit`         | [![Clojars](https://img.shields.io/clojars/v/com.github.oliyh/martian-httpkit.svg)](https://clojars.org/com.github.oliyh/martian-httpkit)             |
+| `clj-http`         | [![Clojars](https://img.shields.io/clojars/v/com.github.oliyh/martian-clj-http.svg)](https://clojars.org/com.github.oliyh/martian-clj-http)           |
 | `clj-http-lite`    | [![Clojars](https://img.shields.io/clojars/v/com.github.oliyh/martian-clj-http-lite.svg)](https://clojars.org/com.github.oliyh/martian-clj-http-lite) |
-| `hato`             | [![Clojars](https://img.shields.io/clojars/v/com.github.oliyh/martian-hato.svg)](https://clojars.org/com.github.oliyh/martian-hato)                 |
+| `hato`             | [![Clojars](https://img.shields.io/clojars/v/com.github.oliyh/martian-hato.svg)](https://clojars.org/com.github.oliyh/martian-hato)                   |
 
 ⚠️ Since the library uses a number of JVM-specific dependencies, there is currently no support for running it with `bb` and `org.babashka/http-client`.
 
@@ -258,6 +264,40 @@ While you can always pass in a custom implementation, the `marksto.clj-tg-bot-ap
 ;=> nil
 ```
 
+### Getting Updates
+
+As stated in [the Bot API documentation](https://core.telegram.org/bots/api#getting-updates), there are 2 mutually exclusive ways to get updates for the bot — via [a webhook URL](#webhook) xor via [long-polling process](#long-polling).
+
+The `updates` module provides conventional means to:
+- uniformly set up and tear down the way a Telegram bot gets updates
+- dynamically switch between these ways at runtime
+
+#### Webhook
+
+You specify a public HTTPS endpoint through which the Telegram Bot API will provide pending updates to the bot.
+
+This way of receiving updates is common for a remotely deployed bot, but arranging it in local dev env can be tricky, since a self-signed certificate, a static IP address with a proper router configuration, and/or a reverse proxy service (such as ngrok) is necessary for this setup to work.
+
+Read the official [Marvin's Marvellous Guide to All Things Webhook](https://core.telegram.org/bots/webhooks) for a more detailed overview.
+
+The `marksto.clj-tg-bot-api.updates.core` namespace comes with a `setup-webhook!` function, which plays well with any system/state management library. Read its docstring for details.
+
+#### Long-polling
+
+Bot performs long-polling of server updates itself, which means a continuous calling of the 'getUpdates' Telegram Bot API method and waiting to receive any incoming updates over this time, then making the same call again.
+
+This way is totally fine for a local debugging/testing purposes, but it turns out to be slower and more error-prone than listening to a dedicated webhook, a recommended option for Production environment.
+
+The `marksto.clj-tg-bot-api.updates.core` namespace comes with a `setup-long-polling!` and `teardown-long-polling!` functions, which play well with any system/state management library. Read their docstring for details.
+
+#### Switching
+
+The `updates` module also allows to dynamically switch between these ways at runtime. This is helpful in REPL-driven development of a bot and can be used to reroute the incoming updates from a remotely deployed instance to your local one for debugging purposes.
+
+This will require you to provide parameters with options for both webhook and long-polling.
+
+⚠️ When switching, mind the database connection or any other external stateful service connection, if your bot happens to use them.
+
 ### Utilities
 
 The library also provides a set of utility functions — for Telegram Bot API types, updates and responses — available for use through the `marksto.clj-tg-bot-api.utils` namespace. Feel free to check them out!
@@ -272,6 +312,6 @@ As an enthusiast building bots daily, I've found that existing Clojure client li
 
 ## License
 
-Copyright © 2025 Mark Sto
+Copyright © 2026 Mark Sto
 
 Licensed under [EPL 1.0](LICENSE) (same as Clojure).
