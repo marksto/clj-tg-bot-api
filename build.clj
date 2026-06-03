@@ -85,11 +85,12 @@
     [:developerConnection "scm:git:ssh:git@github.com:marksto/clj-tg-bot-api.git"]
     [:tag (str "v" version)]]])
 
-(defn- basis []
-  (let [module-overrides (reduce (fn [deps {:keys [lib]}]
-                                   (assoc deps lib {:mvn/version version}))
-                                 {}
-                                 modules)]
+(defn- basis [module-lib]
+  (let [module-overrides (->> modules
+                              (remove #(= module-lib (:lib %)))
+                              (reduce (fn [deps {:keys [lib]}]
+                                        (assoc deps lib {:mvn/version version}))
+                                      {}))]
     (b/create-basis
       {:aliases [:mvn/overrides]
        :extra   {:aliases {:mvn/overrides {:override-deps module-overrides}}}})))
@@ -99,7 +100,7 @@
   (assoc opts
     :lib lib :version version
     :jar-file (format "target/%s-%s.jar" lib version)
-    :basis (basis)
+    :basis (basis lib)
     :class-dir class-dir
     :target "target"
     :src-dirs ["src"]
@@ -107,14 +108,17 @@
 
 (defn- jar-module [opts module]
   (b/delete {:path "target"})
-  (let [opts (jar-opts opts module)]
-    (println (format "\nBuilding '%s'..." (:lib module)))
-    (println "\nWriting pom.xml...")
+  (let [{:keys [lib version] :as opts} (jar-opts opts module)]
+    (println (format "\nPackaging module '%s:%s'..." lib version))
+    (println "Writing pom.xml...")
     (b/write-pom opts)
-    (println "\nCopying source...")
-    (b/copy-dir {:src-dirs ["resources" "src"] :target-dir class-dir})
-    (println "\nBuilding JAR...")
-    (b/jar opts)))
+    (println "Copying source...")
+    (b/copy-dir {:src-dirs (-> opts :basis :paths)
+                 :target-dir (:class-dir opts)})
+    (println "Building JAR...")
+    (b/jar opts)
+    (println "Installing JAR locally...")
+    (b/install opts)))
 
 (defn jar "Build JAR file(s)." [opts]
   (doseq [module (selected-modules opts)]
@@ -123,7 +127,8 @@
   opts)
 
 (defn- install-module [opts module]
-  (let [opts (jar-opts opts module)]
+  (let [{:keys [lib version] :as opts} (jar-opts opts module)]
+    (println (format "Installing module '%s:%s' locally..." lib version))
     (b/install opts)))
 
 (defn install "Install JAR file(s) locally." [opts]
@@ -133,7 +138,8 @@
   opts)
 
 (defn- deploy-module [opts module]
-  (let [{:keys [jar-file] :as opts} (jar-opts opts module)]
+  (let [{:keys [lib version jar-file] :as opts} (jar-opts opts module)]
+    (println (format "Deploying module '%s:%s' to Clojars..." lib version))
     (dd/deploy {:installer :remote
                 :artifact  (b/resolve-path jar-file)
                 :pom-file  (b/pom-path (select-keys opts [:lib :class-dir]))})))
