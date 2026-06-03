@@ -3,7 +3,7 @@
    [babashka.fs :as fs]))
 
 (defn clj-exclusions []
-  (->> [(fs/glob "." "target/**.clj")]
+  (->> [(fs/glob "." "{target,**/target}/**.clj")]
        (flatten)
        (map str)
        (set)))
@@ -21,8 +21,8 @@
               (remove (clj-exclusions))))))
 
 (defn edn-exclusions []
-  (->> [(fs/glob "." "target/**.edn")
-        (fs/glob "." "test-resources/integration/**.edn")]
+  (->> [(fs/glob "." "{target,**/target}/**.edn")
+        (fs/glob "." "{test-resources,**/test-resources}/integration/**.edn")]
        (flatten)
        (map str)
        (set)))

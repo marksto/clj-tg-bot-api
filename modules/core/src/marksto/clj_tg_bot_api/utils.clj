@@ -38,9 +38,9 @@
   "Gets the current date-time in or converts a given `dt-ms` (date-time millis)
    to the Telegram Date/Time format."
   (^long []
-    (types/ms->tg-dt))
+   (types/ms->tg-dt))
   (^long [^long dt-ms]
-    (types/ms->tg-dt dt-ms)))
+   (types/ms->tg-dt dt-ms)))
 
 (defn tg-dt->ms
   "Coerces a given `tg-dt` date-time (in Telegram Date/Time format) to millis."

@@ -16,9 +16,9 @@
 
 (defn ms->tg-dt
   (^long []
-    (ms->tg-dt (System/currentTimeMillis)))
+   (ms->tg-dt (System/currentTimeMillis)))
   (^long [^long dt-ms]
-    (quot dt-ms 1000)))
+   (quot dt-ms 1000)))
 
 (defn tg-dt->ms
   ^long [tg-dt]
