@@ -1,6 +1,7 @@
 {:paths []
 
- :deps  {com.github.marksto/clj-tg-bot-api {:local/root "modules/core"}}
+ :deps  {com.github.marksto/clj-tg-bot-api         {:local/root "modules/core"}
+         com.github.marksto/clj-tg-bot-api.updates {:local/root "modules/updates"}}
 
  :aliases
  {:dev
@@ -32,14 +33,16 @@
   {:extra-deps {com.github.oliyh/martian-hato {:mvn/version "0.2.3"}}}
 
   :test/unit
-  {:extra-paths ["modules/core/test/unit"]
+  {:extra-paths ["modules/core/test/unit"
+                 "modules/updates/test/unit"]
    :extra-deps  {nubank/matcher-combinators                 {:mvn/version "3.10.0"}
                  io.github.matthewdowney/rich-comment-tests {:git/tag "v1.0.3"
                                                              :git/sha "a8711e9"}}}
 
   :test/integration
   {:extra-paths ["modules/core/test/integration"
-                 "modules/core/test-resources/integration"]
+                 "modules/core/test-resources/integration"
+                 "modules/updates/test/integration"]
    :extra-deps  {com.github.oliyh/martian-vcr {:mvn/version "0.2.3"}
                  nubank/matcher-combinators   {:mvn/version "3.10.0"}}}
 

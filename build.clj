@@ -13,7 +13,11 @@
   [{:id 'core
     :dir "modules/core"
     :lib 'com.github.marksto/clj-tg-bot-api
-    :description "The latest Telegram Bot API specification and client lib for Clojure-based apps."}])
+    :description "The latest Telegram Bot API specification and client lib for Clojure-based apps."}
+   {:id 'updates
+    :dir "modules/updates"
+    :lib 'com.github.marksto/clj-tg-bot-api.updates
+    :description "Optional tooling for receiving Telegram Bot API updates with `clj-tg-bot-api`."}])
 
 (def module-by-id
   (into {} (map (juxt :id identity)) modules))
