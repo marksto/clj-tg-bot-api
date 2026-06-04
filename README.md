@@ -230,9 +230,9 @@ The `make-request!` function supports the following call options:
 - `:on-success` — a unary callback function of a response body containing an `:ok true` entry which indicates that the request was successful; by default, returns `:result` of the response;
 - `:on-failure` — a ternary callback function of `method`, `params`, and  response body containing `:ok false` and `:error` entries indicating that the request was unsuccessful; by default, logs the response and throws an exception; supports `:ignore` value;
 - `:on-error` — a ternary callback function of `method`, `params`, and any exception; by default, logs and rethrows the specified exception; supports `:ignore` value;
-- other entries — HTTP client-specific options for making requests, such as timeouts, redirect policy, etc., that go as is into the request map.
+- other entries — HTTP client-specific options for making requests, such as timeouts, redirect policy, proxy, etc., that go as is into the request map.
 
-While you can always pass in a custom implementation, the `marksto.clj-tg-bot-api.core` namespace comes with a set of common ones that can be used as any of these callback functions:
+While you can always pass in a custom `:on-success`/`:on-failure`/`:on-error` implementation, the `marksto.clj-tg-bot-api.core` namespace comes with a set of common ones that can be used as any of these callback functions:
 
 ```clojure
 (def client (tg-bot-api/->client {:bot-token "<TG_BOT_AUTH_TOKEN>"}))
@@ -262,6 +262,44 @@ While you can always pass in a custom implementation, the `marksto.clj-tg-bot-ap
                           {:chat-id 1
                            :text    "Hello, world!"})
 ;=> nil
+```
+
+Examples of passing HTTP client-specific options for making requests as `make-request!` call options:
+
+```clojure
+;; Printing request info to *out*, including request body with 'clj-http':
+;; - https://github.com/dakrone/clj-http#debugging
+(tg-bot-api/make-request! client
+                          {:debug      true
+                           :debug-body true}
+                          :get-me)
+
+;; Specifying a per-request proxy settings with 'clj-http' and 'httpkit':
+;; - https://github.com/dakrone/clj-http#proxies
+;; - https://cljdoc.org/d/http-kit/http-kit/2.9.0-beta3/api/org.httpkit.client#request
+(tg-bot-api/make-request! client
+                          {:proxy-host "127.0.0.1"
+                           :proxy-port 8118}
+                          :send-message
+                          {:chat-id 1
+                           :text    "Hello, world!"})
+
+;; Reusable client (persistent connections, connection pooling) with 'hato':
+;; - https://github.com/gnarroway/hato#building-a-client
+;; - https://github.com/dakrone/clj-http#persistent-connections
+;; - https://github.com/http-kit/http-kit/wiki/2-Client#persistent-connections
+(require '[hato.client :as hc])
+(def http-client (hc/build-http-client {:connect-timeout 10000
+                                        :redirect-policy :always}))
+(def shared-call-opts {:http-client http-client})
+(tg-bot-api/make-request! client
+                          shared-call-opts
+                          :get-me)
+(tg-bot-api/make-request! client
+                          shared-call-opts
+                          :send-message
+                          {:chat-id 1
+                           :text    "Hello, world!"})
 ```
 
 ### Getting Updates
