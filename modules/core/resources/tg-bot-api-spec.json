@@ -1,5 +1,5 @@
 {
-  "version" : "Bot API 10.0",
+  "version" : "Bot API 10.1",
   "types" : [ {
     "id" : "type/update",
     "name" : "Update",
@@ -276,6 +276,11 @@
       "name" : "can_manage_bots",
       "type" : "Boolean",
       "description" : "<em>Optional</em>. <em>True</em>, if other bots can be created to be controlled by the bot. Returned only in <a href=\"#getme\">getMe</a>.",
+      "required" : false
+    }, {
+      "name" : "supports_join_request_queries",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. <em>True</em>, if the bot supports join request queries and can be assigned to process them. Returned only in <a href=\"#getme\">getMe</a>.",
       "required" : false
     } ]
   }, {
@@ -584,6 +589,11 @@
       "type" : "Integer",
       "description" : "<em>Optional</em>. The number of Telegram Stars a general user has to pay to send a message to the chat",
       "required" : false
+    }, {
+      "name" : "guard_bot",
+      "type" : "type/user",
+      "description" : "<em>Optional</em>. The bot that processes join request queries in the chat. The field is only available to chat administrators.",
+      "required" : false
     } ]
   }, {
     "id" : "type/message",
@@ -769,6 +779,11 @@
       "name" : "effect_id",
       "type" : "String",
       "description" : "<em>Optional</em>. Unique identifier of the message effect added to the message",
+      "required" : false
+    }, {
+      "name" : "rich_message",
+      "type" : "type/rich-message",
+      "description" : "<em>Optional</em>. Message is a rich formatted message",
       "required" : false
     }, {
       "name" : "animation",
@@ -2128,6 +2143,17 @@
       "required" : true
     } ]
   }, {
+    "id" : "type/link",
+    "name" : "Link",
+    "kind" : "type",
+    "description" : "<p>Represents an HTTP link.</p>",
+    "fields" : [ {
+      "name" : "url",
+      "type" : "String",
+      "description" : "URL of the link",
+      "required" : true
+    } ]
+  }, {
     "id" : "type/poll-media",
     "name" : "PollMedia",
     "kind" : "type",
@@ -2146,6 +2172,11 @@
       "name" : "document",
       "type" : "type/document",
       "description" : "<em>Optional</em>. Media is a general file, information about the file; currently, can't be received in a poll option",
+      "required" : false
+    }, {
+      "name" : "link",
+      "type" : "type/link",
+      "description" : "<em>Optional</em>. The HTTP link attached to the poll option",
       "required" : false
     }, {
       "name" : "live_photo",
@@ -2189,7 +2220,7 @@
     "name" : "InputPollOptionMedia",
     "kind" : "type",
     "description" : "<p>This object represents the content of a poll option to be sent. It should be one of</p>",
-    "subtypes" : [ "type/input-media-animation", "type/input-media-live-photo", "type/input-media-location", "type/input-media-photo", "type/input-media-sticker", "type/input-media-venue", "type/input-media-video" ]
+    "subtypes" : [ "type/input-media-animation", "type/input-media-link", "type/input-media-live-photo", "type/input-media-location", "type/input-media-photo", "type/input-media-sticker", "type/input-media-venue", "type/input-media-video" ]
   }, {
     "id" : "type/poll-option",
     "name" : "PollOption",
@@ -4561,7 +4592,7 @@
     }, {
       "name" : "can_send_messages",
       "type" : "Boolean",
-      "description" : "<em>True</em>, if the user is allowed to send text messages, contacts, giveaways, giveaway winners, invoices, locations and venues",
+      "description" : "<em>True</em>, if the user is allowed to send text messages, rich messages, contacts, giveaways, giveaway winners, invoices, locations and venues",
       "required" : true
     }, {
       "name" : "can_send_audios",
@@ -4718,6 +4749,11 @@
       "type" : "type/chat-invite-link",
       "description" : "<em>Optional</em>. Chat invite link that was used by the user to send the join request",
       "required" : false
+    }, {
+      "name" : "query_id",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Identifier of the join request query. If present, then the bot must call <a href=\"#sendchatjoinrequestwebapp\">sendChatJoinRequestWebApp</a> or directly call <a href=\"#answerchatjoinrequestquery\">answerChatJoinRequestQuery</a> within 10 seconds.",
+      "required" : false
     } ]
   }, {
     "id" : "type/chat-permissions",
@@ -4727,7 +4763,7 @@
     "fields" : [ {
       "name" : "can_send_messages",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. <em>True</em>, if the user is allowed to send text messages, contacts, giveaways, giveaway winners, invoices, locations and venues",
+      "description" : "<em>Optional</em>. <em>True</em>, if the user is allowed to send text messages, rich messages, contacts, giveaways, giveaway winners, invoices, locations and venues",
       "required" : false
     }, {
       "name" : "can_send_audios",
@@ -6707,6 +6743,23 @@
       "required" : false
     } ]
   }, {
+    "id" : "type/input-media-link",
+    "name" : "InputMediaLink",
+    "kind" : "type",
+    "description" : "<p>Represents an HTTP link to be sent.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the result, must be <em>link</em>",
+      "required" : true,
+      "value" : "link"
+    }, {
+      "name" : "url",
+      "type" : "String",
+      "description" : "HTTP URL of the link",
+      "required" : true
+    } ]
+  }, {
     "id" : "type/input-media-live-photo",
     "name" : "InputMediaLivePhoto",
     "kind" : "type",
@@ -7369,6 +7422,1115 @@
           "to" : 64
         }
       }
+    } ]
+  }, {
+    "id" : "type/rich-message",
+    "name" : "RichMessage",
+    "kind" : "type",
+    "description" : "<p>Rich formatted message.</p>",
+    "fields" : [ {
+      "name" : "blocks",
+      "type" : [ "array", "type/rich-block" ],
+      "description" : "Content of the message",
+      "required" : true
+    }, {
+      "name" : "is_rtl",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. <em>True</em>, if the rich message must be shown right-to-left",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-rich-message",
+    "name" : "InputRichMessage",
+    "kind" : "type",
+    "description" : "<p>Describes a rich message to be sent. Exactly <strong>one</strong> of the fields <em>html</em> or <em>markdown</em> must be used.</p>",
+    "fields" : [ {
+      "name" : "html",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Content of the rich message to send described using HTML formatting. See <a href=\"#rich-message-formatting-options\">rich message formatting options</a> for more details.",
+      "required" : false
+    }, {
+      "name" : "markdown",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Content of the rich message to send described using Markdown formatting. See <a href=\"#rich-message-formatting-options\">rich message formatting options</a> for more details.",
+      "required" : false
+    }, {
+      "name" : "is_rtl",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the rich message must be shown right-to-left",
+      "required" : false
+    }, {
+      "name" : "skip_entity_detection",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. Pass <em>True</em> to skip automatic detection of entities (e.g., URLs, email addresses, username mentions, hashtags, cashtags, bot commands, or phone numbers) in the text",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/rich-text",
+    "name" : "RichText",
+    "kind" : "type",
+    "description" : "<p>This object represents a rich formatted text. Currently, it can be either a String for plain text, an Array of <a href=\"#richtext\">RichText</a>, or any of the following types:</p>",
+    "subtypes" : [ "type/rich-text-bold", "type/rich-text-italic", "type/rich-text-underline", "type/rich-text-strikethrough", "type/rich-text-spoiler", "type/rich-text-date-time", "type/rich-text-text-mention", "type/rich-text-subscript", "type/rich-text-superscript", "type/rich-text-marked", "type/rich-text-code", "type/rich-text-custom-emoji", "type/rich-text-mathematical-expression", "type/rich-text-url", "type/rich-text-email-address", "type/rich-text-phone-number", "type/rich-text-bank-card-number", "type/rich-text-mention", "type/rich-text-hashtag", "type/rich-text-cashtag", "type/rich-text-bot-command", "type/rich-text-anchor", "type/rich-text-anchor-link", "type/rich-text-reference", "type/rich-text-reference-link" ]
+  }, {
+    "id" : "type/rich-text-bold",
+    "name" : "RichTextBold",
+    "kind" : "type",
+    "description" : "<p>A bold text.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “bold”",
+      "required" : true,
+      "value" : "bold"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The text",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-italic",
+    "name" : "RichTextItalic",
+    "kind" : "type",
+    "description" : "<p>An italicized text.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “italic”",
+      "required" : true,
+      "value" : "italic"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The text",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-underline",
+    "name" : "RichTextUnderline",
+    "kind" : "type",
+    "description" : "<p>An underlined text.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “underline”",
+      "required" : true,
+      "value" : "underline"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The text",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-strikethrough",
+    "name" : "RichTextStrikethrough",
+    "kind" : "type",
+    "description" : "<p>A strikethrough text.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “strikethrough”",
+      "required" : true,
+      "value" : "strikethrough"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The text",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-spoiler",
+    "name" : "RichTextSpoiler",
+    "kind" : "type",
+    "description" : "<p>A text covered by a spoiler.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “spoiler”",
+      "required" : true,
+      "value" : "spoiler"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The text",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-date-time",
+    "name" : "RichTextDateTime",
+    "kind" : "type",
+    "description" : "<p>Formatted date and time.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “date_time”",
+      "required" : true,
+      "value" : "date_time"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The text",
+      "required" : true
+    }, {
+      "name" : "unix_time",
+      "type" : "Integer",
+      "description" : "The Unix time associated with the entity",
+      "required" : true
+    }, {
+      "name" : "date_time_format",
+      "type" : "String",
+      "description" : "The string that defines the formatting of the date and time. See <a href=\"#date-time-entity-formatting\">date-time entity formatting</a> for more details.",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-text-mention",
+    "name" : "RichTextTextMention",
+    "kind" : "type",
+    "description" : "<p>A mention of a Telegram user by their identifier.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “text_mention”",
+      "required" : true,
+      "value" : "text_mention"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The text",
+      "required" : true
+    }, {
+      "name" : "user",
+      "type" : "type/user",
+      "description" : "The mentioned user",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-subscript",
+    "name" : "RichTextSubscript",
+    "kind" : "type",
+    "description" : "<p>A subscript text.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “subscript”",
+      "required" : true,
+      "value" : "subscript"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The text",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-superscript",
+    "name" : "RichTextSuperscript",
+    "kind" : "type",
+    "description" : "<p>A superscript text.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “superscript”",
+      "required" : true,
+      "value" : "superscript"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The text",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-marked",
+    "name" : "RichTextMarked",
+    "kind" : "type",
+    "description" : "<p>A marked text.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “marked”",
+      "required" : true,
+      "value" : "marked"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The text",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-code",
+    "name" : "RichTextCode",
+    "kind" : "type",
+    "description" : "<p>A monowidth text.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “code”",
+      "required" : true,
+      "value" : "code"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The text",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-custom-emoji",
+    "name" : "RichTextCustomEmoji",
+    "kind" : "type",
+    "description" : "<p>A custom emoji.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “custom_emoji”",
+      "required" : true,
+      "value" : "custom_emoji"
+    }, {
+      "name" : "custom_emoji_id",
+      "type" : "String",
+      "description" : "Unique identifier of the custom emoji. Use <a href=\"#getcustomemojistickers\">getCustomEmojiStickers</a> to get full information about the sticker.",
+      "required" : true
+    }, {
+      "name" : "alternative_text",
+      "type" : "String",
+      "description" : "Alternative emoji for the custom emoji",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-mathematical-expression",
+    "name" : "RichTextMathematicalExpression",
+    "kind" : "type",
+    "description" : "<p>A mathematical expression.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “mathematical_expression”",
+      "required" : true,
+      "value" : "mathematical_expression"
+    }, {
+      "name" : "expression",
+      "type" : "String",
+      "description" : "The expression in LaTeX format",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-url",
+    "name" : "RichTextUrl",
+    "kind" : "type",
+    "description" : "<p>A text with a link.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “url”",
+      "required" : true,
+      "value" : "url"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The text",
+      "required" : true
+    }, {
+      "name" : "url",
+      "type" : "String",
+      "description" : "URL of the link",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-email-address",
+    "name" : "RichTextEmailAddress",
+    "kind" : "type",
+    "description" : "<p>A text with an email address.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “email_address”",
+      "required" : true,
+      "value" : "email_address"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The text",
+      "required" : true
+    }, {
+      "name" : "email_address",
+      "type" : "String",
+      "description" : "The email address",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-phone-number",
+    "name" : "RichTextPhoneNumber",
+    "kind" : "type",
+    "description" : "<p>A text with a phone number.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “phone_number”",
+      "required" : true,
+      "value" : "phone_number"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The text",
+      "required" : true
+    }, {
+      "name" : "phone_number",
+      "type" : "String",
+      "description" : "The phone number",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-bank-card-number",
+    "name" : "RichTextBankCardNumber",
+    "kind" : "type",
+    "description" : "<p>A text with a bank card number.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “bank_card_number”",
+      "required" : true,
+      "value" : "bank_card_number"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The text",
+      "required" : true
+    }, {
+      "name" : "bank_card_number",
+      "type" : "String",
+      "description" : "The bank card number",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-mention",
+    "name" : "RichTextMention",
+    "kind" : "type",
+    "description" : "<p>A mention by a username.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “mention”",
+      "required" : true,
+      "value" : "mention"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The text",
+      "required" : true
+    }, {
+      "name" : "username",
+      "type" : "String",
+      "description" : "The username",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-hashtag",
+    "name" : "RichTextHashtag",
+    "kind" : "type",
+    "description" : "<p>A hashtag.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “hashtag”",
+      "required" : true,
+      "value" : "hashtag"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The text",
+      "required" : true
+    }, {
+      "name" : "hashtag",
+      "type" : "String",
+      "description" : "The hashtag",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-cashtag",
+    "name" : "RichTextCashtag",
+    "kind" : "type",
+    "description" : "<p>A cashtag.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “cashtag”",
+      "required" : true,
+      "value" : "cashtag"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The text",
+      "required" : true
+    }, {
+      "name" : "cashtag",
+      "type" : "String",
+      "description" : "The cashtag",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-bot-command",
+    "name" : "RichTextBotCommand",
+    "kind" : "type",
+    "description" : "<p>A bot command.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “bot_command”",
+      "required" : true,
+      "value" : "bot_command"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The text",
+      "required" : true
+    }, {
+      "name" : "bot_command",
+      "type" : "String",
+      "description" : "The bot command",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-anchor",
+    "name" : "RichTextAnchor",
+    "kind" : "type",
+    "description" : "<p>An anchor.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “anchor”",
+      "required" : true,
+      "value" : "anchor"
+    }, {
+      "name" : "name",
+      "type" : "String",
+      "description" : "The name of the anchor",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-anchor-link",
+    "name" : "RichTextAnchorLink",
+    "kind" : "type",
+    "description" : "<p>A link to an anchor.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “anchor_link”",
+      "required" : true,
+      "value" : "anchor_link"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The link text",
+      "required" : true
+    }, {
+      "name" : "anchor_name",
+      "type" : "String",
+      "description" : "The name of the anchor. If the name is empty, then the link brings back to the top of the message.",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-reference",
+    "name" : "RichTextReference",
+    "kind" : "type",
+    "description" : "<p>A reference.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “reference”",
+      "required" : true,
+      "value" : "reference"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "Text of the reference",
+      "required" : true
+    }, {
+      "name" : "name",
+      "type" : "String",
+      "description" : "The name of the reference",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-reference-link",
+    "name" : "RichTextReferenceLink",
+    "kind" : "type",
+    "description" : "<p>A link to a reference.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “reference_link”",
+      "required" : true,
+      "value" : "reference_link"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "The link text",
+      "required" : true
+    }, {
+      "name" : "reference_name",
+      "type" : "String",
+      "description" : "The name of the reference",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-block-caption",
+    "name" : "RichBlockCaption",
+    "kind" : "type",
+    "description" : "<p>Caption of a rich formatted block.</p>",
+    "fields" : [ {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "Block caption",
+      "required" : true
+    }, {
+      "name" : "credit",
+      "type" : "type/rich-text",
+      "description" : "<em>Optional</em>. Block credit which corresponds to the HTML tag &lt;cite&gt;",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/rich-block-table-cell",
+    "name" : "RichBlockTableCell",
+    "kind" : "type",
+    "description" : "<p>Cell in a table.</p>",
+    "fields" : [ {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "<em>Optional</em>. Text in the cell. If omitted, then the cell is invisible.",
+      "required" : false
+    }, {
+      "name" : "is_header",
+      "type" : "True",
+      "description" : "<em>Optional</em>. <em>True</em>, if the cell is a header cell",
+      "required" : false
+    }, {
+      "name" : "colspan",
+      "type" : "Integer",
+      "description" : "<em>Optional</em>. The number of columns the cell spans if it is bigger than 1",
+      "required" : false
+    }, {
+      "name" : "rowspan",
+      "type" : "Integer",
+      "description" : "<em>Optional</em>. The number of rows the cell spans if it is bigger than 1",
+      "required" : false
+    }, {
+      "name" : "align",
+      "type" : "String",
+      "description" : "Horizontal cell content alignment. Currently, must be one of “left”, “center”, or “right”.",
+      "required" : true
+    }, {
+      "name" : "valign",
+      "type" : "String",
+      "description" : "Vertical cell content alignment. Currently, must be one of “top”, “middle”, or “bottom”.",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-block-list-item",
+    "name" : "RichBlockListItem",
+    "kind" : "type",
+    "description" : "<p>An item of a list.</p>",
+    "fields" : [ {
+      "name" : "label",
+      "type" : "String",
+      "description" : "Label of the item",
+      "required" : true
+    }, {
+      "name" : "blocks",
+      "type" : [ "array", "type/rich-block" ],
+      "description" : "The content of the item",
+      "required" : true
+    }, {
+      "name" : "has_checkbox",
+      "type" : "True",
+      "description" : "<em>Optional</em>. <em>True</em>, if the item has a checkbox",
+      "required" : false
+    }, {
+      "name" : "is_checked",
+      "type" : "True",
+      "description" : "<em>Optional</em>. <em>True</em>, if the item has a checked checkbox",
+      "required" : false
+    }, {
+      "name" : "value",
+      "type" : "Integer",
+      "description" : "<em>Optional</em>. For ordered lists, the numeric value of the item label",
+      "required" : false
+    }, {
+      "name" : "type",
+      "type" : "String",
+      "description" : "<em>Optional</em>. For ordered lists, the type of the item label; must be one of “a” for lowercase letters, “A” for uppercase letters, “i” for lowercase Roman numerals, “I” for uppercase Roman numerals, or “1” for decimal numbers",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/rich-block",
+    "name" : "RichBlock",
+    "kind" : "type",
+    "description" : "<p>This object represents a block in a rich formatted message. Currently, it can be any of the following types:</p>",
+    "subtypes" : [ "type/rich-block-paragraph", "type/rich-block-section-heading", "type/rich-block-preformatted", "type/rich-block-footer", "type/rich-block-divider", "type/rich-block-mathematical-expression", "type/rich-block-anchor", "type/rich-block-list", "type/rich-block-block-quotation", "type/rich-block-pull-quotation", "type/rich-block-collage", "type/rich-block-slideshow", "type/rich-block-table", "type/rich-block-details", "type/rich-block-map", "type/rich-block-animation", "type/rich-block-audio", "type/rich-block-photo", "type/rich-block-video", "type/rich-block-voice-note", "type/rich-block-thinking" ]
+  }, {
+    "id" : "type/rich-block-paragraph",
+    "name" : "RichBlockParagraph",
+    "kind" : "type",
+    "description" : "<p>A text paragraph, corresponding to the HTML tag <code>&lt;p&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “paragraph”",
+      "required" : true,
+      "value" : "paragraph"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "Text of the block",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-block-section-heading",
+    "name" : "RichBlockSectionHeading",
+    "kind" : "type",
+    "description" : "<p>A section heading, corresponding to the HTML tags <code>&lt;h1&gt;</code>, <code>&lt;h2&gt;</code>, <code>&lt;h3&gt;</code>, <code>&lt;h4&gt;</code>, <code>&lt;h5&gt;</code>, or <code>&lt;h6&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “heading”",
+      "required" : true,
+      "value" : "heading"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "Text of the block",
+      "required" : true
+    }, {
+      "name" : "size",
+      "type" : "Integer",
+      "description" : "Relative size of the text font; 1-6, 1 is the largest, 6 is the smallest",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-block-preformatted",
+    "name" : "RichBlockPreformatted",
+    "kind" : "type",
+    "description" : "<p>A preformatted text block, corresponding to the nested HTML tags <code>&lt;pre&gt;</code> and <code>&lt;code&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “pre”",
+      "required" : true,
+      "value" : "pre"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "Text of the block",
+      "required" : true
+    }, {
+      "name" : "language",
+      "type" : "String",
+      "description" : "<em>Optional</em>. The programming language of the text",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/rich-block-footer",
+    "name" : "RichBlockFooter",
+    "kind" : "type",
+    "description" : "<p>A footer, corresponding to the HTML tag <code>&lt;footer&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “footer”",
+      "required" : true,
+      "value" : "footer"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "Text of the block",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-block-divider",
+    "name" : "RichBlockDivider",
+    "kind" : "type",
+    "description" : "<p>A divider, corresponding to the HTML tag <code>&lt;hr/&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “divider”",
+      "required" : true,
+      "value" : "divider"
+    } ]
+  }, {
+    "id" : "type/rich-block-mathematical-expression",
+    "name" : "RichBlockMathematicalExpression",
+    "kind" : "type",
+    "description" : "<p>A block with a mathematical expression in LaTeX format, corresponding to the custom HTML tag <code>&lt;tg-math-block&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “mathematical_expression”",
+      "required" : true,
+      "value" : "mathematical_expression"
+    }, {
+      "name" : "expression",
+      "type" : "String",
+      "description" : "The mathematical expression in LaTeX format",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-block-anchor",
+    "name" : "RichBlockAnchor",
+    "kind" : "type",
+    "description" : "<p>A block with an anchor, corresponding to the HTML tag <code>&lt;a&gt;</code> with the attribute <code>name</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “anchor”",
+      "required" : true,
+      "value" : "anchor"
+    }, {
+      "name" : "name",
+      "type" : "String",
+      "description" : "The name of the anchor",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-block-list",
+    "name" : "RichBlockList",
+    "kind" : "type",
+    "description" : "<p>A list of blocks, corresponding to the HTML tag <code>&lt;ul&gt;</code> or <code>&lt;ol&gt;</code> with multiple nested tags <code>&lt;li&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “list”",
+      "required" : true,
+      "value" : "list"
+    }, {
+      "name" : "items",
+      "type" : [ "array", "type/rich-block-list-item" ],
+      "description" : "Items of the list",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-block-block-quotation",
+    "name" : "RichBlockBlockQuotation",
+    "kind" : "type",
+    "description" : "<p>A block quotation, corresponding to the HTML tag <code>&lt;blockquote&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “blockquote”",
+      "required" : true,
+      "value" : "blockquote"
+    }, {
+      "name" : "blocks",
+      "type" : [ "array", "type/rich-block" ],
+      "description" : "Content of the block",
+      "required" : true
+    }, {
+      "name" : "credit",
+      "type" : "type/rich-text",
+      "description" : "<em>Optional</em>. Credit of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/rich-block-pull-quotation",
+    "name" : "RichBlockPullQuotation",
+    "kind" : "type",
+    "description" : "<p>A quotation with centered text, loosely corresponding to the HTML tag <code>&lt;aside&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “pullquote”",
+      "required" : true,
+      "value" : "pullquote"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "Text of the block",
+      "required" : true
+    }, {
+      "name" : "credit",
+      "type" : "type/rich-text",
+      "description" : "<em>Optional</em>. Credit of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/rich-block-collage",
+    "name" : "RichBlockCollage",
+    "kind" : "type",
+    "description" : "<p>A collage, corresponding to the custom HTML tag <code>&lt;tg-collage&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “collage”",
+      "required" : true,
+      "value" : "collage"
+    }, {
+      "name" : "blocks",
+      "type" : [ "array", "type/rich-block" ],
+      "description" : "Elements of the collage",
+      "required" : true
+    }, {
+      "name" : "caption",
+      "type" : "type/rich-block-caption",
+      "description" : "<em>Optional</em>. Caption of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/rich-block-slideshow",
+    "name" : "RichBlockSlideshow",
+    "kind" : "type",
+    "description" : "<p>A slideshow, corresponding to the custom HTML tag <code>&lt;tg-slideshow&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “slideshow”",
+      "required" : true,
+      "value" : "slideshow"
+    }, {
+      "name" : "blocks",
+      "type" : [ "array", "type/rich-block" ],
+      "description" : "Elements of the slideshow",
+      "required" : true
+    }, {
+      "name" : "caption",
+      "type" : "type/rich-block-caption",
+      "description" : "<em>Optional</em>. Caption of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/rich-block-table",
+    "name" : "RichBlockTable",
+    "kind" : "type",
+    "description" : "<p>A table, corresponding to the HTML tag <code>&lt;table&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “table”",
+      "required" : true,
+      "value" : "table"
+    }, {
+      "name" : "cells",
+      "type" : [ "array", [ "array", "type/rich-block-table-cell" ] ],
+      "description" : "Cells of the table",
+      "required" : true
+    }, {
+      "name" : "is_bordered",
+      "type" : "True",
+      "description" : "<em>Optional</em>. <em>True</em>, if the table has borders",
+      "required" : false
+    }, {
+      "name" : "is_striped",
+      "type" : "True",
+      "description" : "<em>Optional</em>. <em>True</em>, if the table is striped",
+      "required" : false
+    }, {
+      "name" : "caption",
+      "type" : "type/rich-text",
+      "description" : "<em>Optional</em>. Caption of the table",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/rich-block-details",
+    "name" : "RichBlockDetails",
+    "kind" : "type",
+    "description" : "<p>An expandable block for details disclosure, corresponding to the HTML tag <code>&lt;details&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “details”",
+      "required" : true,
+      "value" : "details"
+    }, {
+      "name" : "summary",
+      "type" : "type/rich-text",
+      "description" : "Always shown summary of the block",
+      "required" : true
+    }, {
+      "name" : "blocks",
+      "type" : [ "array", "type/rich-block" ],
+      "description" : "Content of the block",
+      "required" : true
+    }, {
+      "name" : "is_open",
+      "type" : "True",
+      "description" : "<em>Optional</em>. <em>True</em>, if the content of the block is visible by default",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/rich-block-map",
+    "name" : "RichBlockMap",
+    "kind" : "type",
+    "description" : "<p>A block with a map, corresponding to the custom HTML tag <code>&lt;tg-map&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “map”",
+      "required" : true,
+      "value" : "map"
+    }, {
+      "name" : "location",
+      "type" : "type/location",
+      "description" : "Location of the center of the map",
+      "required" : true
+    }, {
+      "name" : "zoom",
+      "type" : "Integer",
+      "description" : "Map zoom level; 13-20",
+      "required" : true
+    }, {
+      "name" : "width",
+      "type" : "Integer",
+      "description" : "Expected width of the map",
+      "required" : true
+    }, {
+      "name" : "height",
+      "type" : "Integer",
+      "description" : "Expected height of the map",
+      "required" : true
+    }, {
+      "name" : "caption",
+      "type" : "type/rich-block-caption",
+      "description" : "<em>Optional</em>. Caption of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/rich-block-animation",
+    "name" : "RichBlockAnimation",
+    "kind" : "type",
+    "description" : "<p>A block with an animation, corresponding to the HTML tag <code>&lt;video&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “animation”",
+      "required" : true,
+      "value" : "animation"
+    }, {
+      "name" : "animation",
+      "type" : "type/animation",
+      "description" : "The animation",
+      "required" : true
+    }, {
+      "name" : "has_spoiler",
+      "type" : "True",
+      "description" : "<em>Optional</em>. <em>True</em>, if the media preview is covered by a spoiler animation",
+      "required" : false
+    }, {
+      "name" : "caption",
+      "type" : "type/rich-block-caption",
+      "description" : "<em>Optional</em>. Caption of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/rich-block-audio",
+    "name" : "RichBlockAudio",
+    "kind" : "type",
+    "description" : "<p>A block with a music file, corresponding to the HTML tag <code>&lt;audio&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “audio”",
+      "required" : true,
+      "value" : "audio"
+    }, {
+      "name" : "audio",
+      "type" : "type/audio",
+      "description" : "The audio",
+      "required" : true
+    }, {
+      "name" : "caption",
+      "type" : "type/rich-block-caption",
+      "description" : "<em>Optional</em>. Caption of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/rich-block-photo",
+    "name" : "RichBlockPhoto",
+    "kind" : "type",
+    "description" : "<p>A block with a photo, corresponding to the HTML tag <code>&lt;photo&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “photo”",
+      "required" : true,
+      "value" : "photo"
+    }, {
+      "name" : "photo",
+      "type" : [ "array", "type/photo-size" ],
+      "description" : "Available sizes of the photo",
+      "required" : true
+    }, {
+      "name" : "has_spoiler",
+      "type" : "True",
+      "description" : "<em>Optional</em>. <em>True</em>, if the media preview is covered by a spoiler animation",
+      "required" : false
+    }, {
+      "name" : "caption",
+      "type" : "type/rich-block-caption",
+      "description" : "<em>Optional</em>. Caption of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/rich-block-video",
+    "name" : "RichBlockVideo",
+    "kind" : "type",
+    "description" : "<p>A block with a video, corresponding to the HTML tag <code>&lt;video&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “video”",
+      "required" : true,
+      "value" : "video"
+    }, {
+      "name" : "video",
+      "type" : "type/video",
+      "description" : "The video",
+      "required" : true
+    }, {
+      "name" : "has_spoiler",
+      "type" : "True",
+      "description" : "<em>Optional</em>. <em>True</em>, if the media preview is covered by a spoiler animation",
+      "required" : false
+    }, {
+      "name" : "caption",
+      "type" : "type/rich-block-caption",
+      "description" : "<em>Optional</em>. Caption of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/rich-block-voice-note",
+    "name" : "RichBlockVoiceNote",
+    "kind" : "type",
+    "description" : "<p>A block with a voice note, corresponding to the HTML tag <code>&lt;audio&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “voice_note”",
+      "required" : true,
+      "value" : "voice_note"
+    }, {
+      "name" : "voice_note",
+      "type" : "type/voice",
+      "description" : "The voice note",
+      "required" : true
+    }, {
+      "name" : "caption",
+      "type" : "type/rich-block-caption",
+      "description" : "<em>Optional</em>. Caption of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/rich-block-thinking",
+    "name" : "RichBlockThinking",
+    "kind" : "type",
+    "description" : "<p>A block with a “Thinking…” placeholder, corresponding to the custom HTML tag <code>&lt;tg-thinking&gt;</code>. The block may be used only in <a href=\"#sendrichmessagedraft\">sendRichMessageDraft</a>, therefore it can't be received in messages. See <a href=\"https://t.me/addemoji/AIActions\"></a><a href=\"https://t.me/addemoji/AIActions\">https://t.me/addemoji/AIActions</a> for examples of custom emoji, which are recommended for usage in the block.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “thinking”",
+      "required" : true,
+      "value" : "thinking"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "Text of the block. See <a href=\"https://t.me/addemoji/AIActions\"></a><a href=\"https://t.me/addemoji/AIActions\">https://t.me/addemoji/AIActions</a> for examples of custom emoji, which are recommended for usage in the block.",
+      "required" : true
     } ]
   }, {
     "id" : "type/inline-query",
@@ -8802,8 +9964,8 @@
     "id" : "type/input-message-content",
     "name" : "InputMessageContent",
     "kind" : "type",
-    "description" : "<p>This object represents the content of a message to be sent as a result of an inline query. Telegram clients currently support the following 5 types:</p>",
-    "subtypes" : [ "type/input-text-message-content", "type/input-location-message-content", "type/input-venue-message-content", "type/input-contact-message-content", "type/input-invoice-message-content" ]
+    "description" : "<p>This object represents the content of a message to be sent as a result of an inline query. Telegram clients currently support the following types:</p>",
+    "subtypes" : [ "type/input-text-message-content", "type/input-rich-message-content", "type/input-location-message-content", "type/input-venue-message-content", "type/input-contact-message-content", "type/input-invoice-message-content" ]
   }, {
     "id" : "type/input-text-message-content",
     "name" : "InputTextMessageContent",
@@ -8835,6 +9997,17 @@
       "type" : "type/link-preview-options",
       "description" : "<em>Optional</em>. Link preview generation options for the message",
       "required" : false
+    } ]
+  }, {
+    "id" : "type/input-rich-message-content",
+    "name" : "InputRichMessageContent",
+    "kind" : "type",
+    "description" : "<p>Represents the <a href=\"#inputmessagecontent\">content</a> of a rich message to be sent as the result of an inline query.</p>",
+    "fields" : [ {
+      "name" : "rich_message",
+      "type" : "type/input-rich-message",
+      "description" : "The message to be sent",
+      "required" : true
     } ]
   }, {
     "id" : "type/input-location-message-content",
@@ -12812,6 +13985,38 @@
       "description" : "Unique identifier of the target user"
     } ]
   }, {
+    "id" : "method/answer-chat-join-request-query",
+    "name" : "answerChatJoinRequestQuery",
+    "kind" : "method",
+    "description" : "<p>Use this method to process a received chat join request query. Returns <em>True</em> on success.</p>",
+    "params" : [ {
+      "name" : "chat_join_request_query_id",
+      "type" : "String",
+      "required" : true,
+      "description" : "Unique identifier of the join request query"
+    }, {
+      "name" : "result",
+      "type" : "String",
+      "required" : true,
+      "description" : "Result of the query. Must be either “approve” to allow the user to join the chat, “decline” to disallow the user to join the chat, or “queue” to leave the decision to other administrators."
+    } ]
+  }, {
+    "id" : "method/send-chat-join-request-web-app",
+    "name" : "sendChatJoinRequestWebApp",
+    "kind" : "method",
+    "description" : "<p>Use this method to process a received chat join request query by showing a Mini App to the user before deciding the outcome. Returns <em>True</em> on success.</p>",
+    "params" : [ {
+      "name" : "chat_join_request_query_id",
+      "type" : "String",
+      "required" : true,
+      "description" : "Unique identifier of the join request query"
+    }, {
+      "name" : "web_app_url",
+      "type" : "String",
+      "required" : true,
+      "description" : "The URL of the Mini App to be opened"
+    } ]
+  }, {
     "id" : "method/set-chat-photo",
     "name" : "setChatPhoto",
     "kind" : "method",
@@ -14424,7 +15629,7 @@
     "id" : "method/edit-message-text",
     "name" : "editMessageText",
     "kind" : "method",
-    "description" : "<p>Use this method to edit text and <a href=\"#games\">game</a> messages. On success, if the edited message is not an inline message, the edited <a href=\"#message\">Message</a> is returned, otherwise <em>True</em> is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within <strong>48 hours</strong> from the time they were sent.</p>",
+    "description" : "<p>Use this method to edit text, rich and <a href=\"#games\">game</a> messages. On success, if the edited message is not an inline message, the edited <a href=\"#message\">Message</a> is returned, otherwise <em>True</em> is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within <strong>48 hours</strong> from the time they were sent.</p>",
     "params" : [ {
       "name" : "business_connection_id",
       "type" : "String",
@@ -14448,12 +15653,11 @@
     }, {
       "name" : "text",
       "type" : "String",
-      "required" : true,
-      "description" : "New text of the message, 1-4096 characters after entities parsing",
+      "required" : false,
+      "description" : "New text of the message, 1-4096 characters after entity parsing; required if <em>rich_message</em> isn't specified",
       "[:constraints :string]" : {
         "from" : 1,
-        "to" : 4096,
-        "after_entities_parsing" : true
+        "to" : 4096
       }
     }, {
       "name" : "parse_mode",
@@ -14471,6 +15675,11 @@
       "type" : "type/link-preview-options",
       "required" : false,
       "description" : "Link preview generation options for the message"
+    }, {
+      "name" : "rich_message",
+      "type" : "type/input-rich-message",
+      "required" : false,
+      "description" : "New rich content of the message; required if <em>text</em> isn't specified"
     }, {
       "name" : "reply_markup",
       "type" : "type/inline-keyboard-markup",
@@ -14540,7 +15749,7 @@
     "id" : "method/edit-message-media",
     "name" : "editMessageMedia",
     "kind" : "method",
-    "description" : "<p>Use this method to edit animation, audio, document, live photo, photo, or video messages, or to add media to text messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo, a live photo, or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited <a href=\"#message\">Message</a> is returned, otherwise <em>True</em> is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within <strong>48 hours</strong> from the time they were sent.</p>",
+    "description" : "<p>Use this method to edit animation, audio, document, live photo, photo, or video messages, or to replace a text or a rich message with a media. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo, a live photo, or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited <a href=\"#message\">Message</a> is returned, otherwise <em>True</em> is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within <strong>48 hours</strong> from the time they were sent.</p>",
     "params" : [ {
       "name" : "business_connection_id",
       "type" : "String",
@@ -15250,6 +16459,100 @@
       "type" : "String",
       "required" : true,
       "description" : "Sticker set name"
+    } ]
+  }, {
+    "id" : "method/send-rich-message",
+    "name" : "sendRichMessage",
+    "kind" : "method",
+    "description" : "<p>Use this method to send rich messages. If the message contains a block with a media element, then the bot must have the right to send the media to the chat. On success, the sent <a href=\"#message\">Message</a> is returned.</p>",
+    "params" : [ {
+      "name" : "business_connection_id",
+      "type" : "String",
+      "required" : false,
+      "description" : "Unique identifier of the business connection on behalf of which the message will be sent"
+    }, {
+      "name" : "chat_id",
+      "type" : [ "or", [ "Integer", "String" ] ],
+      "required" : true,
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+    }, {
+      "name" : "message_thread_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only"
+    }, {
+      "name" : "direct_messages_topic_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
+    }, {
+      "name" : "rich_message",
+      "type" : "type/input-rich-message",
+      "required" : true,
+      "description" : "The message to be sent"
+    }, {
+      "name" : "disable_notification",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Sends the message <a href=\"https://telegram.org/blog/channels-2-0#silent-messages\">silently</a>. Users will receive a notification with no sound."
+    }, {
+      "name" : "protect_content",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Protects the contents of the sent message from forwarding and saving"
+    }, {
+      "name" : "allow_paid_broadcast",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
+    }, {
+      "name" : "message_effect_id",
+      "type" : "String",
+      "required" : false,
+      "description" : "Unique identifier of the message effect to be added to the message; for private chats only"
+    }, {
+      "name" : "suggested_post_parameters",
+      "type" : "type/suggested-post-parameters",
+      "required" : false,
+      "description" : "A JSON-serialized object containing the parameters of the suggested post to send; for direct messages chats only. If the message is sent as a reply to another suggested post, then that suggested post is automatically declined.",
+      "json_serialized" : true
+    }, {
+      "name" : "reply_parameters",
+      "type" : "type/reply-parameters",
+      "required" : false,
+      "description" : "Description of the message to reply to"
+    }, {
+      "name" : "reply_markup",
+      "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
+      "required" : false,
+      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
+      "json_serialized" : true
+    } ]
+  }, {
+    "id" : "method/send-rich-message-draft",
+    "name" : "sendRichMessageDraft",
+    "kind" : "method",
+    "description" : "<p>Use this method to stream a partial rich message to a user while the message is being generated. Note that the streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is finalized, you <strong>must</strong> call <a href=\"#sendrichmessage\">sendRichMessage</a> with the complete message to persist it in the user's chat. Returns <em>True</em> on success.</p>",
+    "params" : [ {
+      "name" : "chat_id",
+      "type" : "Integer",
+      "required" : true,
+      "description" : "Unique identifier for the target private chat"
+    }, {
+      "name" : "message_thread_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "Unique identifier for the target message thread"
+    }, {
+      "name" : "draft_id",
+      "type" : "Integer",
+      "required" : true,
+      "description" : "Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are animated."
+    }, {
+      "name" : "rich_message",
+      "type" : "type/input-rich-message",
+      "required" : true,
+      "description" : "The partial message to be streamed"
     } ]
   }, {
     "id" : "method/answer-inline-query",
