@@ -6573,7 +6573,7 @@
     "fields" : [ {
       "name" : "type",
       "type" : "String",
-      "description" : "Type of the result, must be <em>animation</em>",
+      "description" : "Type of the media, must be <em>animation</em>",
       "required" : true,
       "value" : "animation"
     }, {
@@ -6642,7 +6642,7 @@
     "fields" : [ {
       "name" : "type",
       "type" : "String",
-      "description" : "Type of the result, must be <em>audio</em>",
+      "description" : "Type of the media, must be <em>audio</em>",
       "required" : true,
       "value" : "audio"
     }, {
@@ -6701,7 +6701,7 @@
     "fields" : [ {
       "name" : "type",
       "type" : "String",
-      "description" : "Type of the result, must be <em>document</em>",
+      "description" : "Type of the media, must be <em>document</em>",
       "required" : true,
       "value" : "document"
     }, {
@@ -6750,7 +6750,7 @@
     "fields" : [ {
       "name" : "type",
       "type" : "String",
-      "description" : "Type of the result, must be <em>link</em>",
+      "description" : "Type of the media, must be <em>link</em>",
       "required" : true,
       "value" : "link"
     }, {
@@ -6767,7 +6767,7 @@
     "fields" : [ {
       "name" : "type",
       "type" : "String",
-      "description" : "Type of the result, must be <em>live_photo</em>",
+      "description" : "Type of the media, must be <em>live_photo</em>",
       "required" : true,
       "value" : "live_photo"
     }, {
@@ -6821,7 +6821,7 @@
     "fields" : [ {
       "name" : "type",
       "type" : "String",
-      "description" : "Type of the result, must be <em>location</em>",
+      "description" : "Type of the media, must be <em>location</em>",
       "required" : true,
       "value" : "location"
     }, {
@@ -6848,7 +6848,7 @@
     "fields" : [ {
       "name" : "type",
       "type" : "String",
-      "description" : "Type of the result, must be <em>photo</em>",
+      "description" : "Type of the media, must be <em>photo</em>",
       "required" : true,
       "value" : "photo"
     }, {
@@ -6897,7 +6897,7 @@
     "fields" : [ {
       "name" : "type",
       "type" : "String",
-      "description" : "Type of the result, must be <em>sticker</em>",
+      "description" : "Type of the media, must be <em>sticker</em>",
       "required" : true,
       "value" : "sticker"
     }, {
@@ -6919,7 +6919,7 @@
     "fields" : [ {
       "name" : "type",
       "type" : "String",
-      "description" : "Type of the result, must be <em>venue</em>",
+      "description" : "Type of the media, must be <em>venue</em>",
       "required" : true,
       "value" : "venue"
     }, {
@@ -6971,7 +6971,7 @@
     "fields" : [ {
       "name" : "type",
       "type" : "String",
-      "description" : "Type of the result, must be <em>video</em>",
+      "description" : "Type of the media, must be <em>video</em>",
       "required" : true,
       "value" : "video"
     }, {
@@ -13359,7 +13359,7 @@
       "name" : "draft_id",
       "type" : "Integer",
       "required" : true,
-      "description" : "Unique identifier of the message draft; must be non-zero. Changes of drafts with the same identifier are animated."
+      "description" : "Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are animated."
     }, {
       "name" : "text",
       "type" : "String",
