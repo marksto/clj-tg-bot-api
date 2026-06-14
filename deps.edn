@@ -7,7 +7,7 @@
  {:dev
   {:extra-paths ["bb" "dev"]
    :extra-deps  {;; Clojure
-                 org.clojure/clojure         {:mvn/version "1.12.4"}
+                 org.clojure/clojure         {:mvn/version "1.12.5"}
 
                  ;; Repeat built-in libs for in-REPL development
                  babashka/fs                 {:mvn/version "0.5.33"}
@@ -64,6 +64,6 @@
                "--ignore-locals"]}
 
   :build
-  {:replace-deps {io.github.clojure/tools.build {:mvn/version "0.10.13"}
-                  slipset/deps-deploy           {:mvn/version "0.2.3"}}
+  {:replace-deps {io.github.clojure/tools.build {:mvn/version "0.10.14"}
+                  slipset/deps-deploy           {:mvn/version "0.2.5"}}
    :ns-default   build}}}
