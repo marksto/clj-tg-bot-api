@@ -15774,7 +15774,7 @@
       "name" : "media",
       "type" : "type/input-media",
       "required" : true,
-      "description" : "A JSON-serialized object for a new media content of the message",
+      "description" : "A JSON-serialized object for the new media content of the message",
       "json_serialized" : true
     }, {
       "name" : "reply_markup",
