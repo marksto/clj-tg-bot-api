@@ -1,5 +1,5 @@
 {
-  "version" : "Bot API 10.1",
+  "version" : "Bot API 10.2",
   "types" : [ {
     "id" : "type/update",
     "name" : "Update",
@@ -134,6 +134,11 @@
       "name" : "managed_bot",
       "type" : "type/managed-bot-updated",
       "description" : "<em>Optional</em>. A new bot was created to be managed by the bot, or token or owner of a managed bot was changed",
+      "required" : false
+    }, {
+      "name" : "subscription",
+      "type" : "type/bot-subscription-updated",
+      "description" : "<em>Optional</em>. User payment subscription has changed",
       "required" : false
     } ]
   }, {
@@ -594,6 +599,11 @@
       "type" : "type/user",
       "description" : "<em>Optional</em>. The bot that processes join request queries in the chat. The field is only available to chat administrators.",
       "required" : false
+    }, {
+      "name" : "community",
+      "type" : "type/community",
+      "description" : "<em>Optional</em>. The <a href=\"#community\">Community</a> to which the chat belongs",
+      "required" : false
     } ]
   }, {
     "id" : "type/message",
@@ -603,7 +613,7 @@
     "fields" : [ {
       "name" : "message_id",
       "type" : "Integer",
-      "description" : "Unique message identifier inside this chat. In specific instances (e.g., message containing a video sent to a big chat), the server might automatically schedule a message instead of sending it immediately. In such cases, this field will be 0 and the relevant message will be unusable until it is actually sent.",
+      "description" : "Unique message identifier inside this chat; 0 for ephemeral messages. In specific instances (e.g., a message containing a video sent to a big chat), the server might automatically schedule a message instead of sending it immediately. In such cases, this field will be 0 and the relevant message will be unusable until it is actually sent.",
       "required" : true
     }, {
       "name" : "message_thread_id",
@@ -639,6 +649,16 @@
       "name" : "sender_tag",
       "type" : "String",
       "description" : "<em>Optional</em>. Tag or custom title of the sender of the message; for supergroups only",
+      "required" : false
+    }, {
+      "name" : "receiver_user",
+      "type" : "type/user",
+      "description" : "<em>Optional</em>. For ephemeral messages, the user who received the message",
+      "required" : false
+    }, {
+      "name" : "ephemeral_message_id",
+      "type" : "Integer",
+      "description" : "<em>Optional</em>. For ephemeral messages, identifier of the ephemeral message inside this chat. The identifier may be reused for another ephemeral message after the message is deleted or expires.",
       "required" : false
     }, {
       "name" : "date",
@@ -678,7 +698,7 @@
     }, {
       "name" : "reply_to_message",
       "type" : "type/message",
-      "description" : "<em>Optional</em>. For replies in the same chat and message thread, the original message. Note that the <a href=\"#message\">Message</a> object in this field will not contain further <em>reply_to_message</em> fields even if it itself is a reply.",
+      "description" : "<em>Optional</em>. For replies in the same chat and message thread, the original message. Note that the <a href=\"#message\">Message</a> object in this field will not contain further <em>reply_to_message</em> fields even if it itself is a reply. If the message is a reply to an ephemeral message, then this field may be omitted.",
       "required" : false
     }, {
       "name" : "external_reply",
@@ -1044,6 +1064,16 @@
       "name" : "checklist_tasks_added",
       "type" : "type/checklist-tasks-added",
       "description" : "<em>Optional</em>. Service message: tasks were added to a checklist",
+      "required" : false
+    }, {
+      "name" : "community_chat_added",
+      "type" : "type/community-chat-added",
+      "description" : "<em>Optional</em>. Service message: chat added to a <a href=\"#community\">Community</a>",
+      "required" : false
+    }, {
+      "name" : "community_chat_removed",
+      "type" : "type/community-chat-removed",
+      "description" : "<em>Optional</em>. Service message: chat removed from a <a href=\"#community\">Community</a>",
       "required" : false
     }, {
       "name" : "direct_message_price_changed",
@@ -1435,22 +1465,27 @@
     "fields" : [ {
       "name" : "message_id",
       "type" : "Integer",
-      "description" : "Identifier of the message that will be replied to in the current chat, or in the chat <em>chat_id</em> if it is specified",
-      "required" : true
+      "description" : "<em>Optional</em>. Identifier of the message that will be replied to in the current chat, or in the chat <em>chat_id</em> if it is specified. Required if <em>ephemeral_message_id</em> isn't specified.",
+      "required" : false
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
-      "description" : "<em>Optional</em>. If the message to be replied to is from a different chat, unique identifier for the chat or username of the bot, supergroup or channel in the format <code>@username</code>. Not supported for messages sent on behalf of a business account and messages from channel direct messages chats.",
+      "description" : "<em>Optional</em>. If the message to be replied to is from a different chat, unique identifier for the chat or username of the bot, supergroup or channel in the format <code>@username</code>. Not supported for messages sent on behalf of a business account, messages from channel direct messages chats and ephemeral messages.",
+      "required" : false
+    }, {
+      "name" : "ephemeral_message_id",
+      "type" : "Integer",
+      "description" : "<em>Optional</em>. Identifier of the incoming ephemeral message that will be replied to in the current chat. A reply to an ephemeral message must itself be an ephemeral message. An ephemeral message may only be replied to within 15 seconds of being sent. Required if <em>message_id</em> isn't specified.",
       "required" : false
     }, {
       "name" : "allow_sending_without_reply",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. Pass <em>True</em> if the message should be sent even if the specified message to be replied to is not found. Always <em>False</em> for replies in another chat or forum topic. Always <em>True</em> for messages sent on behalf of a business account.",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the message should be sent even if the specified message to be replied to is not found. Always <em>False</em> for replies in another chat or forum topic, and sent ephemeral messages. Always <em>True</em> for messages sent on behalf of a business account.",
       "required" : false
     }, {
       "name" : "quote",
       "type" : "String",
-      "description" : "<em>Optional</em>. Quoted part of the message to be replied to; 0-1024 characters after entities parsing. The quote must be an exact substring of the message to be replied to, including <em>bold</em>, <em>italic</em>, <em>underline</em>, <em>strikethrough</em>, <em>spoiler</em>, <em>custom_emoji</em>, and <em>date_time</em> entities. The message will fail to send if the quote isn't found in the original message.",
+      "description" : "<em>Optional</em>. Quoted part of the message to be replied to; 0-1024 characters after entities parsing. The quote must be an exact substring of the message to be replied to, including <em>bold</em>, <em>italic</em>, <em>underline</em>, <em>strikethrough</em>, <em>spoiler</em>, <em>custom_emoji</em>, and <em>date_time</em> entities. The message will fail to send if the quote isn't found in the original message. Ignored for ephemeral messages.",
       "required" : false,
       "constraints" : {
         "string" : {
@@ -2552,7 +2587,7 @@
     }, {
       "name" : "parse_mode",
       "type" : "String",
-      "description" : "<em>Optional</em>. Mode for parsing entities in the text. See <a href=\"https://core.telegram.org/bots/api#formatting-options\">formatting options</a> for more details.",
+      "description" : "<em>Optional</em>. Mode for parsing entities in the text. See <a href=\"#formatting-options\">formatting options</a> for more details.",
       "required" : false
     }, {
       "name" : "text_entities",
@@ -2602,43 +2637,6 @@
       "type" : "Boolean",
       "description" : "<em>Optional</em>. Pass <em>True</em> if other users can mark tasks as done or not done in the checklist",
       "required" : false
-    } ]
-  }, {
-    "id" : "type/checklist-tasks-done",
-    "name" : "ChecklistTasksDone",
-    "kind" : "type",
-    "description" : "<p>Describes a service message about checklist tasks marked as done or not done.</p>",
-    "fields" : [ {
-      "name" : "checklist_message",
-      "type" : "type/message",
-      "description" : "<em>Optional</em>. Message containing the checklist whose tasks were marked as done or not done. Note that the <a href=\"#message\">Message</a> object in this field will not contain the <em>reply_to_message</em> field even if it itself is a reply.",
-      "required" : false
-    }, {
-      "name" : "marked_as_done_task_ids",
-      "type" : [ "array", "Integer" ],
-      "description" : "<em>Optional</em>. Identifiers of the tasks that were marked as done",
-      "required" : false
-    }, {
-      "name" : "marked_as_not_done_task_ids",
-      "type" : [ "array", "Integer" ],
-      "description" : "<em>Optional</em>. Identifiers of the tasks that were marked as not done",
-      "required" : false
-    } ]
-  }, {
-    "id" : "type/checklist-tasks-added",
-    "name" : "ChecklistTasksAdded",
-    "kind" : "type",
-    "description" : "<p>Describes a service message about tasks added to a checklist.</p>",
-    "fields" : [ {
-      "name" : "checklist_message",
-      "type" : "type/message",
-      "description" : "<em>Optional</em>. Message containing the checklist to which the tasks were added. Note that the <a href=\"#message\">Message</a> object in this field will not contain the <em>reply_to_message</em> field even if it itself is a reply.",
-      "required" : false
-    }, {
-      "name" : "tasks",
-      "type" : [ "array", "type/checklist-task" ],
-      "description" : "List of tasks added to the checklist",
-      "required" : true
     } ]
   }, {
     "id" : "type/location",
@@ -2790,6 +2788,27 @@
       "name" : "bot",
       "type" : "type/user",
       "description" : "Information about the bot. Token of the bot can be fetched using the method <a href=\"#getmanagedbottoken\">getManagedBotToken</a>.",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/bot-subscription-updated",
+    "name" : "BotSubscriptionUpdated",
+    "kind" : "type",
+    "description" : "<p>This object contains information about changes to a user payment subscription toward the current bot.</p>",
+    "fields" : [ {
+      "name" : "user",
+      "type" : "type/user",
+      "description" : "User who subscribed for payments toward the bot",
+      "required" : true
+    }, {
+      "name" : "invoice_payload",
+      "type" : "String",
+      "description" : "Bot-specified invoice payload",
+      "required" : true
+    }, {
+      "name" : "state",
+      "type" : "String",
+      "description" : "The new state of the subscription. Currently, it can be one of “canceled” if the user canceled the subscription, “active” if the user re-enabled a previously canceled subscription, or “failed” if payment for the subscription failed.",
       "required" : true
     } ]
   }, {
@@ -3048,6 +3067,59 @@
       "required" : true
     } ]
   }, {
+    "id" : "type/checklist-tasks-done",
+    "name" : "ChecklistTasksDone",
+    "kind" : "type",
+    "description" : "<p>Describes a service message about checklist tasks marked as done or not done.</p>",
+    "fields" : [ {
+      "name" : "checklist_message",
+      "type" : "type/message",
+      "description" : "<em>Optional</em>. Message containing the checklist whose tasks were marked as done or not done. Note that the <a href=\"#message\">Message</a> object in this field will not contain the <em>reply_to_message</em> field even if it itself is a reply.",
+      "required" : false
+    }, {
+      "name" : "marked_as_done_task_ids",
+      "type" : [ "array", "Integer" ],
+      "description" : "<em>Optional</em>. Identifiers of the tasks that were marked as done",
+      "required" : false
+    }, {
+      "name" : "marked_as_not_done_task_ids",
+      "type" : [ "array", "Integer" ],
+      "description" : "<em>Optional</em>. Identifiers of the tasks that were marked as not done",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/checklist-tasks-added",
+    "name" : "ChecklistTasksAdded",
+    "kind" : "type",
+    "description" : "<p>Describes a service message about tasks added to a checklist.</p>",
+    "fields" : [ {
+      "name" : "checklist_message",
+      "type" : "type/message",
+      "description" : "<em>Optional</em>. Message containing the checklist to which the tasks were added. Note that the <a href=\"#message\">Message</a> object in this field will not contain the <em>reply_to_message</em> field even if it itself is a reply.",
+      "required" : false
+    }, {
+      "name" : "tasks",
+      "type" : [ "array", "type/checklist-task" ],
+      "description" : "List of tasks added to the checklist",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/community-chat-added",
+    "name" : "CommunityChatAdded",
+    "kind" : "type",
+    "description" : "<p>Describes a service message about a chat being added to a community.</p>",
+    "fields" : [ {
+      "name" : "community",
+      "type" : "type/community",
+      "description" : "The new community to which the chat belongs",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/community-chat-removed",
+    "name" : "CommunityChatRemoved",
+    "kind" : "type",
+    "description" : "<p>Describes a service message about a chat being removed from a community. Currently holds no information.</p>"
+  }, {
     "id" : "type/forum-topic-created",
     "name" : "ForumTopicCreated",
     "kind" : "type",
@@ -3265,7 +3337,7 @@
     "fields" : [ {
       "name" : "are_direct_messages_enabled",
       "type" : "Boolean",
-      "description" : "<em>True</em>, if direct messages are enabled for the channel chat; false otherwise",
+      "description" : "<em>True</em>, if direct messages are enabled for the channel chat; <em>False</em> otherwise",
       "required" : true
     }, {
       "name" : "direct_message_star_count",
@@ -3704,17 +3776,17 @@
     }, {
       "name" : "is_persistent",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. Requests clients to always show the keyboard when the regular keyboard is hidden. Defaults to <em>false</em>, in which case the custom keyboard can be hidden and opened with a keyboard icon.",
+      "description" : "<em>Optional</em>. Requests clients to always show the keyboard when the regular keyboard is hidden. Defaults to <em>False</em>, in which case the custom keyboard can be hidden and opened with a keyboard icon.",
       "required" : false
     }, {
       "name" : "resize_keyboard",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. Requests clients to resize the keyboard vertically for optimal fit (e.g., make the keyboard smaller if there are just two rows of buttons). Defaults to <em>false</em>, in which case the custom keyboard is always of the same height as the app's standard keyboard.",
+      "description" : "<em>Optional</em>. Requests clients to resize the keyboard vertically for optimal fit (e.g., make the keyboard smaller if there are just two rows of buttons). Defaults to <em>False</em>, in which case the custom keyboard is always of the same height as the app's standard keyboard.",
       "required" : false
     }, {
       "name" : "one_time_keyboard",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. Requests clients to hide the keyboard as soon as it's been used. The keyboard will still be available, but clients will automatically display the usual letter-keyboard in the chat - the user can press a special button in the input field to see the custom keyboard again. Defaults to <em>false</em>.",
+      "description" : "<em>Optional</em>. Requests clients to hide the keyboard as soon as it's been used. The keyboard will still be available, but clients will automatically display the usual letter-keyboard in the chat - the user can press a special button in the input field to see the custom keyboard again. Defaults to <em>False</em>.",
       "required" : false
     }, {
       "name" : "input_field_placeholder",
@@ -4168,6 +4240,22 @@
     } ],
     "notes" : "<blockquote><p><strong>Example:</strong> A <a href=\"https://t.me/PollBot\">poll bot</a> for groups runs in privacy mode (only receives commands, replies to its messages and mentions). There could be two ways to create a new poll:</p><ul><li>Explain the user how to send a command with parameters (e.g. /newpoll question answer1 answer2). May be appealing for hardcore users but lacks modern day polish.</li><li>Guide the user through a step-by-step process. 'Please send me your question', 'Cool, now let's add the first answer option', 'Great. Keep adding answer options, then send /done when you're ready'.</li></ul><p>The last option is definitely more attractive. And if you use <a href=\"#forcereply\">ForceReply</a> in your bot's questions, it will receive the user's answers even if it only receives replies, commands and mentions - without any extra work for the user.</p></blockquote>"
   }, {
+    "id" : "type/community",
+    "name" : "Community",
+    "kind" : "type",
+    "description" : "<p>Represents a community (a group of chats).</p>",
+    "fields" : [ {
+      "name" : "id",
+      "type" : "Integer",
+      "description" : "Unique identifier for this community. This number may have more than 32 significant bits and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this identifier.",
+      "required" : true
+    }, {
+      "name" : "name",
+      "type" : "String",
+      "description" : "Name of the community",
+      "required" : true
+    } ]
+  }, {
     "id" : "type/chat-photo",
     "name" : "ChatPhoto",
     "kind" : "type",
@@ -4342,7 +4430,7 @@
     }, {
       "name" : "can_manage_tags",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. <em>True</em>, if the administrator can edit the tags of regular members; for groups and supergroups only. If omitted defaults to the value of can_pin_messages.",
+      "description" : "<em>Optional</em>. <em>True</em>, if the administrator can edit the tags of regular members; for groups and supergroups only. If omitted, defaults to the value of can_pin_messages.",
       "required" : false
     } ]
   }, {
@@ -4528,7 +4616,7 @@
     }, {
       "name" : "can_manage_tags",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. <em>True</em>, if the administrator can edit the tags of regular members; for groups and supergroups only. If omitted defaults to the value of can_pin_messages.",
+      "description" : "<em>Optional</em>. <em>True</em>, if the administrator can edit the tags of regular members; for groups and supergroups only. If omitted, defaults to the value of can_pin_messages.",
       "required" : false
     }, {
       "name" : "custom_title",
@@ -4752,7 +4840,7 @@
     }, {
       "name" : "query_id",
       "type" : "String",
-      "description" : "<em>Optional</em>. Identifier of the join request query; for bots assigned to process join request only. If present, then the bot must call <a href=\"#sendchatjoinrequestwebapp\">sendChatJoinRequestWebApp</a> or directly call <a href=\"#answerchatjoinrequestquery\">answerChatJoinRequestQuery</a> within 10 seconds.",
+      "description" : "<em>Optional</em>. Identifier of the join request query; for bots assigned to process join requests only. If present, then the bot must call <a href=\"#sendchatjoinrequestwebapp\">sendChatJoinRequestWebApp</a> or directly call <a href=\"#answerchatjoinrequestquery\">answerChatJoinRequestQuery</a> within 10 seconds.",
       "required" : false
     } ]
   }, {
@@ -4838,7 +4926,7 @@
     }, {
       "name" : "can_manage_topics",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. <em>True</em>, if the user is allowed to create forum topics. If omitted defaults to the value of can_pin_messages.",
+      "description" : "<em>Optional</em>. <em>True</em>, if the user is allowed to create forum topics. If omitted, defaults to the value of can_pin_messages.",
       "required" : false
     } ]
   }, {
@@ -5991,6 +6079,11 @@
           "to" : 256
         }
       }
+    }, {
+      "name" : "is_ephemeral",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. <em>True</em>, if the command sends an ephemeral message, which can be seen only by the sender of the message and the bot",
+      "required" : false
     } ]
   }, {
     "id" : "type/bot-command-scope",
@@ -6611,7 +6704,7 @@
     }, {
       "name" : "show_caption_above_media",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. Pass <em>True</em>, if the caption must be shown above the message media",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the caption must be shown above the message media",
       "required" : false
     }, {
       "name" : "width",
@@ -6805,7 +6898,7 @@
     }, {
       "name" : "show_caption_above_media",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. Pass <em>True</em>, if the caption must be shown above the message media",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the caption must be shown above the message media",
       "required" : false
     }, {
       "name" : "has_spoiler",
@@ -6881,7 +6974,7 @@
     }, {
       "name" : "show_caption_above_media",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. Pass <em>True</em>, if the caption must be shown above the message media",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the caption must be shown above the message media",
       "required" : false
     }, {
       "name" : "has_spoiler",
@@ -7019,7 +7112,7 @@
     }, {
       "name" : "show_caption_above_media",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. Pass <em>True</em>, if the caption must be shown above the message media",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the caption must be shown above the message media",
       "required" : false
     }, {
       "name" : "width",
@@ -7045,6 +7138,50 @@
       "name" : "has_spoiler",
       "type" : "Boolean",
       "description" : "<em>Optional</em>. Pass <em>True</em> if the video needs to be covered with a spoiler animation",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-media-voice-note",
+    "name" : "InputMediaVoiceNote",
+    "kind" : "type",
+    "description" : "<p>Represents a voice message file to be sent.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the media, must be <em>voice_note</em>",
+      "required" : true,
+      "value" : "voice_note"
+    }, {
+      "name" : "media",
+      "type" : "String",
+      "description" : "File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass &quot;attach://&lt;file_attach_name&gt;&quot; to upload a new one using multipart/form-data under &lt;file_attach_name&gt; name. <a href=\"#sending-files\">More information on Sending Files »</a>",
+      "required" : true
+    }, {
+      "name" : "caption",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Caption of the voice message to be sent, 0-1024 characters after entities parsing",
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 1024,
+          "after_entities_parsing" : true
+        }
+      }
+    }, {
+      "name" : "parse_mode",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Mode for parsing entities in the voice message caption. See <a href=\"#formatting-options\">formatting options</a> for more details.",
+      "required" : false
+    }, {
+      "name" : "caption_entities",
+      "type" : [ "array", "type/message-entity" ],
+      "description" : "<em>Optional</em>. List of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
+      "required" : false
+    }, {
+      "name" : "duration",
+      "type" : "Integer",
+      "description" : "<em>Optional</em>. Duration of the voice message in seconds",
       "required" : false
     } ]
   }, {
@@ -7443,16 +7580,26 @@
     "id" : "type/input-rich-message",
     "name" : "InputRichMessage",
     "kind" : "type",
-    "description" : "<p>Describes a rich message to be sent. Exactly <strong>one</strong> of the fields <em>html</em> or <em>markdown</em> must be used.</p>",
+    "description" : "<p>Describes a rich message to be sent. Exactly <strong>one</strong> of the fields <em>html</em>, <em>markdown</em>, or <em>blocks</em> must be used.</p>",
     "fields" : [ {
+      "name" : "blocks",
+      "type" : [ "array", "type/input-rich-block" ],
+      "description" : "<em>Optional</em>. Content of the rich message to send described as a list of blocks",
+      "required" : false
+    }, {
       "name" : "html",
       "type" : "String",
-      "description" : "<em>Optional</em>. Content of the rich message to send described using HTML formatting. See <a href=\"#rich-message-formatting-options\">rich message formatting options</a> for more details.",
+      "description" : "<em>Optional</em>. Content of the rich message to send described using HTML formatting. See <a href=\"#rich-message-formatting-options\">rich message formatting options</a> for more details. Use <em>media</em> field to specify the media used in the message.",
       "required" : false
     }, {
       "name" : "markdown",
       "type" : "String",
-      "description" : "<em>Optional</em>. Content of the rich message to send described using Markdown formatting. See <a href=\"#rich-message-formatting-options\">rich message formatting options</a> for more details.",
+      "description" : "<em>Optional</em>. Content of the rich message to send described using Markdown formatting. See <a href=\"#rich-message-formatting-options\">rich message formatting options</a> for more details. Use <em>media</em> field to specify the media used in the message.",
+      "required" : false
+    }, {
+      "name" : "media",
+      "type" : [ "array", "type/input-rich-message-media" ],
+      "description" : "<em>Optional</em>. List of media that are specified in the <em>markdown</em> or <em>html</em> fields using <code>tg://photo?id=</code>, <code>tg://video?id=</code>, and <code>tg://audio?id=</code> links",
       "required" : false
     }, {
       "name" : "is_rtl",
@@ -7464,6 +7611,28 @@
       "type" : "Boolean",
       "description" : "<em>Optional</em>. Pass <em>True</em> to skip automatic detection of entities (e.g., URLs, email addresses, username mentions, hashtags, cashtags, bot commands, or phone numbers) in the text",
       "required" : false
+    } ]
+  }, {
+    "id" : "type/input-rich-message-media",
+    "name" : "InputRichMessageMedia",
+    "kind" : "type",
+    "description" : "<p>Describes a media element embedded in an outgoing rich message.</p>",
+    "fields" : [ {
+      "name" : "id",
+      "type" : "String",
+      "description" : "Unique identifier of the media used in a <code>tg://photo?id=</code>, <code>tg://video?id=</code>, or <code>tg://audio?id=</code> link. 1-64 characters, only <code>A-Z</code>, <code>a-z</code>, <code>0-9</code>, <code>_</code> and <code>-</code> are allowed.",
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "from" : 1,
+          "to" : 64
+        }
+      }
+    }, {
+      "name" : "media",
+      "type" : [ "or", [ "type/input-media-animation", "type/input-media-audio", "type/input-media-photo", "type/input-media-video", "type/input-media-voice-note" ] ],
+      "description" : "The media to be sent. Everything except the media itself and its properties is ignored.",
+      "required" : true
     } ]
   }, {
     "id" : "type/rich-text",
@@ -8519,7 +8688,7 @@
     "id" : "type/rich-block-thinking",
     "name" : "RichBlockThinking",
     "kind" : "type",
-    "description" : "<p>A block with a “Thinking…” placeholder, corresponding to the custom HTML tag <code>&lt;tg-thinking&gt;</code>. The block may be used only in <a href=\"#sendrichmessagedraft\">sendRichMessageDraft</a>, therefore it can't be received in messages. See <a href=\"https://t.me/addemoji/AIActions\"></a><a href=\"https://t.me/addemoji/AIActions\">https://t.me/addemoji/AIActions</a> for examples of custom emoji, which are recommended for usage in the block.</p>",
+    "description" : "<p>A block with a “Thinking…” placeholder, corresponding to the custom HTML tag <code>&lt;tg-thinking&gt;</code>. The block may be used only in <a href=\"#sendrichmessagedraft\">sendRichMessageDraft</a>, therefore it can't be received in messages. See <a href=\"https://t.me/addemoji/AIActions\"></a><a href=\"https://t.me/addemoji/AIActions\">https://t.me/addemoji/AIActions</a> for examples of custom emoji that are recommended for usage in the block.</p>",
     "fields" : [ {
       "name" : "type",
       "type" : "String",
@@ -8529,7 +8698,496 @@
     }, {
       "name" : "text",
       "type" : "type/rich-text",
-      "description" : "Text of the block. See <a href=\"https://t.me/addemoji/AIActions\"></a><a href=\"https://t.me/addemoji/AIActions\">https://t.me/addemoji/AIActions</a> for examples of custom emoji, which are recommended for usage in the block.",
+      "description" : "Text of the block. See <a href=\"https://t.me/addemoji/AIActions\"></a><a href=\"https://t.me/addemoji/AIActions\">https://t.me/addemoji/AIActions</a> for examples of custom emoji that are recommended for usage in the block.",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/input-rich-block-list-item",
+    "name" : "InputRichBlockListItem",
+    "kind" : "type",
+    "description" : "<p>An item of a list to be sent.</p>",
+    "fields" : [ {
+      "name" : "blocks",
+      "type" : [ "array", "type/input-rich-block" ],
+      "description" : "The content of the item",
+      "required" : true
+    }, {
+      "name" : "has_checkbox",
+      "type" : "True",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the item has a checkbox",
+      "required" : false
+    }, {
+      "name" : "is_checked",
+      "type" : "True",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the item has a checked checkbox",
+      "required" : false
+    }, {
+      "name" : "value",
+      "type" : "Integer",
+      "description" : "<em>Optional</em>. For ordered lists, the numeric value of the item label",
+      "required" : false
+    }, {
+      "name" : "type",
+      "type" : "String",
+      "description" : "<em>Optional</em>. For ordered lists, the type of the item label; must be one of “a” for lowercase letters, “A” for uppercase letters, “i” for lowercase Roman numerals, “I” for uppercase Roman numerals, or “1” for decimal numbers",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-rich-block",
+    "name" : "InputRichBlock",
+    "kind" : "type",
+    "description" : "<p>This object represents a block in a rich formatted message to be sent. Currently, it can be any of the following types:</p>",
+    "subtypes" : [ "type/input-rich-block-paragraph", "type/input-rich-block-section-heading", "type/input-rich-block-preformatted", "type/input-rich-block-footer", "type/input-rich-block-divider", "type/input-rich-block-mathematical-expression", "type/input-rich-block-anchor", "type/input-rich-block-list", "type/input-rich-block-block-quotation", "type/input-rich-block-pull-quotation", "type/input-rich-block-collage", "type/input-rich-block-slideshow", "type/input-rich-block-table", "type/input-rich-block-details", "type/input-rich-block-map", "type/input-rich-block-animation", "type/input-rich-block-audio", "type/input-rich-block-photo", "type/input-rich-block-video", "type/input-rich-block-voice-note", "type/input-rich-block-thinking" ]
+  }, {
+    "id" : "type/input-rich-block-paragraph",
+    "name" : "InputRichBlockParagraph",
+    "kind" : "type",
+    "description" : "<p>A text paragraph, corresponding to the HTML tag <code>&lt;p&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “paragraph”",
+      "required" : true,
+      "value" : "paragraph"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "Text of the block",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/input-rich-block-section-heading",
+    "name" : "InputRichBlockSectionHeading",
+    "kind" : "type",
+    "description" : "<p>A section heading, corresponding to the HTML tags <code>&lt;h1&gt;</code>, <code>&lt;h2&gt;</code>, <code>&lt;h3&gt;</code>, <code>&lt;h4&gt;</code>, <code>&lt;h5&gt;</code>, or <code>&lt;h6&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “heading”",
+      "required" : true,
+      "value" : "heading"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "Text of the block",
+      "required" : true
+    }, {
+      "name" : "size",
+      "type" : "Integer",
+      "description" : "Relative size of the text font; 1-6, 1 is the largest, 6 is the smallest",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/input-rich-block-preformatted",
+    "name" : "InputRichBlockPreformatted",
+    "kind" : "type",
+    "description" : "<p>A preformatted text block, corresponding to the nested HTML tags <code>&lt;pre&gt;</code> and <code>&lt;code&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “pre”",
+      "required" : true,
+      "value" : "pre"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "Text of the block",
+      "required" : true
+    }, {
+      "name" : "language",
+      "type" : "String",
+      "description" : "<em>Optional</em>. The programming language of the text",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-rich-block-footer",
+    "name" : "InputRichBlockFooter",
+    "kind" : "type",
+    "description" : "<p>A footer, corresponding to the HTML tag <code>&lt;footer&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “footer”",
+      "required" : true,
+      "value" : "footer"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "Text of the block",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/input-rich-block-divider",
+    "name" : "InputRichBlockDivider",
+    "kind" : "type",
+    "description" : "<p>A divider, corresponding to the HTML tag <code>&lt;hr/&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “divider”",
+      "required" : true,
+      "value" : "divider"
+    } ]
+  }, {
+    "id" : "type/input-rich-block-mathematical-expression",
+    "name" : "InputRichBlockMathematicalExpression",
+    "kind" : "type",
+    "description" : "<p>A block with a mathematical expression in LaTeX format, corresponding to the custom HTML tag <code>&lt;tg-math-block&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “mathematical_expression”",
+      "required" : true,
+      "value" : "mathematical_expression"
+    }, {
+      "name" : "expression",
+      "type" : "String",
+      "description" : "The mathematical expression in LaTeX format",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/input-rich-block-anchor",
+    "name" : "InputRichBlockAnchor",
+    "kind" : "type",
+    "description" : "<p>A block with an anchor, corresponding to the HTML tag <code>&lt;a&gt;</code> with the attribute <code>name</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “anchor”",
+      "required" : true,
+      "value" : "anchor"
+    }, {
+      "name" : "name",
+      "type" : "String",
+      "description" : "The name of the anchor",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/input-rich-block-list",
+    "name" : "InputRichBlockList",
+    "kind" : "type",
+    "description" : "<p>A list of blocks, corresponding to the HTML tag <code>&lt;ul&gt;</code> or <code>&lt;ol&gt;</code> with multiple nested tags <code>&lt;li&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “list”",
+      "required" : true,
+      "value" : "list"
+    }, {
+      "name" : "items",
+      "type" : [ "array", "type/input-rich-block-list-item" ],
+      "description" : "Items of the list",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/input-rich-block-block-quotation",
+    "name" : "InputRichBlockBlockQuotation",
+    "kind" : "type",
+    "description" : "<p>A block quotation, corresponding to the HTML tag <code>&lt;blockquote&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “blockquote”",
+      "required" : true,
+      "value" : "blockquote"
+    }, {
+      "name" : "blocks",
+      "type" : [ "array", "type/input-rich-block" ],
+      "description" : "Content of the block",
+      "required" : true
+    }, {
+      "name" : "credit",
+      "type" : "type/rich-text",
+      "description" : "<em>Optional</em>. Credit of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-rich-block-pull-quotation",
+    "name" : "InputRichBlockPullQuotation",
+    "kind" : "type",
+    "description" : "<p>A quotation with centered text, loosely corresponding to the HTML tag <code>&lt;aside&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “pullquote”",
+      "required" : true,
+      "value" : "pullquote"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "Text of the block",
+      "required" : true
+    }, {
+      "name" : "credit",
+      "type" : "type/rich-text",
+      "description" : "<em>Optional</em>. Credit of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-rich-block-collage",
+    "name" : "InputRichBlockCollage",
+    "kind" : "type",
+    "description" : "<p>A collage, corresponding to the custom HTML tag <code>&lt;tg-collage&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “collage”",
+      "required" : true,
+      "value" : "collage"
+    }, {
+      "name" : "blocks",
+      "type" : [ "array", "type/input-rich-block" ],
+      "description" : "Elements of the collage",
+      "required" : true
+    }, {
+      "name" : "caption",
+      "type" : "type/rich-block-caption",
+      "description" : "<em>Optional</em>. Caption of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-rich-block-slideshow",
+    "name" : "InputRichBlockSlideshow",
+    "kind" : "type",
+    "description" : "<p>A slideshow, corresponding to the custom HTML tag <code>&lt;tg-slideshow&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “slideshow”",
+      "required" : true,
+      "value" : "slideshow"
+    }, {
+      "name" : "blocks",
+      "type" : [ "array", "type/input-rich-block" ],
+      "description" : "Elements of the slideshow",
+      "required" : true
+    }, {
+      "name" : "caption",
+      "type" : "type/rich-block-caption",
+      "description" : "<em>Optional</em>. Caption of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-rich-block-table",
+    "name" : "InputRichBlockTable",
+    "kind" : "type",
+    "description" : "<p>A table, corresponding to the HTML tag <code>&lt;table&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “table”",
+      "required" : true,
+      "value" : "table"
+    }, {
+      "name" : "cells",
+      "type" : [ "array", [ "array", "type/rich-block-table-cell" ] ],
+      "description" : "Cells of the table",
+      "required" : true
+    }, {
+      "name" : "is_bordered",
+      "type" : "True",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the table has borders",
+      "required" : false
+    }, {
+      "name" : "is_striped",
+      "type" : "True",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the table is striped",
+      "required" : false
+    }, {
+      "name" : "caption",
+      "type" : "type/rich-text",
+      "description" : "<em>Optional</em>. Caption of the table",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-rich-block-details",
+    "name" : "InputRichBlockDetails",
+    "kind" : "type",
+    "description" : "<p>An expandable block for details disclosure, corresponding to the HTML tag <code>&lt;details&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “details”",
+      "required" : true,
+      "value" : "details"
+    }, {
+      "name" : "summary",
+      "type" : "type/rich-text",
+      "description" : "Always shown summary of the block",
+      "required" : true
+    }, {
+      "name" : "blocks",
+      "type" : [ "array", "type/input-rich-block" ],
+      "description" : "Content of the block",
+      "required" : true
+    }, {
+      "name" : "is_open",
+      "type" : "True",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the content of the block is visible by default",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-rich-block-map",
+    "name" : "InputRichBlockMap",
+    "kind" : "type",
+    "description" : "<p>A block with a map, corresponding to the custom HTML tag <code>&lt;tg-map&gt;</code>. The map's width and height must not exceed 10000 in total. The width and height ratio must be at most 20.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “map”",
+      "required" : true,
+      "value" : "map"
+    }, {
+      "name" : "location",
+      "type" : "type/location",
+      "description" : "Location of the center of the map",
+      "required" : true
+    }, {
+      "name" : "zoom",
+      "type" : "Integer",
+      "description" : "Map zoom level; 0-24",
+      "required" : true
+    }, {
+      "name" : "width",
+      "type" : "Integer",
+      "description" : "Map width; 0-10000",
+      "required" : true
+    }, {
+      "name" : "height",
+      "type" : "Integer",
+      "description" : "Map height; 0-10000",
+      "required" : true
+    }, {
+      "name" : "caption",
+      "type" : "type/rich-block-caption",
+      "description" : "<em>Optional</em>. Caption of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-rich-block-animation",
+    "name" : "InputRichBlockAnimation",
+    "kind" : "type",
+    "description" : "<p>A block with an animation, corresponding to the HTML tag <code>&lt;video&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “animation”",
+      "required" : true,
+      "value" : "animation"
+    }, {
+      "name" : "animation",
+      "type" : "type/input-media-animation",
+      "description" : "The animation. Caption is ignored.",
+      "required" : true
+    }, {
+      "name" : "caption",
+      "type" : "type/rich-block-caption",
+      "description" : "<em>Optional</em>. Caption of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-rich-block-audio",
+    "name" : "InputRichBlockAudio",
+    "kind" : "type",
+    "description" : "<p>A block with a music file, corresponding to the HTML tag <code>&lt;audio&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “audio”",
+      "required" : true,
+      "value" : "audio"
+    }, {
+      "name" : "audio",
+      "type" : "type/input-media-audio",
+      "description" : "The audio. Caption is ignored.",
+      "required" : true
+    }, {
+      "name" : "caption",
+      "type" : "type/rich-block-caption",
+      "description" : "<em>Optional</em>. Caption of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-rich-block-photo",
+    "name" : "InputRichBlockPhoto",
+    "kind" : "type",
+    "description" : "<p>A block with a photo, corresponding to the HTML tag <code>&lt;img&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “photo”",
+      "required" : true,
+      "value" : "photo"
+    }, {
+      "name" : "photo",
+      "type" : "type/input-media-photo",
+      "description" : "The photo. Caption is ignored.",
+      "required" : true
+    }, {
+      "name" : "caption",
+      "type" : "type/rich-block-caption",
+      "description" : "<em>Optional</em>. Caption of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-rich-block-video",
+    "name" : "InputRichBlockVideo",
+    "kind" : "type",
+    "description" : "<p>A block with a video, corresponding to the HTML tag <code>&lt;video&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “video”",
+      "required" : true,
+      "value" : "video"
+    }, {
+      "name" : "video",
+      "type" : "type/input-media-video",
+      "description" : "The video. Caption is ignored.",
+      "required" : true
+    }, {
+      "name" : "caption",
+      "type" : "type/rich-block-caption",
+      "description" : "<em>Optional</em>. Caption of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-rich-block-voice-note",
+    "name" : "InputRichBlockVoiceNote",
+    "kind" : "type",
+    "description" : "<p>A block with a voice note, corresponding to the HTML tag <code>&lt;audio&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “voice_note”",
+      "required" : true,
+      "value" : "voice_note"
+    }, {
+      "name" : "voice_note",
+      "type" : "type/input-media-voice-note",
+      "description" : "The voice note. Caption is ignored.",
+      "required" : true
+    }, {
+      "name" : "caption",
+      "type" : "type/rich-block-caption",
+      "description" : "<em>Optional</em>. Caption of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-rich-block-thinking",
+    "name" : "InputRichBlockThinking",
+    "kind" : "type",
+    "description" : "<p>A block with a “Thinking…” placeholder, corresponding to the custom HTML tag <code>&lt;tg-thinking&gt;</code>. The block may be used only in <a href=\"#sendrichmessagedraft\">sendRichMessageDraft</a>, therefore it can't be received in messages. See <a href=\"https://t.me/addemoji/AIActions\"></a><a href=\"https://t.me/addemoji/AIActions\">https://t.me/addemoji/AIActions</a> for examples of custom emoji that are recommended for usage in the block.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “thinking”",
+      "required" : true,
+      "value" : "thinking"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "Text of the block. See <a href=\"https://t.me/addemoji/AIActions\"></a><a href=\"https://t.me/addemoji/AIActions\">https://t.me/addemoji/AIActions</a> for examples of custom emoji that are recommended for usage in the block.",
       "required" : true
     } ]
   }, {
@@ -8735,7 +9393,7 @@
     }, {
       "name" : "show_caption_above_media",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. Pass <em>True</em>, if the caption must be shown above the message media",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the caption must be shown above the message media",
       "required" : false
     }, {
       "name" : "reply_markup",
@@ -8824,7 +9482,7 @@
     }, {
       "name" : "show_caption_above_media",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. Pass <em>True</em>, if the caption must be shown above the message media",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the caption must be shown above the message media",
       "required" : false
     }, {
       "name" : "reply_markup",
@@ -8913,7 +9571,7 @@
     }, {
       "name" : "show_caption_above_media",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. Pass <em>True</em>, if the caption must be shown above the message media",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the caption must be shown above the message media",
       "required" : false
     }, {
       "name" : "reply_markup",
@@ -8987,7 +9645,7 @@
     }, {
       "name" : "show_caption_above_media",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. Pass <em>True</em>, if the caption must be shown above the message media",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the caption must be shown above the message media",
       "required" : false
     }, {
       "name" : "video_width",
@@ -9541,7 +10199,7 @@
     }, {
       "name" : "show_caption_above_media",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. Pass <em>True</em>, if the caption must be shown above the message media",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the caption must be shown above the message media",
       "required" : false
     }, {
       "name" : "reply_markup",
@@ -9605,7 +10263,7 @@
     }, {
       "name" : "show_caption_above_media",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. Pass <em>True</em>, if the caption must be shown above the message media",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the caption must be shown above the message media",
       "required" : false
     }, {
       "name" : "reply_markup",
@@ -9669,7 +10327,7 @@
     }, {
       "name" : "show_caption_above_media",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. Pass <em>True</em>, if the caption must be shown above the message media",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the caption must be shown above the message media",
       "required" : false
     }, {
       "name" : "reply_markup",
@@ -9834,7 +10492,7 @@
     }, {
       "name" : "show_caption_above_media",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. Pass <em>True</em>, if the caption must be shown above the message media",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the caption must be shown above the message media",
       "required" : false
     }, {
       "name" : "reply_markup",
@@ -10173,7 +10831,7 @@
     }, {
       "name" : "suggested_tip_amounts",
       "type" : [ "array", "Integer" ],
-      "description" : "<em>Optional</em>. A JSON-serialized array of suggested amounts of tip in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed <em>max_tip_amount</em>.",
+      "description" : "<em>Optional</em>. A JSON-serialized Array of suggested amounts of tip in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed <em>max_tip_amount</em>.",
       "required" : false,
       "json_serialized" : true
     }, {
@@ -11441,6 +12099,16 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
+      "name" : "receiver_user_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
+    }, {
+      "name" : "callback_query_id",
+      "type" : "String",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+    }, {
       "name" : "text",
       "type" : "String",
       "required" : true,
@@ -11565,7 +12233,7 @@
     "id" : "method/forward-messages",
     "name" : "forwardMessages",
     "kind" : "method",
-    "description" : "<p>Use this method to forward multiple messages of any kind. If some of the specified messages can't be found or forwarded, they are skipped. Service messages and messages with protected content can't be forwarded. Album grouping is kept for forwarded messages. On success, an array of <a href=\"#messageid\">MessageId</a> of the sent messages is returned.</p>",
+    "description" : "<p>Use this method to forward multiple messages of any kind. If some of the specified messages can't be found or forwarded, they are skipped. Service messages and messages with protected content can't be forwarded. Album grouping is kept for forwarded messages. On success, an Array of <a href=\"#messageid\">MessageId</a> of the sent messages is returned.</p>",
     "params" : [ {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
@@ -11663,7 +12331,7 @@
       "name" : "show_caption_above_media",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em>, if the caption must be shown above the message media. Ignored if a new caption isn't specified."
+      "description" : "Pass <em>True</em> if the caption must be shown above the message media. Ignored if a new caption isn't specified."
     }, {
       "name" : "disable_notification",
       "type" : "Boolean",
@@ -11706,7 +12374,7 @@
     "id" : "method/copy-messages",
     "name" : "copyMessages",
     "kind" : "method",
-    "description" : "<p>Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz <a href=\"#poll\">poll</a> can be copied only if the value of the field <em>correct_option_id</em> is known to the bot. The method is analogous to the method <a href=\"#forwardmessages\">forwardMessages</a>, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of <a href=\"#messageid\">MessageId</a> of the sent messages is returned.</p>",
+    "description" : "<p>Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz <a href=\"#poll\">poll</a> can be copied only if the value of the field <em>correct_option_id</em> is known to the bot. The method is analogous to the method <a href=\"#forwardmessages\">forwardMessages</a>, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an Array of <a href=\"#messageid\">MessageId</a> of the sent messages is returned.</p>",
     "params" : [ {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
@@ -11775,6 +12443,16 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
+      "name" : "receiver_user_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
+    }, {
+      "name" : "callback_query_id",
+      "type" : "String",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+    }, {
       "name" : "photo",
       "type" : [ "or", [ "type/input-file", "String" ] ],
       "required" : true,
@@ -11804,7 +12482,7 @@
       "name" : "show_caption_above_media",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em>, if the caption must be shown above the message media"
+      "description" : "Pass <em>True</em> if the caption must be shown above the message media"
     }, {
       "name" : "has_spoiler",
       "type" : "Boolean",
@@ -11874,6 +12552,16 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
+      "name" : "receiver_user_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
+    }, {
+      "name" : "callback_query_id",
+      "type" : "String",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+    }, {
       "name" : "live_photo",
       "type" : [ "or", [ "type/input-file", "String" ] ],
       "required" : true,
@@ -11908,7 +12596,7 @@
       "name" : "show_caption_above_media",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em>, if the caption must be shown above the message media"
+      "description" : "Pass <em>True</em> if the caption must be shown above the message media"
     }, {
       "name" : "has_spoiler",
       "type" : "Boolean",
@@ -11977,6 +12665,16 @@
       "type" : "Integer",
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
+    }, {
+      "name" : "receiver_user_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
+    }, {
+      "name" : "callback_query_id",
+      "type" : "String",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
     }, {
       "name" : "audio",
       "type" : [ "or", [ "type/input-file", "String" ] ],
@@ -12087,6 +12785,16 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
+      "name" : "receiver_user_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
+    }, {
+      "name" : "callback_query_id",
+      "type" : "String",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+    }, {
       "name" : "document",
       "type" : [ "or", [ "type/input-file", "String" ] ],
       "required" : true,
@@ -12186,6 +12894,16 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
+      "name" : "receiver_user_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
+    }, {
+      "name" : "callback_query_id",
+      "type" : "String",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+    }, {
       "name" : "video",
       "type" : [ "or", [ "type/input-file", "String" ] ],
       "required" : true,
@@ -12245,7 +12963,7 @@
       "name" : "show_caption_above_media",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em>, if the caption must be shown above the message media"
+      "description" : "Pass <em>True</em> if the caption must be shown above the message media"
     }, {
       "name" : "has_spoiler",
       "type" : "Boolean",
@@ -12320,6 +13038,16 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
+      "name" : "receiver_user_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
+    }, {
+      "name" : "callback_query_id",
+      "type" : "String",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+    }, {
       "name" : "animation",
       "type" : [ "or", [ "type/input-file", "String" ] ],
       "required" : true,
@@ -12369,7 +13097,7 @@
       "name" : "show_caption_above_media",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em>, if the caption must be shown above the message media"
+      "description" : "Pass <em>True</em> if the caption must be shown above the message media"
     }, {
       "name" : "has_spoiler",
       "type" : "Boolean",
@@ -12438,6 +13166,16 @@
       "type" : "Integer",
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
+    }, {
+      "name" : "receiver_user_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
+    }, {
+      "name" : "callback_query_id",
+      "type" : "String",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
     }, {
       "name" : "voice",
       "type" : [ "or", [ "type/input-file", "String" ] ],
@@ -12533,6 +13271,16 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
+      "name" : "receiver_user_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
+    }, {
+      "name" : "callback_query_id",
+      "type" : "String",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+    }, {
       "name" : "video_note",
       "type" : [ "or", [ "type/input-file", "String" ] ],
       "required" : true,
@@ -12624,7 +13372,7 @@
       "name" : "media",
       "type" : [ "array", "type/input-paid-media" ],
       "required" : true,
-      "description" : "A JSON-serialized array describing the media to be sent; up to 10 items",
+      "description" : "A JSON-serialized Array describing the media to be sent; up to 10 items",
       "json_serialized" : true
     }, {
       "name" : "payload",
@@ -12656,7 +13404,7 @@
       "name" : "show_caption_above_media",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em>, if the caption must be shown above the message media"
+      "description" : "Pass <em>True</em> if the caption must be shown above the message media"
     }, {
       "name" : "disable_notification",
       "type" : "Boolean",
@@ -12694,7 +13442,7 @@
     "id" : "method/send-media-group",
     "name" : "sendMediaGroup",
     "kind" : "method",
-    "description" : "<p>Use this method to send a group of photos, live photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of <a href=\"#message\">Message</a> objects that were sent is returned.</p>",
+    "description" : "<p>Use this method to send a group of photos, live photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an Array of <a href=\"#message\">Message</a> objects that were sent is returned.</p>",
     "params" : [ {
       "name" : "business_connection_id",
       "type" : "String",
@@ -12719,7 +13467,7 @@
       "name" : "media",
       "type" : [ "array", [ "or", [ "type/input-media-audio", "type/input-media-document", "type/input-media-live-photo", "type/input-media-photo", "type/input-media-video" ] ] ],
       "required" : true,
-      "description" : "A JSON-serialized array describing messages to be sent, must include 2-10 items",
+      "description" : "A JSON-serialized Array describing messages to be sent, must include 2-10 items",
       "json_serialized" : true
     }, {
       "name" : "disable_notification",
@@ -12773,6 +13521,16 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
+      "name" : "receiver_user_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
+    }, {
+      "name" : "callback_query_id",
+      "type" : "String",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+    }, {
       "name" : "latitude",
       "type" : "Float",
       "required" : true,
@@ -12791,7 +13549,7 @@
       "name" : "live_period",
       "type" : "Integer",
       "required" : false,
-      "description" : "Period in seconds during which the location will be updated (see <a href=\"https://telegram.org/blog/live-locations\">Live Locations</a>, should be between 60 and 86400, or 0x7FFFFFFF for live locations that can be edited indefinitely"
+      "description" : "Period in seconds during which the location will be updated (see <a href=\"https://telegram.org/blog/live-locations\">Live Locations</a>), must be between 60 and 86400, or 0x7FFFFFFF for live locations that can be edited indefinitely. Must be 0 for ephemeral messages."
     }, {
       "name" : "heading",
       "type" : "Integer",
@@ -12865,6 +13623,16 @@
       "type" : "Integer",
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
+    }, {
+      "name" : "receiver_user_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
+    }, {
+      "name" : "callback_query_id",
+      "type" : "String",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
     }, {
       "name" : "latitude",
       "type" : "Float",
@@ -12968,6 +13736,16 @@
       "type" : "Integer",
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
+    }, {
+      "name" : "receiver_user_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
+    }, {
+      "name" : "callback_query_id",
+      "type" : "String",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
     }, {
       "name" : "phone_number",
       "type" : "String",
@@ -13086,32 +13864,32 @@
       "name" : "allows_multiple_answers",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em>, if the poll allows multiple answers, defaults to <em>False</em>"
+      "description" : "Pass <em>True</em> if the poll allows multiple answers, defaults to <em>False</em>"
     }, {
       "name" : "allows_revoting",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em>, if the poll allows to change chosen answer options, defaults to <em>False</em> for quizzes and to <em>True</em> for regular polls"
+      "description" : "Pass <em>True</em> if the poll allows to change chosen answer options, defaults to <em>False</em> for quizzes and to <em>True</em> for regular polls"
     }, {
       "name" : "shuffle_options",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em>, if the poll options must be shown in random order"
+      "description" : "Pass <em>True</em> if the poll options must be shown in random order"
     }, {
       "name" : "allow_adding_options",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em>, if answer options can be added to the poll after creation; not supported for anonymous polls and quizzes"
+      "description" : "Pass <em>True</em> if answer options can be added to the poll after creation; not supported for anonymous polls and quizzes"
     }, {
       "name" : "hide_results_until_closes",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em>, if poll results must be shown only after the poll closes"
+      "description" : "Pass <em>True</em> if poll results must be shown only after the poll closes"
     }, {
       "name" : "members_only",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em>, if voting is limited to users who have been members of the chat where the poll is being sent for more than 24 hours; for channel chats only"
+      "description" : "Pass <em>True</em> if voting is limited to users who have been members of the chat where the poll is being sent for more than 24 hours; for channel chats only"
     }, {
       "name" : "country_codes",
       "type" : [ "array", "String" ],
@@ -14014,7 +14792,7 @@
       "name" : "web_app_url",
       "type" : "String",
       "required" : true,
-      "description" : "The URL of the Mini App to be opened"
+      "description" : "An HTTPS URL of a Web App to be opened with additional data as specified in <a href=\"/bots/webapps#initializing-mini-apps\">Initializing Web Apps</a>"
     } ]
   }, {
     "id" : "method/set-chat-photo",
@@ -14183,7 +14961,7 @@
     "id" : "method/get-chat-member-count",
     "name" : "getChatMemberCount",
     "kind" : "method",
-    "description" : "<p>Use this method to get the number of members in a chat. Returns <em>Int</em> on success.</p>",
+    "description" : "<p>Use this method to get the number of members in a chat. Returns <em>Integer</em> on success.</p>",
     "params" : [ {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
@@ -14210,7 +14988,7 @@
     "id" : "method/get-user-personal-chat-messages",
     "name" : "getUserPersonalChatMessages",
     "kind" : "method",
-    "description" : "<p>Use this method to get the last messages from the personal chat (i.e., the chat currently added to their profile) of a given user. On success, an array of <a href=\"#message\">Message</a> objects is returned.</p>",
+    "description" : "<p>Use this method to get the last messages from the personal chat (i.e., the chat currently added to their profile) of a given user. On success, an Array of <a href=\"#message\">Message</a> objects is returned.</p>",
     "params" : [ {
       "name" : "user_id",
       "type" : "Integer",
@@ -14476,7 +15254,7 @@
       "name" : "show_alert",
       "type" : "Boolean",
       "required" : false,
-      "description" : "If <em>True</em>, an alert will be shown by the client instead of a notification at the top of the chat screen. Defaults to <em>false</em>."
+      "description" : "If <em>True</em>, an alert will be shown by the client instead of a notification at the top of the chat screen. Defaults to <em>False</em>."
     }, {
       "name" : "url",
       "type" : "String",
@@ -14579,12 +15357,12 @@
       "name" : "is_access_restricted",
       "type" : "Boolean",
       "required" : true,
-      "description" : "Pass <em>True</em>, if only selected users can access the bot. The bot's owner can always access it."
+      "description" : "Pass <em>True</em> if only selected users can access the bot. The bot's owner can always access it."
     }, {
       "name" : "added_user_ids",
       "type" : [ "array", "Integer" ],
       "required" : false,
-      "description" : "A JSON-serialized list of up to 10 identifiers of users who will have access to the bot in addition to its owner. Ignored if <em>is_access_restricted</em> is false.",
+      "description" : "A JSON-serialized list of up to 10 identifiers of users who will have access to the bot in addition to its owner. Ignored if <em>is_access_restricted</em> is <em>False</em>.",
       "json_serialized" : true
     } ]
   }, {
@@ -15121,7 +15899,7 @@
       "name" : "show_gift_button",
       "type" : "Boolean",
       "required" : true,
-      "description" : "Pass <em>True</em>, if a button for sending a gift to the user or by the business account must always be shown in the input field"
+      "description" : "Pass <em>True</em> if a button for sending a gift to the user or by the business account must always be shown in the input field"
     }, {
       "name" : "accepted_gift_types",
       "type" : "type/accepted-gift-types",
@@ -15679,7 +16457,7 @@
       "name" : "rich_message",
       "type" : "type/input-rich-message",
       "required" : false,
-      "description" : "New rich content of the message; required if <em>text</em> isn't specified"
+      "description" : "New rich content of the message; required if <em>text</em> isn't specified. Direct upload of new files isn't supported when an inline message is edited."
     }, {
       "name" : "reply_markup",
       "type" : "type/inline-keyboard-markup",
@@ -15737,7 +16515,7 @@
       "name" : "show_caption_above_media",
       "type" : "Boolean",
       "required" : false,
-      "description" : "Pass <em>True</em>, if the caption must be shown above the message media. Supported only for animation, photo and video messages."
+      "description" : "Pass <em>True</em> if the caption must be shown above the message media. Supported only for animation, photo and video messages."
     }, {
       "name" : "reply_markup",
       "type" : "type/inline-keyboard-markup",
@@ -15970,6 +16748,166 @@
       "json_serialized" : true
     } ]
   }, {
+    "id" : "method/edit-ephemeral-message-text",
+    "name" : "editEphemeralMessageText",
+    "kind" : "method",
+    "description" : "<p>Use this method to edit an ephemeral text message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, <em>True</em> is returned.</p>",
+    "params" : [ {
+      "name" : "chat_id",
+      "type" : [ "or", [ "Integer", "String" ] ],
+      "required" : true,
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
+    }, {
+      "name" : "receiver_user_id",
+      "type" : "Integer",
+      "required" : true,
+      "description" : "Identifier of the user who received the message"
+    }, {
+      "name" : "ephemeral_message_id",
+      "type" : "Integer",
+      "required" : true,
+      "description" : "Identifier of the ephemeral message to edit"
+    }, {
+      "name" : "text",
+      "type" : "String",
+      "required" : true,
+      "description" : "New text of the message, 1-4096 characters after entity parsing",
+      "[:constraints :string]" : {
+        "from" : 1,
+        "to" : 4096
+      }
+    }, {
+      "name" : "parse_mode",
+      "type" : "String",
+      "required" : false,
+      "description" : "Mode for parsing entities in the message text. See <a href=\"#formatting-options\">formatting options</a> for more details."
+    }, {
+      "name" : "entities",
+      "type" : [ "array", "type/message-entity" ],
+      "required" : false,
+      "description" : "A JSON-serialized list of special entities that appear in message text, which can be specified instead of <em>parse_mode</em>",
+      "json_serialized" : true
+    }, {
+      "name" : "link_preview_options",
+      "type" : "type/link-preview-options",
+      "required" : false,
+      "description" : "Link preview generation options for the message"
+    }, {
+      "name" : "reply_markup",
+      "type" : "type/inline-keyboard-markup",
+      "required" : false,
+      "description" : "A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>",
+      "json_serialized" : true
+    } ]
+  }, {
+    "id" : "method/edit-ephemeral-message-media",
+    "name" : "editEphemeralMessageMedia",
+    "kind" : "method",
+    "description" : "<p>Use this method to edit the media of an ephemeral message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, <em>True</em> is returned.</p>",
+    "params" : [ {
+      "name" : "chat_id",
+      "type" : [ "or", [ "Integer", "String" ] ],
+      "required" : true,
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
+    }, {
+      "name" : "receiver_user_id",
+      "type" : "Integer",
+      "required" : true,
+      "description" : "Identifier of the user who received the message"
+    }, {
+      "name" : "ephemeral_message_id",
+      "type" : "Integer",
+      "required" : true,
+      "description" : "Identifier of the ephemeral message to edit"
+    }, {
+      "name" : "media",
+      "type" : "type/input-media",
+      "required" : true,
+      "description" : "A JSON-serialized object for the new media content of the message. A new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL.",
+      "json_serialized" : true
+    }, {
+      "name" : "reply_markup",
+      "type" : "type/inline-keyboard-markup",
+      "required" : false,
+      "description" : "A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>",
+      "json_serialized" : true
+    } ]
+  }, {
+    "id" : "method/edit-ephemeral-message-caption",
+    "name" : "editEphemeralMessageCaption",
+    "kind" : "method",
+    "description" : "<p>Use this method to edit the caption of an ephemeral message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, <em>True</em> is returned.</p>",
+    "params" : [ {
+      "name" : "chat_id",
+      "type" : [ "or", [ "Integer", "String" ] ],
+      "required" : true,
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
+    }, {
+      "name" : "receiver_user_id",
+      "type" : "Integer",
+      "required" : true,
+      "description" : "Identifier of the user who received the message"
+    }, {
+      "name" : "ephemeral_message_id",
+      "type" : "Integer",
+      "required" : true,
+      "description" : "Identifier of the ephemeral message to edit"
+    }, {
+      "name" : "caption",
+      "type" : "String",
+      "required" : false,
+      "description" : "New caption of the message, 0-1024 characters after entities parsing",
+      "[:constraints :string]" : {
+        "from" : 0,
+        "to" : 1024,
+        "after_entities_parsing" : true
+      }
+    }, {
+      "name" : "parse_mode",
+      "type" : "String",
+      "required" : false,
+      "description" : "Mode for parsing entities in the message caption. See <a href=\"#formatting-options\">formatting options</a> for more details."
+    }, {
+      "name" : "caption_entities",
+      "type" : [ "array", "type/message-entity" ],
+      "required" : false,
+      "description" : "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
+      "json_serialized" : true
+    }, {
+      "name" : "reply_markup",
+      "type" : "type/inline-keyboard-markup",
+      "required" : false,
+      "description" : "A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>",
+      "json_serialized" : true
+    } ]
+  }, {
+    "id" : "method/edit-ephemeral-message-reply-markup",
+    "name" : "editEphemeralMessageReplyMarkup",
+    "kind" : "method",
+    "description" : "<p>Use this method to edit only the reply markup of an ephemeral message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, <em>True</em> is returned.</p>",
+    "params" : [ {
+      "name" : "chat_id",
+      "type" : [ "or", [ "Integer", "String" ] ],
+      "required" : true,
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
+    }, {
+      "name" : "receiver_user_id",
+      "type" : "Integer",
+      "required" : true,
+      "description" : "Identifier of the user who received the message"
+    }, {
+      "name" : "ephemeral_message_id",
+      "type" : "Integer",
+      "required" : true,
+      "description" : "Identifier of the ephemeral message to edit"
+    }, {
+      "name" : "reply_markup",
+      "type" : "type/inline-keyboard-markup",
+      "required" : false,
+      "description" : "A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>",
+      "json_serialized" : true
+    } ]
+  }, {
     "id" : "method/approve-suggested-post",
     "name" : "approveSuggestedPost",
     "kind" : "method",
@@ -16049,6 +16987,27 @@
       "json_serialized" : true
     } ]
   }, {
+    "id" : "method/delete-ephemeral-message",
+    "name" : "deleteEphemeralMessage",
+    "kind" : "method",
+    "description" : "<p>Use this method to delete an ephemeral message. Note that it is not guaranteed that the user will receive the message deletion event, especially if they are offline. Returns <em>True</em> on success.</p>",
+    "params" : [ {
+      "name" : "chat_id",
+      "type" : [ "or", [ "Integer", "String" ] ],
+      "required" : true,
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
+    }, {
+      "name" : "receiver_user_id",
+      "type" : "Integer",
+      "required" : true,
+      "description" : "Identifier of the user who received the message"
+    }, {
+      "name" : "ephemeral_message_id",
+      "type" : "Integer",
+      "required" : true,
+      "description" : "Identifier of the ephemeral message to delete"
+    } ]
+  }, {
     "id" : "method/delete-message-reaction",
     "name" : "deleteMessageReaction",
     "kind" : "method",
@@ -16120,6 +17079,16 @@
       "type" : "Integer",
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
+    }, {
+      "name" : "receiver_user_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
+    }, {
+      "name" : "callback_query_id",
+      "type" : "String",
+      "required" : false,
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
     }, {
       "name" : "sticker",
       "type" : [ "or", [ "type/input-file", "String" ] ],
@@ -16552,7 +17521,7 @@
       "name" : "rich_message",
       "type" : "type/input-rich-message",
       "required" : true,
-      "description" : "The partial message to be streamed"
+      "description" : "The partial message to be streamed. Direct upload of new files isn't supported."
     } ]
   }, {
     "id" : "method/answer-inline-query",
@@ -16568,7 +17537,7 @@
       "name" : "results",
       "type" : [ "array", "type/inline-query-result" ],
       "required" : true,
-      "description" : "A JSON-serialized array of results for the inline query",
+      "description" : "A JSON-serialized Array of results for the inline query",
       "json_serialized" : true
     }, {
       "name" : "cache_time",
@@ -16660,7 +17629,7 @@
       "name" : "suggested_tip_amounts",
       "type" : [ "array", "Integer" ],
       "required" : false,
-      "description" : "A JSON-serialized array of suggested amounts of tips in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed <em>max_tip_amount</em>.",
+      "description" : "A JSON-serialized Array of suggested amounts of tips in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed <em>max_tip_amount</em>.",
       "json_serialized" : true
     }, {
       "name" : "start_parameter",
@@ -16829,7 +17798,7 @@
       "name" : "suggested_tip_amounts",
       "type" : [ "array", "Integer" ],
       "required" : false,
-      "description" : "A JSON-serialized array of suggested amounts of tips in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed <em>max_tip_amount</em>.",
+      "description" : "A JSON-serialized Array of suggested amounts of tips in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed <em>max_tip_amount</em>.",
       "json_serialized" : true
     }, {
       "name" : "provider_data",
@@ -16912,7 +17881,7 @@
       "name" : "shipping_options",
       "type" : [ "array", "type/shipping-option" ],
       "required" : false,
-      "description" : "Required if <em>ok</em> is <em>True</em>. A JSON-serialized array of available shipping options.",
+      "description" : "Required if <em>ok</em> is <em>True</em>. A JSON-serialized Array of available shipping options.",
       "json_serialized" : true
     }, {
       "name" : "error_message",
@@ -17013,7 +17982,7 @@
       "name" : "errors",
       "type" : [ "array", "type/passport-element-error" ],
       "required" : true,
-      "description" : "A JSON-serialized array describing the errors",
+      "description" : "A JSON-serialized Array describing the errors",
       "json_serialized" : true
     } ]
   }, {
