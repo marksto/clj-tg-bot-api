@@ -1043,7 +1043,7 @@
     }, {
       "name" : "proximity_alert_triggered",
       "type" : "type/proximity-alert-triggered",
-      "description" : "<em>Optional</em>. Service message. A user in the chat triggered another user's proximity alert while sharing Live Location.",
+      "description" : "<em>Optional</em>. Service message: a user in the chat triggered another user's proximity alert while sharing Live Location",
       "required" : false
     }, {
       "name" : "boost_added",
@@ -12107,7 +12107,7 @@
       "name" : "callback_query_id",
       "type" : "String",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
     }, {
       "name" : "text",
       "type" : "String",
@@ -12451,7 +12451,7 @@
       "name" : "callback_query_id",
       "type" : "String",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
     }, {
       "name" : "photo",
       "type" : [ "or", [ "type/input-file", "String" ] ],
@@ -12560,7 +12560,7 @@
       "name" : "callback_query_id",
       "type" : "String",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
     }, {
       "name" : "live_photo",
       "type" : [ "or", [ "type/input-file", "String" ] ],
@@ -12674,7 +12674,7 @@
       "name" : "callback_query_id",
       "type" : "String",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
     }, {
       "name" : "audio",
       "type" : [ "or", [ "type/input-file", "String" ] ],
@@ -12793,7 +12793,7 @@
       "name" : "callback_query_id",
       "type" : "String",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
     }, {
       "name" : "document",
       "type" : [ "or", [ "type/input-file", "String" ] ],
@@ -12902,7 +12902,7 @@
       "name" : "callback_query_id",
       "type" : "String",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
     }, {
       "name" : "video",
       "type" : [ "or", [ "type/input-file", "String" ] ],
@@ -13046,7 +13046,7 @@
       "name" : "callback_query_id",
       "type" : "String",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
     }, {
       "name" : "animation",
       "type" : [ "or", [ "type/input-file", "String" ] ],
@@ -13175,7 +13175,7 @@
       "name" : "callback_query_id",
       "type" : "String",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
     }, {
       "name" : "voice",
       "type" : [ "or", [ "type/input-file", "String" ] ],
@@ -13279,7 +13279,7 @@
       "name" : "callback_query_id",
       "type" : "String",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
     }, {
       "name" : "video_note",
       "type" : [ "or", [ "type/input-file", "String" ] ],
@@ -13529,7 +13529,7 @@
       "name" : "callback_query_id",
       "type" : "String",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
     }, {
       "name" : "latitude",
       "type" : "Float",
@@ -13632,7 +13632,7 @@
       "name" : "callback_query_id",
       "type" : "String",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
     }, {
       "name" : "latitude",
       "type" : "Float",
@@ -13745,7 +13745,7 @@
       "name" : "callback_query_id",
       "type" : "String",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
     }, {
       "name" : "phone_number",
       "type" : "String",
@@ -17088,7 +17088,7 @@
       "name" : "callback_query_id",
       "type" : "String",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggerred the message if any"
+      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
     }, {
       "name" : "sticker",
       "type" : [ "or", [ "type/input-file", "String" ] ],
