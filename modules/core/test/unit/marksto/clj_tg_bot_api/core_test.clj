@@ -12,6 +12,7 @@
 (def test-bot-str (format "#TelegramBotAPIClient{:bot-id %s}" test-bot-id))
 
 (deftest ->client-test
+  #_{:clj-kondo/ignore [:type-mismatch]}
   (testing "invalid parameters"
     (is (thrown-with-msg?
           Exception
@@ -64,6 +65,7 @@
 
 (deftest explore-test
   (let [client (sut/->client :bot-token test-bot-token)]
+    #_{:clj-kondo/ignore [:type-mismatch]}
     (testing "invalid parameters"
       (is (thrown-with-msg?
             Exception
@@ -92,6 +94,7 @@
 (deftest make-request!-test
   (let [client (sut/->client {:bot-token test-bot-token
                               :responses ctx->mock-responses})]
+    #_{:clj-kondo/ignore [:type-mismatch]}
     (testing "invalid parameters"
       (is (thrown-with-msg?
             Exception
@@ -185,6 +188,7 @@
 
 (deftest build-response-test
   (let [client (sut/->client {:bot-token test-bot-token})]
+    #_{:clj-kondo/ignore [:type-mismatch]}
     (testing "invalid parameters"
       (is (thrown-with-msg?
             Exception
