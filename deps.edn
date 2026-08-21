@@ -10,9 +10,9 @@
                  org.clojure/clojure         {:mvn/version "1.12.5"}
 
                  ;; Repeat built-in libs for in-REPL development
-                 babashka/fs                 {:mvn/version "0.5.33"}
+                 babashka/fs                 {:mvn/version "0.5.34"}
                  cheshire/cheshire           {:mvn/version "6.2.0"}
-                 org.babashka/http-client    {:mvn/version "0.4.23"}
+                 org.babashka/http-client    {:mvn/version "0.4.24"}
                  org.clj-commons/hickory     {:mvn/version "0.7.7"}
 
                  ;; Development tools
@@ -35,7 +35,7 @@
   :test/unit
   {:extra-paths ["modules/core/test/unit"
                  "modules/updates/test/unit"]
-   :extra-deps  {nubank/matcher-combinators                 {:mvn/version "3.10.0"}
+   :extra-deps  {nubank/matcher-combinators                 {:mvn/version "3.11.0"}
                  io.github.matthewdowney/rich-comment-tests {:git/tag "v1.0.3"
                                                              :git/sha "a8711e9"}}}
 
@@ -44,7 +44,7 @@
                  "modules/core/test-resources/integration"
                  "modules/updates/test/integration"]
    :extra-deps  {com.github.oliyh/martian-vcr {:mvn/version "0.2.3"}
-                 nubank/matcher-combinators   {:mvn/version "3.10.0"}}}
+                 nubank/matcher-combinators   {:mvn/version "3.11.0"}}}
 
   ;; Run with "BOT_AUTH_TOKEN=... bb test"
   :test/runner
@@ -53,7 +53,7 @@
 
   ;; Run with "bb lint:splint" (or as part of "bb lint")
   :splint
-  {:extra-deps {io.github.noahtheduke/splint {:mvn/version "1.24.0"}}
+  {:extra-deps {io.github.noahtheduke/splint {:mvn/version "1.25.0"}}
    :main-opts  ["-m" "noahtheduke.splint"]}
 
   ;; Run with "bb outdated --upgrade", "bb outdated --upgrade --force"
