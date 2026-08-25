@@ -1,5 +1,5 @@
 {
-  "version" : "Bot API 10.2",
+  "version" : "Bot API 10.3",
   "types" : [ {
     "id" : "type/update",
     "name" : "Update",
@@ -139,6 +139,11 @@
       "name" : "subscription",
       "type" : "type/bot-subscription-updated",
       "description" : "<em>Optional</em>. User payment subscription has changed",
+      "required" : false
+    }, {
+      "name" : "stopped_message_generation",
+      "type" : "type/message-generation-stopped",
+      "description" : "<em>Optional</em>. A user asked the bot to stop the generation of a message",
       "required" : false
     } ]
   }, {
@@ -1068,12 +1073,17 @@
     }, {
       "name" : "community_chat_added",
       "type" : "type/community-chat-added",
-      "description" : "<em>Optional</em>. Service message: chat added to a <a href=\"#community\">Community</a>",
+      "description" : "<em>Optional</em>. Service message: chat or bot added to a <a href=\"#community\">Community</a>",
+      "required" : false
+    }, {
+      "name" : "community_chat_joined",
+      "type" : "type/community-chat-joined",
+      "description" : "<em>Optional</em>. Service message: chat was joined by a user from a <a href=\"#community\">Community</a>",
       "required" : false
     }, {
       "name" : "community_chat_removed",
       "type" : "type/community-chat-removed",
-      "description" : "<em>Optional</em>. Service message: chat removed from a <a href=\"#community\">Community</a>",
+      "description" : "<em>Optional</em>. Service message: chat or bot removed from a <a href=\"#community\">Community</a>",
       "required" : false
     }, {
       "name" : "direct_message_price_changed",
@@ -1522,6 +1532,27 @@
       "required" : false
     } ]
   }, {
+    "id" : "type/ephemeral-message-parameters",
+    "name" : "EphemeralMessageParameters",
+    "kind" : "type",
+    "description" : "",
+    "fields" : [ {
+      "name" : "receiver_user_id",
+      "type" : "Integer",
+      "description" : "Identifier of the user who will receive the message. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">here</a> for more details.",
+      "required" : true
+    }, {
+      "name" : "callback_query_id",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Identifier of the callback query which triggered the message, if any",
+      "required" : false
+    }, {
+      "name" : "replace_callback_query_message",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the ephemeral message must be shown in place of the original message. Must be <em>False</em> for callback queries from ephemeral messages, which must be edited using regular <em>editEphemeralMessage…</em> methods.",
+      "required" : false
+    } ]
+  }, {
     "id" : "type/message-origin",
     "name" : "MessageOrigin",
     "kind" : "type",
@@ -1967,7 +1998,7 @@
     "id" : "type/video-note",
     "name" : "VideoNote",
     "kind" : "type",
-    "description" : "<p>This object represents a <a href=\"https://telegram.org/blog/video-messages-and-telescope\">video message</a> (available in Telegram apps as of <a href=\"https://telegram.org/blog/video-messages-and-telescope\">v.4.0</a>).</p>",
+    "description" : "<p>This object represents a <a href=\"https://telegram.org/blog/video-messages-and-telescope\">video message</a>.</p>",
     "fields" : [ {
       "name" : "file_id",
       "type" : "String",
@@ -2812,6 +2843,27 @@
       "required" : true
     } ]
   }, {
+    "id" : "type/message-generation-stopped",
+    "name" : "MessageGenerationStopped",
+    "kind" : "type",
+    "description" : "<p>This object describes an update about a user stopping message generation.</p>",
+    "fields" : [ {
+      "name" : "chat",
+      "type" : "type/chat",
+      "description" : "Chat in which the message is generated",
+      "required" : true
+    }, {
+      "name" : "message_thread_id",
+      "type" : "Integer",
+      "description" : "<em>Optional</em>. Unique identifier of the message thread in which the message is generated",
+      "required" : false
+    }, {
+      "name" : "draft_id",
+      "type" : "Integer",
+      "description" : "Unique identifier of the message draft which was stopped",
+      "required" : true
+    } ]
+  }, {
     "id" : "type/poll-option-added",
     "name" : "PollOptionAdded",
     "kind" : "type",
@@ -3107,18 +3159,29 @@
     "id" : "type/community-chat-added",
     "name" : "CommunityChatAdded",
     "kind" : "type",
-    "description" : "<p>Describes a service message about a chat being added to a community.</p>",
+    "description" : "<p>Describes a service message about a chat or a bot being added to a community.</p>",
     "fields" : [ {
       "name" : "community",
       "type" : "type/community",
-      "description" : "The new community to which the chat belongs",
+      "description" : "The new community to which the chat or the bot belongs",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/community-chat-joined",
+    "name" : "CommunityChatJoined",
+    "kind" : "type",
+    "description" : "<p>Describes a service message about a chat being joined by a user from a community.</p>",
+    "fields" : [ {
+      "name" : "community",
+      "type" : "type/community",
+      "description" : "The community from which the chat was joined",
       "required" : true
     } ]
   }, {
     "id" : "type/community-chat-removed",
     "name" : "CommunityChatRemoved",
     "kind" : "type",
-    "description" : "<p>Describes a service message about a chat being removed from a community. Currently holds no information.</p>"
+    "description" : "<p>Describes a service message about a chat or a bot being removed from a community. Currently holds no information.</p>"
   }, {
     "id" : "type/forum-topic-created",
     "name" : "ForumTopicCreated",
@@ -3804,6 +3867,11 @@
       "type" : "Boolean",
       "description" : "<em>Optional</em>. Use this parameter if you want to show the keyboard to specific users only. Targets: 1) users that are @mentioned in the <em>text</em> of the <a href=\"#message\">Message</a> object; 2) if the bot's message is a reply to a message in the same chat and forum topic, sender of the original message.<br><br><em>Example:</em> A user requests to change the bot's language, bot replies to the request with a keyboard to select the new language. Other users in the group don't see the keyboard.",
       "required" : false
+    }, {
+      "name" : "force_reply",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the reply interface must be shown to the user, as if they had manually selected the bot's message and tapped 'Reply'",
+      "required" : false
     } ]
   }, {
     "id" : "type/keyboard-button",
@@ -4023,6 +4091,11 @@
       "type" : [ "array", [ "array", "type/inline-keyboard-button" ] ],
       "description" : "Array of button rows, each represented by an Array of <a href=\"#inlinekeyboardbutton\">InlineKeyboardButton</a> objects",
       "required" : true
+    }, {
+      "name" : "force_reply",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the reply interface must be shown to the user, as if they had manually selected the bot's message and tapped 'Reply'. The value of the field can't be changed when the inline keyboard is edited.",
+      "required" : false
     } ]
   }, {
     "id" : "type/inline-keyboard-button",
@@ -4062,7 +4135,7 @@
     }, {
       "name" : "login_url",
       "type" : "type/login-url",
-      "description" : "<em>Optional</em>. An HTTPS URL used to automatically authorize the user. Can be used as a replacement for the <a href=\"/widgets/login\">Telegram Login Widget</a>.",
+      "description" : "<em>Optional</em>. An HTTPS URL used to automatically authorize the user. Can be used as a replacement for the <a href=\"/widgets/login\">Telegram Login Widget</a>. Not supported for ephemeral messages.",
       "required" : false
     }, {
       "name" : "switch_inline_query",
@@ -4094,12 +4167,17 @@
       "type" : "Boolean",
       "description" : "<em>Optional</em>. Specify <em>True</em>, to send a <a href=\"#payments\">Pay button</a>. Substrings “<img class=\"emoji\" src=\"//telegram.org/img/emoji/40/E2AD90.png\" width=\"20\" height=\"20\" alt=\"⭐\">” and “XTR” in the buttons's text will be replaced with a Telegram Star icon.<br><br><strong>NOTE:</strong> This type of button <strong>must</strong> always be the first button in the first row and can only be used in invoice messages.",
       "required" : false
+    }, {
+      "name" : "disabled",
+      "type" : "type/disabled-button",
+      "description" : "<em>Optional</em>. If set, then the button is disabled and does nothing",
+      "required" : false
     } ]
   }, {
     "id" : "type/login-url",
     "name" : "LoginUrl",
     "kind" : "type",
-    "description" : "<p>This object represents a parameter of the inline keyboard button used to automatically authorize a user. Serves as a great replacement for the <a href=\"/widgets/login\">Telegram Login Widget</a> when the user is coming from Telegram. All the user needs to do is tap/click a button and confirm that they want to log in:</p><div class=\"blog_image_wrap\"><a href=\"/file/811140015/1734/8VZFkwWXalM.97872/6127fa62d8a0bf2b3c\" target=\"_blank\"><img src=\"/file/811140909/1631/20k1Z53eiyY.23995/c541e89b74253623d9\" title=\"TITLE\" alt=\"TITLE\" srcset=\"/file/811140015/1734/8VZFkwWXalM.97872/6127fa62d8a0bf2b3c , 2x\"></a></div><p>Telegram apps support these buttons as of <a href=\"https://telegram.org/blog/privacy-discussions-web-bots#meet-seamless-web-bots\">version 5.7</a>.</p><blockquote><p>Sample bot: <a href=\"https://t.me/discussbot\">@discussbot</a></p></blockquote>",
+    "description" : "<p>This object represents a parameter of the inline keyboard button used to automatically authorize a user. It serves as a great replacement for the <a href=\"/widgets/login\">Telegram Login Widget</a> when the user is coming from Telegram. All the user needs to do is tap/click a button and confirm that they want to log in:</p><div class=\"blog_image_wrap\"><a href=\"/file/811140015/1734/8VZFkwWXalM.97872/6127fa62d8a0bf2b3c\" target=\"_blank\"><img src=\"/file/811140909/1631/20k1Z53eiyY.23995/c541e89b74253623d9\" title=\"TITLE\" alt=\"TITLE\" srcset=\"/file/811140015/1734/8VZFkwWXalM.97872/6127fa62d8a0bf2b3c , 2x\"></a></div><blockquote><p>Sample bot: <a href=\"https://t.me/discussbot\">@DiscussBot</a></p></blockquote>",
     "fields" : [ {
       "name" : "url",
       "type" : "String",
@@ -4113,7 +4191,7 @@
     }, {
       "name" : "bot_username",
       "type" : "String",
-      "description" : "<em>Optional</em>. Username of a bot, which will be used for user authorization. See <a href=\"/widgets/login#setting-up-a-bot\">Setting up a bot</a> for more details. If not specified, the current bot's username will be assumed. The <em>url</em>'s domain must be the same as the domain linked with the bot. See <a href=\"/widgets/login#linking-your-domain-to-the-bot\">Linking your domain to the bot</a> for more details.",
+      "description" : "<em>Optional</em>. Username of a bot, which will be used for user authorization; not supported in <a href=\"#richmessagebutton\">RichMessageButton</a>. See <a href=\"/widgets/login#setting-up-a-bot\">Setting up a bot</a> for more details. If not specified, the current bot's username will be assumed. The <em>url</em>'s domain must be the same as the domain linked with the bot. See <a href=\"/widgets/login#linking-your-domain-to-the-bot\">Linking your domain to the bot</a> for more details.",
       "required" : false
     }, {
       "name" : "request_write_access",
@@ -4170,6 +4248,11 @@
       }
     } ]
   }, {
+    "id" : "type/disabled-button",
+    "name" : "DisabledButton",
+    "kind" : "type",
+    "description" : "<p>This object represents a disabled button which does nothing. Currently holds no information.</p>"
+  }, {
     "id" : "type/callback-query",
     "name" : "CallbackQuery",
     "kind" : "type",
@@ -4207,7 +4290,7 @@
     }, {
       "name" : "game_short_name",
       "type" : "String",
-      "description" : "<em>Optional</em>. Short name of a <a href=\"#games\">Game</a> to be returned, serves as the unique identifier for the game",
+      "description" : "<em>Optional</em>. Short name of a <a href=\"#game\">Game</a> to be returned, serves as the unique identifier for the game",
       "required" : false
     } ],
     "notes" : "<blockquote><p><strong>NOTE:</strong> After the user presses a callback button, Telegram clients will display a progress bar until you call <a href=\"#answercallbackquery\">answerCallbackQuery</a>. It is, therefore, necessary to react by calling <a href=\"#answercallbackquery\">answerCallbackQuery</a> even if no notification to the user is needed (e.g., without specifying any of the optional parameters).</p></blockquote>"
@@ -4219,7 +4302,7 @@
     "fields" : [ {
       "name" : "force_reply",
       "type" : "True",
-      "description" : "Shows reply interface to the user, as if they manually selected the bot's message and tapped 'Reply'",
+      "description" : "Shows reply interface to the user, as if they had manually selected the bot's message and tapped 'Reply'",
       "required" : true
     }, {
       "name" : "input_field_placeholder",
@@ -4430,8 +4513,13 @@
     }, {
       "name" : "can_manage_tags",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. <em>True</em>, if the administrator can edit the tags of regular members; for groups and supergroups only. If omitted, defaults to the value of can_pin_messages.",
+      "description" : "<em>Optional</em>. <em>True</em>, if the administrator can edit the tags of regular members; for groups and supergroups only",
       "required" : false
+    }, {
+      "name" : "can_send_welcome_messages",
+      "type" : "Boolean",
+      "description" : "<em>True</em>, if the administrator can manage chat welcome messages or directly send them in the case of bots",
+      "required" : true
     } ]
   }, {
     "id" : "type/chat-member-updated",
@@ -4616,8 +4704,13 @@
     }, {
       "name" : "can_manage_tags",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. <em>True</em>, if the administrator can edit the tags of regular members; for groups and supergroups only. If omitted, defaults to the value of can_pin_messages.",
+      "description" : "<em>Optional</em>. <em>True</em>, if the administrator can edit the tags of regular members; for groups and supergroups only",
       "required" : false
+    }, {
+      "name" : "can_send_welcome_messages",
+      "type" : "Boolean",
+      "description" : "<em>True</em>, if the administrator can manage chat welcome messages or directly send them in the case of bots",
+      "required" : true
     }, {
       "name" : "custom_title",
       "type" : "String",
@@ -5802,6 +5895,21 @@
       "type" : "String",
       "description" : "Origin of the gift. Currently, either “upgrade” for gifts upgraded from regular gifts, “transfer” for gifts transferred from other users or channels, “resale” for gifts bought from other users, “gifted_upgrade” for upgrades purchased after the gift was sent, or “offer” for gifts bought or sold through gift purchase offers.",
       "required" : true
+    }, {
+      "name" : "text",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Text of the message that was added to the gift",
+      "required" : false
+    }, {
+      "name" : "entities",
+      "type" : [ "array", "type/message-entity" ],
+      "description" : "<em>Optional</em>. Special entities that appear in the text",
+      "required" : false
+    }, {
+      "name" : "is_private",
+      "type" : "True",
+      "description" : "<em>Optional</em>. <em>True</em>, if the sender and gift text are shown only to the gift receiver; otherwise, everyone will be able to see them",
+      "required" : false
     }, {
       "name" : "last_resale_currency",
       "type" : "String",
@@ -7599,7 +7707,7 @@
     }, {
       "name" : "media",
       "type" : [ "array", "type/input-rich-message-media" ],
-      "description" : "<em>Optional</em>. List of media that are specified in the <em>markdown</em> or <em>html</em> fields using <code>tg://photo?id=</code>, <code>tg://video?id=</code>, and <code>tg://audio?id=</code> links",
+      "description" : "<em>Optional</em>. List of media that are specified in the <em>markdown</em> or <em>html</em> fields using <code>tg://photo?id=</code>, <code>tg://video?id=</code>, <code>tg://document?id=</code>, and <code>tg://audio?id=</code> links",
       "required" : false
     }, {
       "name" : "is_rtl",
@@ -7620,7 +7728,7 @@
     "fields" : [ {
       "name" : "id",
       "type" : "String",
-      "description" : "Unique identifier of the media used in a <code>tg://photo?id=</code>, <code>tg://video?id=</code>, or <code>tg://audio?id=</code> link. 1-64 characters, only <code>A-Z</code>, <code>a-z</code>, <code>0-9</code>, <code>_</code> and <code>-</code> are allowed.",
+      "description" : "Unique identifier of the media used in a <code>tg://photo?id=</code>, <code>tg://video?id=</code>, <code>tg://document?id=</code>, or <code>tg://audio?id=</code> link. 1-64 characters, only <code>A-Z</code>, <code>a-z</code>, <code>0-9</code>, <code>_</code> and <code>-</code> are allowed.",
       "required" : true,
       "constraints" : {
         "string" : {
@@ -7630,16 +7738,77 @@
       }
     }, {
       "name" : "media",
-      "type" : [ "or", [ "type/input-media-animation", "type/input-media-audio", "type/input-media-photo", "type/input-media-video", "type/input-media-voice-note" ] ],
+      "type" : [ "or", [ "type/input-media-animation", "type/input-media-audio", "type/input-media-document", "type/input-media-photo", "type/input-media-video", "type/input-media-voice-note" ] ],
       "description" : "The media to be sent. Everything except the media itself and its properties is ignored.",
       "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-message-button",
+    "name" : "RichMessageButton",
+    "kind" : "type",
+    "description" : "<p>This object represents a button in a <a href=\"#richmessage\">RichMessage</a>. Exactly one of the fields other than <em>text</em> and <em>style</em> must be used to specify the type of the button.</p>",
+    "fields" : [ {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "Text of the button. May contain only plain text, <a href=\"#richtextcustomemoji\">RichTextCustomEmoji</a> and <a href=\"#richtextdatetime\">RichTextDateTime</a> entities.",
+      "required" : true
+    }, {
+      "name" : "style",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Style of the button. Must be one of “danger” (red), “success” (green), “primary” (blue) or “link” (the button is shown as a regular link without borders). If omitted, then an app-specific style is used. The style “link” is allowed only for callback buttons.",
+      "required" : false
+    }, {
+      "name" : "url",
+      "type" : "String",
+      "description" : "<em>Optional</em>. HTTP or tg:// URL to be opened when the button is pressed. Links <code>tg://user?id=&lt;user_id&gt;</code> can be used to mention a user by their identifier without using a username, if this is allowed by their privacy settings.",
+      "required" : false
+    }, {
+      "name" : "callback_data",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Data to be sent in a <a href=\"#callbackquery\">callback query</a> to the bot when the button is pressed, 1-64 bytes",
+      "required" : false
+    }, {
+      "name" : "web_app",
+      "type" : "type/web-app-info",
+      "description" : "<em>Optional</em>. Description of the <a href=\"/bots/webapps\">Web App</a> that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method <a href=\"#answerwebappquery\">answerWebAppQuery</a>. Available only in private chats between a user and the bot. Not supported for messages sent on behalf of a business account.",
+      "required" : false
+    }, {
+      "name" : "login_url",
+      "type" : "type/login-url",
+      "description" : "<em>Optional</em>. An HTTPS URL used to automatically authorize the user. Can be used as a replacement for the <a href=\"/widgets/login\">Telegram Login Widget</a>. Not supported for ephemeral messages.",
+      "required" : false
+    }, {
+      "name" : "switch_inline_query",
+      "type" : "String",
+      "description" : "<em>Optional</em>. If set, pressing the button will prompt the user to select one of their chats, open that chat and insert the bot's username and the specified inline query in the input field. May be empty, in which case just the bot's username will be inserted. Not supported for messages sent in channel direct messages chats and on behalf of a business account.",
+      "required" : false
+    }, {
+      "name" : "switch_inline_query_current_chat",
+      "type" : "String",
+      "description" : "<em>Optional</em>. If set, pressing the button will insert the bot's username and the specified inline query in the current chat's input field. May be empty, in which case only the bot's username will be inserted. Not supported in channels and for messages sent in channel direct messages chats and on behalf of a business account.",
+      "required" : false
+    }, {
+      "name" : "switch_inline_query_chosen_chat",
+      "type" : "type/switch-inline-query-chosen-chat",
+      "description" : "<em>Optional</em>. If set, pressing the button will prompt the user to select one of their chats of the specified type, open that chat and insert the bot's username and the specified inline query in the input field. Not supported for messages sent in channel direct messages chats and on behalf of a business account.",
+      "required" : false
+    }, {
+      "name" : "copy_text",
+      "type" : "type/copy-text-button",
+      "description" : "<em>Optional</em>. A button that copies the specified text to the clipboard",
+      "required" : false
+    }, {
+      "name" : "disabled",
+      "type" : "type/disabled-button",
+      "description" : "<em>Optional</em>. If set, then the button is disabled and does nothing",
+      "required" : false
     } ]
   }, {
     "id" : "type/rich-text",
     "name" : "RichText",
     "kind" : "type",
     "description" : "<p>This object represents a rich formatted text. Currently, it can be either a String for plain text, an Array of <a href=\"#richtext\">RichText</a>, or any of the following types:</p>",
-    "subtypes" : [ "type/rich-text-bold", "type/rich-text-italic", "type/rich-text-underline", "type/rich-text-strikethrough", "type/rich-text-spoiler", "type/rich-text-date-time", "type/rich-text-text-mention", "type/rich-text-subscript", "type/rich-text-superscript", "type/rich-text-marked", "type/rich-text-code", "type/rich-text-custom-emoji", "type/rich-text-mathematical-expression", "type/rich-text-url", "type/rich-text-email-address", "type/rich-text-phone-number", "type/rich-text-bank-card-number", "type/rich-text-mention", "type/rich-text-hashtag", "type/rich-text-cashtag", "type/rich-text-bot-command", "type/rich-text-anchor", "type/rich-text-anchor-link", "type/rich-text-reference", "type/rich-text-reference-link" ]
+    "subtypes" : [ "type/rich-text-bold", "type/rich-text-italic", "type/rich-text-underline", "type/rich-text-strikethrough", "type/rich-text-spoiler", "type/rich-text-date-time", "type/rich-text-text-mention", "type/rich-text-subscript", "type/rich-text-superscript", "type/rich-text-marked", "type/rich-text-code", "type/rich-text-custom-emoji", "type/rich-text-mathematical-expression", "type/rich-text-url", "type/rich-text-email-address", "type/rich-text-phone-number", "type/rich-text-bank-card-number", "type/rich-text-mention", "type/rich-text-hashtag", "type/rich-text-cashtag", "type/rich-text-bot-command", "type/rich-text-button", "type/rich-text-anchor", "type/rich-text-anchor-link", "type/rich-text-reference", "type/rich-text-reference-link" ]
   }, {
     "id" : "type/rich-text-bold",
     "name" : "RichTextBold",
@@ -8058,6 +8227,23 @@
       "required" : true
     } ]
   }, {
+    "id" : "type/rich-text-button",
+    "name" : "RichTextButton",
+    "kind" : "type",
+    "description" : "<p>A button.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “button”",
+      "required" : true,
+      "value" : "button"
+    }, {
+      "name" : "button",
+      "type" : "type/rich-message-button",
+      "description" : "The button",
+      "required" : true
+    } ]
+  }, {
     "id" : "type/rich-text-anchor",
     "name" : "RichTextAnchor",
     "kind" : "type",
@@ -8233,7 +8419,7 @@
     "name" : "RichBlock",
     "kind" : "type",
     "description" : "<p>This object represents a block in a rich formatted message. Currently, it can be any of the following types:</p>",
-    "subtypes" : [ "type/rich-block-paragraph", "type/rich-block-section-heading", "type/rich-block-preformatted", "type/rich-block-footer", "type/rich-block-divider", "type/rich-block-mathematical-expression", "type/rich-block-anchor", "type/rich-block-list", "type/rich-block-block-quotation", "type/rich-block-pull-quotation", "type/rich-block-collage", "type/rich-block-slideshow", "type/rich-block-table", "type/rich-block-details", "type/rich-block-map", "type/rich-block-animation", "type/rich-block-audio", "type/rich-block-photo", "type/rich-block-video", "type/rich-block-voice-note", "type/rich-block-thinking" ]
+    "subtypes" : [ "type/rich-block-paragraph", "type/rich-block-section-heading", "type/rich-block-preformatted", "type/rich-block-footer", "type/rich-block-divider", "type/rich-block-mathematical-expression", "type/rich-block-anchor", "type/rich-block-list", "type/rich-block-block-quotation", "type/rich-block-expandable-block-quotation", "type/rich-block-pull-quotation", "type/rich-block-collage", "type/rich-block-slideshow", "type/rich-block-table", "type/rich-block-details", "type/rich-block-map", "type/rich-block-buttons", "type/rich-block-animation", "type/rich-block-audio", "type/rich-block-document", "type/rich-block-photo", "type/rich-block-video", "type/rich-block-voice-note", "type/rich-block-thinking" ]
   }, {
     "id" : "type/rich-block-paragraph",
     "name" : "RichBlockParagraph",
@@ -8398,6 +8584,28 @@
       "required" : false
     } ]
   }, {
+    "id" : "type/rich-block-expandable-block-quotation",
+    "name" : "RichBlockExpandableBlockQuotation",
+    "kind" : "type",
+    "description" : "<p>A block quotation, corresponding to the HTML tag <code>&lt;blockquote&gt;</code> with custom attribute <code>&quot;collapsed&quot;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “expandable_blockquote”",
+      "required" : true,
+      "value" : "expandable_blockquote"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "Content of the block",
+      "required" : true
+    }, {
+      "name" : "credit",
+      "type" : "type/rich-text",
+      "description" : "<em>Optional</em>. Credit of the block",
+      "required" : false
+    } ]
+  }, {
     "id" : "type/rich-block-pull-quotation",
     "name" : "RichBlockPullQuotation",
     "kind" : "type",
@@ -8490,6 +8698,11 @@
       "description" : "<em>Optional</em>. <em>True</em>, if the table is striped",
       "required" : false
     }, {
+      "name" : "is_compact",
+      "type" : "True",
+      "description" : "<em>Optional</em>. <em>True</em>, if table cells have smaller indents",
+      "required" : false
+    }, {
       "name" : "caption",
       "type" : "type/rich-text",
       "description" : "<em>Optional</em>. Caption of the table",
@@ -8541,7 +8754,7 @@
     }, {
       "name" : "zoom",
       "type" : "Integer",
-      "description" : "Map zoom level; 13-20",
+      "description" : "Map zoom level",
       "required" : true
     }, {
       "name" : "width",
@@ -8557,6 +8770,28 @@
       "name" : "caption",
       "type" : "type/rich-block-caption",
       "description" : "<em>Optional</em>. Caption of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/rich-block-buttons",
+    "name" : "RichBlockButtons",
+    "kind" : "type",
+    "description" : "<p>A block containing a list of buttons that are shown in one row, corresponding to the custom HTML tag <code>&lt;tg-button-row&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “buttons”",
+      "required" : true,
+      "value" : "buttons"
+    }, {
+      "name" : "buttons",
+      "type" : [ "array", "type/rich-message-button" ],
+      "description" : "The buttons",
+      "required" : true
+    }, {
+      "name" : "align",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Horizontal alignment of the buttons. Currently, must be one of “left”, “center”, or “right”.",
       "required" : false
     } ]
   }, {
@@ -8601,6 +8836,28 @@
       "name" : "audio",
       "type" : "type/audio",
       "description" : "The audio",
+      "required" : true
+    }, {
+      "name" : "caption",
+      "type" : "type/rich-block-caption",
+      "description" : "<em>Optional</em>. Caption of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/rich-block-document",
+    "name" : "RichBlockDocument",
+    "kind" : "type",
+    "description" : "<p>A block with a general file, corresponding to the custom HTML tag <code>&lt;tg-document&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “document”",
+      "required" : true,
+      "value" : "document"
+    }, {
+      "name" : "document",
+      "type" : "type/document",
+      "description" : "The document",
       "required" : true
     }, {
       "name" : "caption",
@@ -8737,7 +8994,7 @@
     "name" : "InputRichBlock",
     "kind" : "type",
     "description" : "<p>This object represents a block in a rich formatted message to be sent. Currently, it can be any of the following types:</p>",
-    "subtypes" : [ "type/input-rich-block-paragraph", "type/input-rich-block-section-heading", "type/input-rich-block-preformatted", "type/input-rich-block-footer", "type/input-rich-block-divider", "type/input-rich-block-mathematical-expression", "type/input-rich-block-anchor", "type/input-rich-block-list", "type/input-rich-block-block-quotation", "type/input-rich-block-pull-quotation", "type/input-rich-block-collage", "type/input-rich-block-slideshow", "type/input-rich-block-table", "type/input-rich-block-details", "type/input-rich-block-map", "type/input-rich-block-animation", "type/input-rich-block-audio", "type/input-rich-block-photo", "type/input-rich-block-video", "type/input-rich-block-voice-note", "type/input-rich-block-thinking" ]
+    "subtypes" : [ "type/input-rich-block-paragraph", "type/input-rich-block-section-heading", "type/input-rich-block-preformatted", "type/input-rich-block-footer", "type/input-rich-block-divider", "type/input-rich-block-mathematical-expression", "type/input-rich-block-anchor", "type/input-rich-block-list", "type/input-rich-block-block-quotation", "type/input-rich-block-expandable-block-quotation", "type/input-rich-block-pull-quotation", "type/input-rich-block-collage", "type/input-rich-block-slideshow", "type/input-rich-block-table", "type/input-rich-block-details", "type/input-rich-block-map", "type/input-rich-block-buttons", "type/input-rich-block-animation", "type/input-rich-block-audio", "type/input-rich-block-document", "type/input-rich-block-photo", "type/input-rich-block-video", "type/input-rich-block-voice-note", "type/input-rich-block-thinking" ]
   }, {
     "id" : "type/input-rich-block-paragraph",
     "name" : "InputRichBlockParagraph",
@@ -8902,6 +9159,28 @@
       "required" : false
     } ]
   }, {
+    "id" : "type/input-rich-block-expandable-block-quotation",
+    "name" : "InputRichBlockExpandableBlockQuotation",
+    "kind" : "type",
+    "description" : "<p>A block quotation, corresponding to the HTML tag <code>&lt;blockquote&gt;</code> with custom attribute <code>&quot;collapsed&quot;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “expandable_blockquote”",
+      "required" : true,
+      "value" : "expandable_blockquote"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "Content of the block",
+      "required" : true
+    }, {
+      "name" : "credit",
+      "type" : "type/rich-text",
+      "description" : "<em>Optional</em>. Credit of the block",
+      "required" : false
+    } ]
+  }, {
     "id" : "type/input-rich-block-pull-quotation",
     "name" : "InputRichBlockPullQuotation",
     "kind" : "type",
@@ -8994,6 +9273,11 @@
       "description" : "<em>Optional</em>. Pass <em>True</em> if the table is striped",
       "required" : false
     }, {
+      "name" : "is_compact",
+      "type" : "True",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if table cells must have smaller indents",
+      "required" : false
+    }, {
       "name" : "caption",
       "type" : "type/rich-text",
       "description" : "<em>Optional</em>. Caption of the table",
@@ -9045,22 +9329,44 @@
     }, {
       "name" : "zoom",
       "type" : "Integer",
-      "description" : "Map zoom level; 0-24",
-      "required" : true
+      "description" : "<em>Optional</em>. Map zoom level; 0-24",
+      "required" : false
     }, {
       "name" : "width",
       "type" : "Integer",
-      "description" : "Map width; 0-10000",
-      "required" : true
+      "description" : "<em>Optional</em>. Map width; 0-10000",
+      "required" : false
     }, {
       "name" : "height",
       "type" : "Integer",
-      "description" : "Map height; 0-10000",
-      "required" : true
+      "description" : "<em>Optional</em>. Map height; 0-10000",
+      "required" : false
     }, {
       "name" : "caption",
       "type" : "type/rich-block-caption",
       "description" : "<em>Optional</em>. Caption of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-rich-block-buttons",
+    "name" : "InputRichBlockButtons",
+    "kind" : "type",
+    "description" : "<p>A block containing a list of buttons that are shown in one row, corresponding to the custom HTML tag <code>&lt;tg-button-row&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “buttons”",
+      "required" : true,
+      "value" : "buttons"
+    }, {
+      "name" : "buttons",
+      "type" : [ "array", "type/rich-message-button" ],
+      "description" : "List of 1-8 buttons to send",
+      "required" : true
+    }, {
+      "name" : "align",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Horizontal alignment of the buttons. Currently, must be one of “left”, “center”, or “right”.",
       "required" : false
     } ]
   }, {
@@ -9100,6 +9406,28 @@
       "name" : "audio",
       "type" : "type/input-media-audio",
       "description" : "The audio. Caption is ignored.",
+      "required" : true
+    }, {
+      "name" : "caption",
+      "type" : "type/rich-block-caption",
+      "description" : "<em>Optional</em>. Caption of the block",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-rich-block-document",
+    "name" : "InputRichBlockDocument",
+    "kind" : "type",
+    "description" : "<p>A block with a general file, corresponding to the custom HTML tag <code>&lt;tg-document&gt;</code>.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the block, always “document”",
+      "required" : true,
+      "value" : "document"
+    }, {
+      "name" : "document",
+      "type" : "type/input-media-document",
+      "description" : "The document. Caption is ignored.",
       "required" : true
     }, {
       "name" : "caption",
@@ -10120,7 +10448,7 @@
     "id" : "type/inline-query-result-game",
     "name" : "InlineQueryResultGame",
     "kind" : "type",
-    "description" : "<p>Represents a <a href=\"#games\">Game</a>.</p>",
+    "description" : "<p>Represents a <a href=\"#game\">Game</a>.</p>",
     "fields" : [ {
       "name" : "type",
       "type" : "String",
@@ -10664,7 +10992,7 @@
     "fields" : [ {
       "name" : "rich_message",
       "type" : "type/input-rich-message",
-      "description" : "The message to be sent",
+      "description" : "The message to be sent. Only previously uploaded files may be used in the message.",
       "required" : true
     } ]
   }, {
@@ -12099,15 +12427,11 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
-      "name" : "receiver_user_id",
-      "type" : "Integer",
+      "name" : "ephemeral_message_parameters",
+      "type" : "type/ephemeral-message-parameters",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
-    }, {
-      "name" : "callback_query_id",
-      "type" : "String",
-      "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
+      "description" : "A JSON-serialized object containing the parameters of the ephemeral message to send",
+      "json_serialized" : true
     }, {
       "name" : "text",
       "type" : "String",
@@ -12443,15 +12767,11 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
-      "name" : "receiver_user_id",
-      "type" : "Integer",
+      "name" : "ephemeral_message_parameters",
+      "type" : "type/ephemeral-message-parameters",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
-    }, {
-      "name" : "callback_query_id",
-      "type" : "String",
-      "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
+      "description" : "A JSON-serialized object containing the parameters of the ephemeral message to send",
+      "json_serialized" : true
     }, {
       "name" : "photo",
       "type" : [ "or", [ "type/input-file", "String" ] ],
@@ -12552,15 +12872,11 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
-      "name" : "receiver_user_id",
-      "type" : "Integer",
+      "name" : "ephemeral_message_parameters",
+      "type" : "type/ephemeral-message-parameters",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
-    }, {
-      "name" : "callback_query_id",
-      "type" : "String",
-      "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
+      "description" : "A JSON-serialized object containing the parameters of the ephemeral message to send",
+      "json_serialized" : true
     }, {
       "name" : "live_photo",
       "type" : [ "or", [ "type/input-file", "String" ] ],
@@ -12666,15 +12982,11 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
-      "name" : "receiver_user_id",
-      "type" : "Integer",
+      "name" : "ephemeral_message_parameters",
+      "type" : "type/ephemeral-message-parameters",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
-    }, {
-      "name" : "callback_query_id",
-      "type" : "String",
-      "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
+      "description" : "A JSON-serialized object containing the parameters of the ephemeral message to send",
+      "json_serialized" : true
     }, {
       "name" : "audio",
       "type" : [ "or", [ "type/input-file", "String" ] ],
@@ -12785,15 +13097,11 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
-      "name" : "receiver_user_id",
-      "type" : "Integer",
+      "name" : "ephemeral_message_parameters",
+      "type" : "type/ephemeral-message-parameters",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
-    }, {
-      "name" : "callback_query_id",
-      "type" : "String",
-      "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
+      "description" : "A JSON-serialized object containing the parameters of the ephemeral message to send",
+      "json_serialized" : true
     }, {
       "name" : "document",
       "type" : [ "or", [ "type/input-file", "String" ] ],
@@ -12894,15 +13202,11 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
-      "name" : "receiver_user_id",
-      "type" : "Integer",
+      "name" : "ephemeral_message_parameters",
+      "type" : "type/ephemeral-message-parameters",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
-    }, {
-      "name" : "callback_query_id",
-      "type" : "String",
-      "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
+      "description" : "A JSON-serialized object containing the parameters of the ephemeral message to send",
+      "json_serialized" : true
     }, {
       "name" : "video",
       "type" : [ "or", [ "type/input-file", "String" ] ],
@@ -13038,15 +13342,11 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
-      "name" : "receiver_user_id",
-      "type" : "Integer",
+      "name" : "ephemeral_message_parameters",
+      "type" : "type/ephemeral-message-parameters",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
-    }, {
-      "name" : "callback_query_id",
-      "type" : "String",
-      "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
+      "description" : "A JSON-serialized object containing the parameters of the ephemeral message to send",
+      "json_serialized" : true
     }, {
       "name" : "animation",
       "type" : [ "or", [ "type/input-file", "String" ] ],
@@ -13167,15 +13467,11 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
-      "name" : "receiver_user_id",
-      "type" : "Integer",
+      "name" : "ephemeral_message_parameters",
+      "type" : "type/ephemeral-message-parameters",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
-    }, {
-      "name" : "callback_query_id",
-      "type" : "String",
-      "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
+      "description" : "A JSON-serialized object containing the parameters of the ephemeral message to send",
+      "json_serialized" : true
     }, {
       "name" : "voice",
       "type" : [ "or", [ "type/input-file", "String" ] ],
@@ -13249,7 +13545,7 @@
     "id" : "method/send-video-note",
     "name" : "sendVideoNote",
     "kind" : "method",
-    "description" : "<p>As of <a href=\"https://telegram.org/blog/video-messages-and-telescope\">v.4.0</a>, Telegram clients support rounded square MPEG4 videos of up to 1 minute long. Use this method to send video messages. On success, the sent <a href=\"#message\">Message</a> is returned.</p>",
+    "description" : "<p>Use this method to send a rounded square MPEG4 video of up to 1 minute long. On success, the sent <a href=\"#message\">Message</a> is returned.</p>",
     "params" : [ {
       "name" : "business_connection_id",
       "type" : "String",
@@ -13271,15 +13567,11 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
-      "name" : "receiver_user_id",
-      "type" : "Integer",
+      "name" : "ephemeral_message_parameters",
+      "type" : "type/ephemeral-message-parameters",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
-    }, {
-      "name" : "callback_query_id",
-      "type" : "String",
-      "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
+      "description" : "A JSON-serialized object containing the parameters of the ephemeral message to send",
+      "json_serialized" : true
     }, {
       "name" : "video_note",
       "type" : [ "or", [ "type/input-file", "String" ] ],
@@ -13521,15 +13813,11 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
-      "name" : "receiver_user_id",
-      "type" : "Integer",
+      "name" : "ephemeral_message_parameters",
+      "type" : "type/ephemeral-message-parameters",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
-    }, {
-      "name" : "callback_query_id",
-      "type" : "String",
-      "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
+      "description" : "A JSON-serialized object containing the parameters of the ephemeral message to send",
+      "json_serialized" : true
     }, {
       "name" : "latitude",
       "type" : "Float",
@@ -13624,15 +13912,11 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
-      "name" : "receiver_user_id",
-      "type" : "Integer",
+      "name" : "ephemeral_message_parameters",
+      "type" : "type/ephemeral-message-parameters",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
-    }, {
-      "name" : "callback_query_id",
-      "type" : "String",
-      "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
+      "description" : "A JSON-serialized object containing the parameters of the ephemeral message to send",
+      "json_serialized" : true
     }, {
       "name" : "latitude",
       "type" : "Float",
@@ -13737,15 +14021,11 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
-      "name" : "receiver_user_id",
-      "type" : "Integer",
+      "name" : "ephemeral_message_parameters",
+      "type" : "type/ephemeral-message-parameters",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
-    }, {
-      "name" : "callback_query_id",
-      "type" : "String",
-      "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
+      "description" : "A JSON-serialized object containing the parameters of the ephemeral message to send",
+      "json_serialized" : true
     }, {
       "name" : "phone_number",
       "type" : "String",
@@ -14137,7 +14417,7 @@
       "name" : "draft_id",
       "type" : "Integer",
       "required" : true,
-      "description" : "Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are animated."
+      "description" : "Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are animated. Otherwise, the draft is replaced without animation."
     }, {
       "name" : "text",
       "type" : "String",
@@ -14159,6 +14439,16 @@
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in message text, which can be specified instead of <em>parse_mode</em>",
       "json_serialized" : true
+    }, {
+      "name" : "can_stop",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Pass <em>True</em> to show the user a button to stop further drafts. The bot will receive an <a href=\"#update\">Update</a> “stopped_message_generation” if the user presses the button."
+    }, {
+      "name" : "keep_on_stop",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Pass <em>True</em> to keep the draft in the chat when the button is pressed. The draft will still disappear after a short time or if the bot sends a message. To fully preserve the partial draft, the bot should send it as a new message."
     } ]
   }, {
     "id" : "method/send-chat-action",
@@ -14467,6 +14757,11 @@
       "type" : "Boolean",
       "required" : false,
       "description" : "Pass <em>True</em> if the administrator can edit the tags of regular members; for groups and supergroups only"
+    }, {
+      "name" : "can_send_welcome_messages",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Pass <em>True</em> if the administrator can manage chat welcome messages or directly send them in the case of bots"
     } ]
   }, {
     "id" : "method/set-chat-administrator-custom-title",
@@ -15264,7 +15559,7 @@
       "name" : "cache_time",
       "type" : "Integer",
       "required" : false,
-      "description" : "The maximum amount of time in seconds that the result of the callback query may be cached client-side. Telegram apps will support caching starting in version 3.14. Defaults to 0."
+      "description" : "The maximum amount of time in seconds that the result of the callback query may be cached client-side. Defaults to 0."
     } ]
   }, {
     "id" : "method/answer-guest-query",
@@ -16457,7 +16752,7 @@
       "name" : "rich_message",
       "type" : "type/input-rich-message",
       "required" : false,
-      "description" : "New rich content of the message; required if <em>text</em> isn't specified. Direct upload of new files isn't supported when an inline message is edited."
+      "description" : "New rich content of the message; required if <em>text</em> isn't specified. Direct upload of new files and explicit upload of files by a URL isn't supported when an inline message is edited."
     }, {
       "name" : "reply_markup",
       "type" : "type/inline-keyboard-markup",
@@ -16751,7 +17046,7 @@
     "id" : "method/edit-ephemeral-message-text",
     "name" : "editEphemeralMessageText",
     "kind" : "method",
-    "description" : "<p>Use this method to edit an ephemeral text message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, <em>True</em> is returned.</p>",
+    "description" : "<p>Use this method to edit an ephemeral text or rich message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, <em>True</em> is returned.</p>",
     "params" : [ {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
@@ -16770,8 +17065,8 @@
     }, {
       "name" : "text",
       "type" : "String",
-      "required" : true,
-      "description" : "New text of the message, 1-4096 characters after entity parsing",
+      "required" : false,
+      "description" : "New text of the message, 1-4096 characters after entity parsing; required if <em>rich_message</em> isn't specified",
       "[:constraints :string]" : {
         "from" : 1,
         "to" : 4096
@@ -16787,6 +17082,11 @@
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in message text, which can be specified instead of <em>parse_mode</em>",
       "json_serialized" : true
+    }, {
+      "name" : "rich_message",
+      "type" : "type/input-rich-message",
+      "required" : false,
+      "description" : "New rich content of the message; required if <em>text</em> isn't specified"
     }, {
       "name" : "link_preview_options",
       "type" : "type/link-preview-options",
@@ -16823,7 +17123,7 @@
       "name" : "media",
       "type" : "type/input-media",
       "required" : true,
-      "description" : "A JSON-serialized object for the new media content of the message. A new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL.",
+      "description" : "A JSON-serialized object for the new media content of the message",
       "json_serialized" : true
     }, {
       "name" : "reply_markup",
@@ -16873,6 +17173,11 @@
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
       "json_serialized" : true
+    }, {
+      "name" : "show_caption_above_media",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Pass <em>True</em> if the caption must be shown above the message media. Supported only for animation, photo and video messages."
     }, {
       "name" : "reply_markup",
       "type" : "type/inline-keyboard-markup",
@@ -17080,15 +17385,11 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
-      "name" : "receiver_user_id",
-      "type" : "Integer",
+      "name" : "ephemeral_message_parameters",
+      "type" : "type/ephemeral-message-parameters",
       "required" : false,
-      "description" : "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">ephemeral message sending</a> for more details."
-    }, {
-      "name" : "callback_query_id",
-      "type" : "String",
-      "required" : false,
-      "description" : "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any"
+      "description" : "A JSON-serialized object containing the parameters of the ephemeral message to send",
+      "json_serialized" : true
     }, {
       "name" : "sticker",
       "type" : [ "or", [ "type/input-file", "String" ] ],
@@ -17455,6 +17756,12 @@
       "required" : false,
       "description" : "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat"
     }, {
+      "name" : "ephemeral_message_parameters",
+      "type" : "type/ephemeral-message-parameters",
+      "required" : false,
+      "description" : "A JSON-serialized object containing the parameters of the ephemeral message to send",
+      "json_serialized" : true
+    }, {
       "name" : "rich_message",
       "type" : "type/input-rich-message",
       "required" : true,
@@ -17516,12 +17823,22 @@
       "name" : "draft_id",
       "type" : "Integer",
       "required" : true,
-      "description" : "Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are animated."
+      "description" : "Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are animated. Otherwise, the draft is replaced without animation."
     }, {
       "name" : "rich_message",
       "type" : "type/input-rich-message",
       "required" : true,
-      "description" : "The partial message to be streamed. Direct upload of new files isn't supported."
+      "description" : "The partial message to be streamed. Direct upload of new files and explicit upload of files by a URL isn't supported."
+    }, {
+      "name" : "can_stop",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Pass <em>True</em> to show the user a button to stop further drafts. The bot will receive an <a href=\"#update\">Update</a> “stopped_message_generation” if the user presses the button."
+    }, {
+      "name" : "keep_on_stop",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Pass <em>True</em> to keep the draft in the chat when the button is pressed. The draft will still disappear after a short time or if the bot sends a message. To fully preserve the partial draft, the bot should send it as a new message."
     } ]
   }, {
     "id" : "method/answer-inline-query",
