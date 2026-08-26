@@ -7755,7 +7755,7 @@
     }, {
       "name" : "style",
       "type" : "String",
-      "description" : "<em>Optional</em>. Style of the button. Must be one of “danger” (red), “success” (green), “primary” (blue) or “link” (the button is shown as a regular link without borders). If omitted, then an app-specific style is used. The style “link” is allowed only for callback buttons.",
+      "description" : "<em>Optional</em>. Style of the button. Must be one of “danger”, “success”, “primary”, or “link” (the button is shown as a regular link without borders). Apps may use theme-specific colors for the button background and text based on the style. The style “link” is allowed only for callback buttons.",
       "required" : false
     }, {
       "name" : "url",
@@ -8587,7 +8587,7 @@
     "id" : "type/rich-block-expandable-block-quotation",
     "name" : "RichBlockExpandableBlockQuotation",
     "kind" : "type",
-    "description" : "<p>A block quotation, corresponding to the HTML tag <code>&lt;blockquote&gt;</code> with custom attribute <code>&quot;collapsed&quot;</code>.</p>",
+    "description" : "<p>A block quotation, corresponding to the HTML tag <code>&lt;blockquote&gt;</code> with custom attribute <code>&quot;expandable&quot;</code>.</p>",
     "fields" : [ {
       "name" : "type",
       "type" : "String",
@@ -9162,7 +9162,7 @@
     "id" : "type/input-rich-block-expandable-block-quotation",
     "name" : "InputRichBlockExpandableBlockQuotation",
     "kind" : "type",
-    "description" : "<p>A block quotation, corresponding to the HTML tag <code>&lt;blockquote&gt;</code> with custom attribute <code>&quot;collapsed&quot;</code>.</p>",
+    "description" : "<p>A block quotation, corresponding to the HTML tag <code>&lt;blockquote&gt;</code> with custom attribute <code>&quot;expandable&quot;</code>.</p>",
     "fields" : [ {
       "name" : "type",
       "type" : "String",
