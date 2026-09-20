@@ -1,3 +1,4 @@
+[![Bot API](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmarksto%2Fclj-tg-bot-api%2Fmain%2Fmodules%2Fcore%2Fresources%2Ftg-bot-api-spec.json&query=%24.version&label=Telegram&color=26A5E4&logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
 [![Clojars Project](https://img.shields.io/clojars/v/com.github.marksto/clj-tg-bot-api.svg)](https://clojars.org/com.github.marksto/clj-tg-bot-api)
 [![CI](https://github.com/marksto/clj-tg-bot-api/actions/workflows/ci.yml/badge.svg)](https://github.com/marksto/clj-tg-bot-api/actions)
 [![License](https://img.shields.io/github/license/marksto/clj-tg-bot-api.svg)](LICENSE)

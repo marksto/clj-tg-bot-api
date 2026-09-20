@@ -409,22 +409,38 @@
 
 ;;; Entrypoint
 
-(defn update-spec! []
+(defn ->version-number [version]
+  (str/replace (str version) #"^Bot API\s+" ""))
+
+(defn emit-gh-output! [k v]
+  (some-> (System/getenv "GITHUB_OUTPUT")
+          (spit (format "%s=%s\n" (name k) v) :append true)))
+
+(defn update-spec!
+  "Fetches the official docs page and rewrites the spec file if it has changed.
+
+   Returns `nil` when there is nothing to update, and otherwise a map of what
+   the update amounts to — the new `:version`, and a `:version-changed?` flag
+   or a mere reshuffling of the same Bot API version."
+  []
   (or (when-some [{:keys [body headers]} (fetch-tg-bot-api-page!)]
-        (let [parsed-page (parse-tg-bot-api-page body)
+        (let [{:keys [version] :as parsed-page} (parse-tg-bot-api-page body)
               new-json (json/generate-string parsed-page {:pretty true})
               old-json (when (fs/exists? spec-file) (slurp spec-file))]
           (when-not (= old-json new-json)
             (spit spec-file new-json)
             (when-some [etag (get headers "ETag")] (spit etag-file etag))
             (log/info "Telegram Bot API >> Changed, spec updated")
-            :updated)))
+            (let [{prev-version :version} (json/parse-string old-json true)]
+              {:version          version
+               :version-changed? (not= prev-version version)}))))
       (log/info "Telegram Bot API >> No changes")))
 
 (defn -main [& _args]
-  (when (= :updated (update-spec!))
-    (some-> (System/getenv "GITHUB_OUTPUT")
-            (spit "updated=true\n" :append true)))
+  (when-some [{:keys [version version-changed?]} (update-spec!)]
+    (emit-gh-output! :updated true)
+    (emit-gh-output! :version (->version-number version))
+    (emit-gh-output! :version-changed version-changed?))
   #_(System/exit 0))
 
 (when (= *file* (System/getProperty "babashka.file"))

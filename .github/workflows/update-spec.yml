@@ -46,12 +46,19 @@ jobs:
 
       - name: Commit and push when changed
         if: steps.update-spec.outputs.updated == 'true'
+        env:
+          BOT_API_VERSION: ${{ steps.update-spec.outputs.version }}
+          VERSION_CHANGED: ${{ steps.update-spec.outputs.version-changed }}
         run: |
           git add modules/core/resources/tg-bot-api-spec.json
           if [ -f modules/core/resources/.tg-bot-api-etag ]; then
             git add modules/core/resources/.tg-bot-api-etag
           fi
-          git commit -m "Update Telegram Bot API spec [skip ci]"
+          if [ "$VERSION_CHANGED" = "true" ]; then
+            git commit -m "Update Telegram Bot API spec, version $BOT_API_VERSION"
+          else
+            git commit -m "Update Telegram Bot API spec, misc [skip ci]"
+          fi
           git push
 
       - name: Build JAR file
