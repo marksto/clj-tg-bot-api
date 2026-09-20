@@ -1,5 +1,6 @@
 (ns marksto.clj-tg-bot-api.core-test
   (:require
+   [clojure.pprint :as pp]
    [clojure.test :refer [deftest is testing]]
    [marksto.clj-tg-bot-api.core :as sut]
    [matcher-combinators.test])
@@ -184,7 +185,28 @@
                  (sut/make-request! client :set-webhook {:url             "https://example.com"
                                                          :allowed_updates ["message"
                                                                            "edited_channel_post"
-                                                                           "callback_query"]}))))))))
+                                                                           "callback_query"]}))))))
+
+    ;; NB: The one place where every API method is exercised, if only barely.
+    (testing "params coercion for every method"
+      (let [api-methods (map first (sut/explore client))
+            failure-map (reduce (fn [res method]
+                                  ;; NB: An empty params map either builds a request (no required)
+                                  ;;     or fails the coercion. There is no other expected outcome
+                                  ;;     if the API spec is healthy.
+                                  (try
+                                    (sut/make-request! client method {})
+                                    res
+                                    (catch Exception e
+                                      (let [ex-msg (str (ex-message e))]
+                                        (if (re-find #"Could not coerce value to schema" ex-msg)
+                                          res
+                                          (assoc res method ex-msg))))))
+                                {}
+                                api-methods)]
+        (is (empty? failure-map)
+            (format "Methods failing in unexpected way:\n%s"
+                    (with-out-str (pp/pprint failure-map))))))))
 
 (deftest build-response-test
   (let [client (sut/->client {:bot-token test-bot-token})]
