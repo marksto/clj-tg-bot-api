@@ -161,17 +161,19 @@
   (condp = schema
     s/Str (s/constrained schema (->string-constraints-pred string))))
 
+(def type-schemas-ns (create-ns 'marksto.clj-tg-bot-api.impl.api.schemas))
+
 (defn type-schema-symbol [type-name]
   (symbol (str type-name "Schema")))
 
 (defn type-schema-var
   ([type-name]
-   (intern *ns* (type-schema-symbol type-name)))
+   (intern type-schemas-ns (type-schema-symbol type-name)))
   ([type-name schema]
-   (intern *ns* (type-schema-symbol type-name) schema)))
+   (intern type-schemas-ns (type-schema-symbol type-name) schema)))
 
 (defn has-type-schema-var? [type-name]
-  (boolean (ns-resolve *ns* (type-schema-symbol type-name))))
+  (boolean (ns-resolve type-schemas-ns (type-schema-symbol type-name))))
 
 (def ->field-name (comp keyword :name))
 
