@@ -217,17 +217,27 @@
       (utils/index-by ->field-name fields)
       (utils/update-kvs
         (fn [field-name {:keys [required type constraints]}]
-          (let [{name :name} (get-in @*state [:id->api-type type])
-                field-schema (if (has-type-schema-var? name)
-                               (s/recursive (type-schema-var name))
+          (let [{type-name :name} (get-in @*state [:id->api-type type])
+                field-schema (if (has-type-schema-var? type-name)
+                               (s/recursive (type-schema-var type-name))
                                (constrained-type->schema *state type constraints))]
             [(cond-> field-name (not required) (s/optional-key))
              field-schema])))
       (s/named name)))
 
+(defn api-type:subtype->schema
+  [*state api-subtype-id]
+  (let [{type-name :name} (get-in @*state [:id->api-type api-subtype-id])]
+    ;; NB: The order within a cycle is arbitrary, so a subtype may be parsed
+    ;;     after a supertype that unites it, in which case there's no schema
+    ;;     to look up yet, and only a `s/recursive` ref can stand in for it.
+    (if (has-type-schema-var? type-name)
+      (s/recursive (type-schema-var type-name))
+      (type->schema *state api-subtype-id))))
+
 (defn api-type:supertype->schema
   [*state name api-subtype-ids]
-  (let [subtype-schemas (map #(type->schema *state %) api-subtype-ids)
+  (let [subtype-schemas (map #(api-type:subtype->schema *state %) api-subtype-ids)
         subtypes (map #(get-in @*state [:id->api-type %]) api-subtype-ids)
         type-dependant-field (some #(when (contains? % :value) %)
                                    (:fields (first subtypes)))]
@@ -241,18 +251,18 @@
 
 (defn api-type->schema
   [*state {:keys [id name fields subtypes] :as _api-type}]
-  (cond
-    (some? fields)
-    (let [schema (api-type:concrete->schema *state name fields)]
-      (when (has-type-schema-var? name)
-        (type-schema-var name schema))
-      schema)
+  (let [schema (cond
+                 (some? fields)
+                 (api-type:concrete->schema *state name fields)
 
-    (some? subtypes)
-    (api-type:supertype->schema *state name subtypes)
+                 (some? subtypes)
+                 (api-type:supertype->schema *state name subtypes)
 
-    :else ; <=> "Currently holds no information"
-    (if (= input-file-api-type-id id) InputFile s/Any)))
+                 :else ; <=> "Currently holds no information"
+                 (if (= input-file-api-type-id id) InputFile s/Any))]
+    (when (has-type-schema-var? name)
+      (type-schema-var name schema))
+    schema))
 
 (defn parse:api-type
   [*state {api-type-id :id fields :fields :as api-type}]
