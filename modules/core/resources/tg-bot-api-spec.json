@@ -6206,7 +6206,8 @@
           "length" : {
             "from" : 1,
             "to" : 32
-          }
+          },
+          "pattern" : "[a-z0-9_]*"
         }
       }
     }, {
@@ -7786,7 +7787,8 @@
           "length" : {
             "from" : 1,
             "to" : 64
-          }
+          },
+          "pattern" : "[A-Za-z0-9_-]*"
         }
       }
     }, {
@@ -9648,7 +9650,8 @@
           "length" : {
             "from" : 1,
             "to" : 64
-          }
+          },
+          "pattern" : "[A-Za-z0-9_-]*"
         }
       }
     } ]
@@ -12678,7 +12681,8 @@
           "length" : {
             "from" : 1,
             "to" : 256
-          }
+          },
+          "pattern" : "[A-Za-z0-9_-]*"
         }
       }
     } ],
@@ -15175,7 +15179,8 @@
           "length" : {
             "from" : 0,
             "to" : 16
-          }
+          },
+          "pattern" : "[^\\p{IsExtended_Pictographic}]*"
         }
       }
     } ]
@@ -15204,7 +15209,8 @@
           "length" : {
             "from" : 0,
             "to" : 16
-          }
+          },
+          "pattern" : "[^\\p{IsExtended_Pictographic}]*"
         }
       }
     } ]
@@ -18011,7 +18017,8 @@
           "length" : {
             "from" : 1,
             "to" : 64
-          }
+          },
+          "pattern" : "[A-Za-z0-9_]*"
         }
       }
     }, {

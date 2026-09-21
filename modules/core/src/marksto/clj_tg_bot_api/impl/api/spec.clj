@@ -177,6 +177,14 @@
       (->range-pred params measure))
     (throw (ex-info "Unsupported 'length' constraint unit" {:unit unit}))))
 
+(defmethod ->constraint-pred :pattern
+  [_ pattern _modifiers schema]
+  (when-not (= s/Str schema)
+    (throw (ex-info "The 'pattern' constraint requires a string"
+                    {:schema schema})))
+  (let [pattern-re (re-pattern pattern)]
+    #(some? (re-matches pattern-re %))))
+
 (defmethod ->constraint-pred :total_length
   [_ params _modifiers schema]
   (when-not (= [s/Str] schema)

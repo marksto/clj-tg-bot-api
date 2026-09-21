@@ -234,14 +234,51 @@
 (def type-dependant-field-re
   #".+(?:(must be)|(always)) [\"“]?([a-z0-9_]+)[\"”]?$")
 
-;; NB: We do not parse other constraints for strings, such as
-;;     "with at most 2 line feeds" or "emoji are not allowed"
-;;     or "only `A-Z`, `a-z`, `0-9`, `_` and `-` are allowed".
+;; NB: We do not parse other constraints for strings, such as:
+;;     - "with at most 2 line feeds"
+;;     - "must begin with a letter"
+;;     - "can't contain consecutive underscores"
 (def string-length-re
   #"(?:(\d+)-)?(\d+) characters(?:[^.;]*(after entit(?:y|ies) parsing))?")
 
 (def string-byte-length-re
   #"(?i)(?:(\d+)-)?(\d+) bytes")
+
+(def string-allowed-chars-re
+  #"(?i)only (?:characters )?([^.]+?) and (\S+) are allowed")
+
+(def string-allowed-chars-prose-re
+  #"(?i)can contain only ([^.]+)")
+
+(def string-emoji-re
+  #"(?i)emoji are not allowed")
+
+(def char-range-or-char-re
+  #"(?:.-.|.)")
+
+(def prose->char-class
+  {"lowercase english letters" "a-z"
+   "uppercase english letters" "A-Z"
+   "english letters"           "A-Za-z"
+   "digits"                    "0-9"
+   "underscores"               "_"})
+
+(def no-emoji-pattern "[^\\p{IsExtended_Pictographic}]*")
+
+(defn ->chars-pattern [char-classes]
+  (str "[" (str/join char-classes) "]*"))
+
+(defn parse-enumerated-chars [head tail]
+  (let [items (conj (str/split head #",\s*") tail)]
+    (when (every? #(re-matches char-range-or-char-re %) items)
+      (let [{ranges true chars false} (group-by #(= 3 (count %)) items)]
+        (->chars-pattern (concat ranges (sort-by #(= "-" %) chars)))))))
+
+(defn parse-prose-chars [prose]
+  (let [items (str/split prose #",\s*|\s+and\s+")
+        char-classes (map #(prose->char-class (str/lower-case %)) items)]
+    (when (every? some? char-classes)
+      (->chars-pattern char-classes))))
 
 (defn parse-range-constraint
   ([from to]
@@ -259,10 +296,19 @@
             (some-> (re-find string-byte-length-re desc-text)
                     (next)
                     (->> (zipmap [:from :to]))
-                    (assoc :unit "bytes")))]
+                    (assoc :unit "bytes")))
+        [_ chars-head chars-tail] (re-find string-allowed-chars-re desc-text)
+        [_ chars-prose] (re-find string-allowed-chars-prose-re desc-text)
+        pattern (or (when chars-head
+                      (parse-enumerated-chars chars-head chars-tail))
+                    (when chars-prose
+                      (parse-prose-chars chars-prose))
+                    (when (re-find string-emoji-re desc-text)
+                      no-emoji-pattern))]
     (not-empty
       (cond-> {}
         to (assoc :length (parse-range-constraint from to unit))
+        pattern (assoc :pattern pattern)
         after-entities-parsing (assoc :after_entities_parsing true)))))
 
 (def array-constraints-re

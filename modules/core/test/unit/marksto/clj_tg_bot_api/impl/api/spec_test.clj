@@ -60,6 +60,26 @@
                                 :callback_data (str/join (repeat 33 \ж))}))
         "Callback data over the 64 bytes must fail, being only 33 characters")))
 
+(deftest pattern-constraint-is-enforced
+  (let [{:keys [methods]} (sut/get-tg-bot-api-spec)
+        params-schema-of #(->> methods
+                               (some (fn [m] (when (= % (:name m)) m)))
+                               :params-schema)
+        set-webhook (params-schema-of "setWebhook")
+        set-custom-title (params-schema-of "setChatAdministratorCustomTitle")]
+    (testing "an enumerated character set"
+      (let [->params #(hash-map :url "https://example.com/hook" :secret_token %)]
+        (is (nil? (s/check set-webhook (->params "s3cret_token-42")))
+            "A secret token of the allowed characters must pass")
+        (is (some? (s/check set-webhook (->params "s3cret token")))
+            "A secret token with a disallowed character must fail")))
+    (testing "a character set banning emoji"
+      (let [->params #(hash-map :chat_id 1 :user_id 2 :custom_title %)]
+        (is (nil? (s/check set-custom-title (->params "Admin 1")))
+            "A custom title of mere digits and letters must pass")
+        (is (some? (s/check set-custom-title (->params "Admin \uD83D\uDE00")))
+            "A custom title with an emoji must fail")))))
+
 ;;
 
 (comment
