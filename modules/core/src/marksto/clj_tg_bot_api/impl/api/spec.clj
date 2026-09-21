@@ -146,16 +146,6 @@
                                     error-symbol (conj error-symbol))))
      (apply s/cond-pre schemas))))
 
-;; TODO: Impl the `after_entities_parsing`-related logic. Pre-parse an `obj`?
-;;       Is the juice worth the squeeze though? Probably not, or vary rarely.
-(defn ->string-constraints-pred
-  [{:keys [from to after_entities_parsing]}]
-  (fn [obj]
-    (or after_entities_parsing
-        (let [str-length (count obj)]
-          (and (if from (<= from str-length) true)
-               (<= str-length to))))))
-
 (defn ->range-pred
   [{:keys [from to]} measure]
   (fn [obj]
@@ -164,28 +154,44 @@
            (<= n to)))))
 
 (defmulti ->constraint-pred
-  "Builds a predicate for a single constraint, given the schema it guards."
-  {:arglists '([constraint params schema])}
-  (fn [constraint _params _schema] constraint))
+  "Builds a predicate for a single constraint, given the modifiers that alter
+   the way it is checked and the schema it guards."
+  {:arglists '([constraint params modifiers schema])}
+  (fn [constraint _params _modifiers _schema] constraint))
+
+(defmethod ->constraint-pred :length
+  [_ params {:keys [after_entities_parsing]} schema]
+  (when-not (= s/Str schema)
+    (throw (ex-info "The 'length' constraint requires a string"
+                    {:schema schema})))
+  ;; TODO: Impl the `after_entities_parsing`-related logic. Pre-parse an `obj`?
+  ;;       Is the juice worth the squeeze though? Probably not, or vary rarely.
+  (if after_entities_parsing
+    (constantly true)
+    (->range-pred params count)))
 
 (defmethod ->constraint-pred :total_length
-  [_ params schema]
+  [_ params _modifiers schema]
   (when-not (= [s/Str] schema)
     (throw (ex-info "The 'total_length' constraint requires string items"
                     {:schema schema})))
   (->range-pred params #(transduce (map count) + %)))
 
-(defn ->array-constraints-pred
-  [array-constraints schema]
-  (->> array-constraints
-       (map (fn [[constraint params]] (->constraint-pred constraint params schema)))
-       (apply every-pred)))
+(def constraint-modifiers #{:after_entities_parsing})
+
+(defn ->constraints-pred
+  [constraints schema]
+  (let [modifiers (select-keys constraints constraint-modifiers)]
+    (->> (utils/filter-keys constraints (complement constraint-modifiers))
+         (map (fn [[constraint params]]
+                (->constraint-pred constraint params modifiers schema)))
+         (apply every-pred any?))))
 
 (defn constrained-schema
   [schema {:keys [string array] :as _constraints}]
   (cond-> schema
-    string (s/constrained (->string-constraints-pred string) 'string-constraints)
-    array (s/constrained (->array-constraints-pred array schema) 'array-constraints)))
+    string (s/constrained (->constraints-pred string schema) 'string-constraints)
+    array (s/constrained (->constraints-pred array schema) 'array-constraints)))
 
 (def type-schemas-ns (create-ns 'marksto.clj-tg-bot-api.impl.api.schemas))
 

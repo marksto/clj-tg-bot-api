@@ -242,9 +242,9 @@
 
 (defn parse-string-constraints [groups]
   (let [[from to after-entities-parsing] (next groups)]
-    (merge (when from
-             {:from (parse-long from)})
-           {:to (parse-long to)}
+    (merge {:length (merge (when from
+                             {:from (parse-long from)})
+                           {:to (parse-long to)})}
            (when after-entities-parsing
              {:after_entities_parsing true}))))
 
