@@ -12364,9 +12364,11 @@
       "type" : "String",
       "required" : false,
       "description" : "A secret token to be sent in a header “X-Telegram-Bot-Api-Secret-Token” in every webhook request, 1-256 characters. Only characters <code>A-Z</code>, <code>a-z</code>, <code>0-9</code>, <code>_</code> and <code>-</code> are allowed. The header is useful to ensure that the request comes from a webhook set by you.",
-      "[:constraints :string]" : {
-        "from" : 1,
-        "to" : 256
+      "constraints" : {
+        "string" : {
+          "from" : 1,
+          "to" : 256
+        }
       }
     } ],
     "notes" : "<blockquote><p><strong>Notes</strong><br><strong>1.</strong> You will not be able to receive updates using <a href=\"#getupdates\">getUpdates</a> for as long as an outgoing webhook is set up.<br><strong>2.</strong> To use a self-signed certificate, you need to upload your <a href=\"/bots/self-signed\">public key certificate</a> using <em>certificate</em> parameter. Please upload as InputFile, sending a String will not work.<br><strong>3.</strong> Ports currently supported <em>for webhooks</em>: <strong>443, 80, 88, 8443</strong>.</p><p>If you're having any trouble setting up webhooks, please check out this <a href=\"/bots/webhooks\">amazing guide to webhooks</a>.</p></blockquote>"
@@ -12437,10 +12439,12 @@
       "type" : "String",
       "required" : true,
       "description" : "Text of the message to be sent, 1-4096 characters after entities parsing",
-      "[:constraints :string]" : {
-        "from" : 1,
-        "to" : 4096,
-        "after_entities_parsing" : true
+      "constraints" : {
+        "string" : {
+          "from" : 1,
+          "to" : 4096,
+          "after_entities_parsing" : true
+        }
       }
     }, {
       "name" : "parse_mode",
@@ -12635,10 +12639,12 @@
       "type" : "String",
       "required" : false,
       "description" : "New caption for media, 0-1024 characters after entities parsing. If not specified, the original caption is kept.",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 1024,
-        "after_entities_parsing" : true
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 1024,
+          "after_entities_parsing" : true
+        }
       }
     }, {
       "name" : "parse_mode",
@@ -12782,10 +12788,12 @@
       "type" : "String",
       "required" : false,
       "description" : "Photo caption (may also be used when resending photos by <em>file_id</em>), 0-1024 characters after entities parsing",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 1024,
-        "after_entities_parsing" : true
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 1024,
+          "after_entities_parsing" : true
+        }
       }
     }, {
       "name" : "parse_mode",
@@ -12892,10 +12900,12 @@
       "type" : "String",
       "required" : false,
       "description" : "Video caption (may also be used when resending videos by <em>file_id</em>), 0-1024 characters after entities parsing",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 1024,
-        "after_entities_parsing" : true
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 1024,
+          "after_entities_parsing" : true
+        }
       }
     }, {
       "name" : "parse_mode",
@@ -12997,10 +13007,12 @@
       "type" : "String",
       "required" : false,
       "description" : "Audio caption, 0-1024 characters after entities parsing",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 1024,
-        "after_entities_parsing" : true
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 1024,
+          "after_entities_parsing" : true
+        }
       }
     }, {
       "name" : "parse_mode",
@@ -13117,10 +13129,12 @@
       "type" : "String",
       "required" : false,
       "description" : "Document caption (may also be used when resending documents by <em>file_id</em>), 0-1024 characters after entities parsing",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 1024,
-        "after_entities_parsing" : true
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 1024,
+          "after_entities_parsing" : true
+        }
       }
     }, {
       "name" : "parse_mode",
@@ -13247,10 +13261,12 @@
       "type" : "String",
       "required" : false,
       "description" : "Video caption (may also be used when resending videos by <em>file_id</em>), 0-1024 characters after entities parsing",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 1024,
-        "after_entities_parsing" : true
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 1024,
+          "after_entities_parsing" : true
+        }
       }
     }, {
       "name" : "parse_mode",
@@ -13377,10 +13393,12 @@
       "type" : "String",
       "required" : false,
       "description" : "Animation caption (may also be used when resending animation by <em>file_id</em>), 0-1024 characters after entities parsing",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 1024,
-        "after_entities_parsing" : true
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 1024,
+          "after_entities_parsing" : true
+        }
       }
     }, {
       "name" : "parse_mode",
@@ -13482,10 +13500,12 @@
       "type" : "String",
       "required" : false,
       "description" : "Voice message caption, 0-1024 characters after entities parsing",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 1024,
-        "after_entities_parsing" : true
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 1024,
+          "after_entities_parsing" : true
+        }
       }
     }, {
       "name" : "parse_mode",
@@ -13676,10 +13696,12 @@
       "type" : "String",
       "required" : false,
       "description" : "Media caption, 0-1024 characters after entities parsing",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 1024,
-        "after_entities_parsing" : true
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 1024,
+          "after_entities_parsing" : true
+        }
       }
     }, {
       "name" : "parse_mode",
@@ -14109,9 +14131,11 @@
       "type" : "String",
       "required" : true,
       "description" : "Poll question, 1-300 characters",
-      "[:constraints :string]" : {
-        "from" : 1,
-        "to" : 300
+      "constraints" : {
+        "string" : {
+          "from" : 1,
+          "to" : 300
+        }
       }
     }, {
       "name" : "question_parse_mode",
@@ -14187,10 +14211,12 @@
       "type" : "String",
       "required" : false,
       "description" : "Text that is shown when a user chooses an incorrect answer or taps on the lamp icon in a quiz-style poll, 0-200 characters with at most 2 line feeds after entities parsing",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 200,
-        "after_entities_parsing" : true
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 200,
+          "after_entities_parsing" : true
+        }
       }
     }, {
       "name" : "explanation_parse_mode",
@@ -14228,10 +14254,12 @@
       "type" : "String",
       "required" : false,
       "description" : "Description of the poll to be sent, 0-1024 characters after entities parsing",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 1024,
-        "after_entities_parsing" : true
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 1024,
+          "after_entities_parsing" : true
+        }
       }
     }, {
       "name" : "description_parse_mode",
@@ -14423,10 +14451,12 @@
       "type" : "String",
       "required" : false,
       "description" : "Text of the message to be sent, 0-4096 characters after entities parsing. Pass an empty text to show a “Thinking…” placeholder.",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 4096,
-        "after_entities_parsing" : true
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 4096,
+          "after_entities_parsing" : true
+        }
       }
     }, {
       "name" : "parse_mode",
@@ -14783,9 +14813,11 @@
       "type" : "String",
       "required" : true,
       "description" : "New custom title for the administrator; 0-16 characters, emoji are not allowed",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 16
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 16
+        }
       }
     } ]
   }, {
@@ -14808,9 +14840,11 @@
       "type" : "String",
       "required" : false,
       "description" : "New tag for the member; 0-16 characters, emoji are not allowed",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 16
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 16
+        }
       }
     } ]
   }, {
@@ -14894,9 +14928,11 @@
       "type" : "String",
       "required" : false,
       "description" : "Invite link name; 0-32 characters",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 32
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 32
+        }
       }
     }, {
       "name" : "expire_date",
@@ -14934,9 +14970,11 @@
       "type" : "String",
       "required" : false,
       "description" : "Invite link name; 0-32 characters",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 32
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 32
+        }
       }
     }, {
       "name" : "expire_date",
@@ -14969,9 +15007,11 @@
       "type" : "String",
       "required" : false,
       "description" : "Invite link name; 0-32 characters",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 32
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 32
+        }
       }
     }, {
       "name" : "subscription_period",
@@ -15004,9 +15044,11 @@
       "type" : "String",
       "required" : false,
       "description" : "Invite link name; 0-32 characters",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 32
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 32
+        }
       }
     } ]
   }, {
@@ -15131,9 +15173,11 @@
       "type" : "String",
       "required" : true,
       "description" : "New chat title, 1-128 characters",
-      "[:constraints :string]" : {
-        "from" : 1,
-        "to" : 128
+      "constraints" : {
+        "string" : {
+          "from" : 1,
+          "to" : 128
+        }
       }
     } ]
   }, {
@@ -15151,9 +15195,11 @@
       "type" : "String",
       "required" : false,
       "description" : "New chat description, 0-255 characters",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 255
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 255
+        }
       }
     } ]
   }, {
@@ -15342,9 +15388,11 @@
       "type" : "String",
       "required" : true,
       "description" : "Topic name, 1-128 characters",
-      "[:constraints :string]" : {
-        "from" : 1,
-        "to" : 128
+      "constraints" : {
+        "string" : {
+          "from" : 1,
+          "to" : 128
+        }
       }
     }, {
       "name" : "icon_color",
@@ -15377,9 +15425,11 @@
       "type" : "String",
       "required" : false,
       "description" : "New topic name, 0-128 characters. If not specified or empty, the current name of the topic will be kept.",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 128
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 128
+        }
       }
     }, {
       "name" : "icon_custom_emoji_id",
@@ -15466,9 +15516,11 @@
       "type" : "String",
       "required" : true,
       "description" : "New topic name, 1-128 characters",
-      "[:constraints :string]" : {
-        "from" : 1,
-        "to" : 128
+      "constraints" : {
+        "string" : {
+          "from" : 1,
+          "to" : 128
+        }
       }
     } ]
   }, {
@@ -15541,9 +15593,11 @@
       "type" : "String",
       "required" : false,
       "description" : "Text of the notification. If not specified, nothing will be shown to the user, 0-200 characters.",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 200
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 200
+        }
       }
     }, {
       "name" : "show_alert",
@@ -15727,9 +15781,11 @@
       "type" : "String",
       "required" : false,
       "description" : "New bot name; 0-64 characters. Pass an empty string to remove the dedicated name for the given language.",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 64
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 64
+        }
       }
     }, {
       "name" : "language_code",
@@ -15758,9 +15814,11 @@
       "type" : "String",
       "required" : false,
       "description" : "New bot description; 0-512 characters. Pass an empty string to remove the dedicated description for the given language.",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 512
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 512
+        }
       }
     }, {
       "name" : "language_code",
@@ -15789,9 +15847,11 @@
       "type" : "String",
       "required" : false,
       "description" : "New short description for the bot; 0-120 characters. Pass an empty string to remove the dedicated short description for the given language.",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 120
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 120
+        }
       }
     }, {
       "name" : "language_code",
@@ -15917,9 +15977,11 @@
       "type" : "String",
       "required" : false,
       "description" : "Text that will be shown along with the gift; 0-128 characters",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 128
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 128
+        }
       }
     }, {
       "name" : "text_parse_mode",
@@ -15958,9 +16020,11 @@
       "type" : "String",
       "required" : false,
       "description" : "Text that will be shown along with the service message about the subscription; 0-128 characters",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 128
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 128
+        }
       }
     }, {
       "name" : "text_parse_mode",
@@ -15989,9 +16053,11 @@
       "type" : "String",
       "required" : false,
       "description" : "Custom description for the verification; 0-70 characters. Must be empty if the organization isn't allowed to provide a custom verification description.",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 70
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 70
+        }
       }
     } ]
   }, {
@@ -16009,9 +16075,11 @@
       "type" : "String",
       "required" : false,
       "description" : "Custom description for the verification; 0-70 characters. Must be empty if the organization isn't allowed to provide a custom verification description.",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 70
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 70
+        }
       }
     } ]
   }, {
@@ -16089,18 +16157,22 @@
       "type" : "String",
       "required" : true,
       "description" : "The new value of the first name for the business account; 1-64 characters",
-      "[:constraints :string]" : {
-        "from" : 1,
-        "to" : 64
+      "constraints" : {
+        "string" : {
+          "from" : 1,
+          "to" : 64
+        }
       }
     }, {
       "name" : "last_name",
       "type" : "String",
       "required" : false,
       "description" : "The new value of the last name for the business account; 0-64 characters",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 64
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 64
+        }
       }
     } ]
   }, {
@@ -16118,9 +16190,11 @@
       "type" : "String",
       "required" : false,
       "description" : "The new value of the username for the business account; 0-32 characters",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 32
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 32
+        }
       }
     } ]
   }, {
@@ -16138,9 +16212,11 @@
       "type" : "String",
       "required" : false,
       "description" : "The new value of the bio for the business account; 0-140 characters",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 140
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 140
+        }
       }
     } ]
   }, {
@@ -16494,10 +16570,12 @@
       "type" : "String",
       "required" : false,
       "description" : "Caption of the story, 0-2048 characters after entities parsing",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 2048,
-        "after_entities_parsing" : true
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 2048,
+          "after_entities_parsing" : true
+        }
       }
     }, {
       "name" : "parse_mode",
@@ -16588,10 +16666,12 @@
       "type" : "String",
       "required" : false,
       "description" : "Caption of the story, 0-2048 characters after entities parsing",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 2048,
-        "after_entities_parsing" : true
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 2048,
+          "after_entities_parsing" : true
+        }
       }
     }, {
       "name" : "parse_mode",
@@ -16728,9 +16808,11 @@
       "type" : "String",
       "required" : false,
       "description" : "New text of the message, 1-4096 characters after entity parsing; required if <em>rich_message</em> isn't specified",
-      "[:constraints :string]" : {
-        "from" : 1,
-        "to" : 4096
+      "constraints" : {
+        "string" : {
+          "from" : 1,
+          "to" : 4096
+        }
       }
     }, {
       "name" : "parse_mode",
@@ -16790,10 +16872,12 @@
       "type" : "String",
       "required" : false,
       "description" : "New caption of the message, 0-1024 characters after entities parsing",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 1024,
-        "after_entities_parsing" : true
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 1024,
+          "after_entities_parsing" : true
+        }
       }
     }, {
       "name" : "parse_mode",
@@ -17067,9 +17151,11 @@
       "type" : "String",
       "required" : false,
       "description" : "New text of the message, 1-4096 characters after entity parsing; required if <em>rich_message</em> isn't specified",
-      "[:constraints :string]" : {
-        "from" : 1,
-        "to" : 4096
+      "constraints" : {
+        "string" : {
+          "from" : 1,
+          "to" : 4096
+        }
       }
     }, {
       "name" : "parse_mode",
@@ -17157,10 +17243,12 @@
       "type" : "String",
       "required" : false,
       "description" : "New caption of the message, 0-1024 characters after entities parsing",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 1024,
-        "after_entities_parsing" : true
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 1024,
+          "after_entities_parsing" : true
+        }
       }
     }, {
       "name" : "parse_mode",
@@ -17253,9 +17341,11 @@
       "type" : "String",
       "required" : false,
       "description" : "Comment for the creator of the suggested post; 0-128 characters",
-      "[:constraints :string]" : {
-        "from" : 0,
-        "to" : 128
+      "constraints" : {
+        "string" : {
+          "from" : 0,
+          "to" : 128
+        }
       }
     } ]
   }, {
@@ -17497,18 +17587,22 @@
       "type" : "String",
       "required" : true,
       "description" : "Short name of sticker set, to be used in <code>t.me/addstickers/</code> URLs (e.g., <em>animals</em>). Can contain only English letters, digits and underscores. Must begin with a letter, can't contain consecutive underscores and must end in <code>&quot;_by_&lt;bot_username&gt;&quot;</code>. <code>&lt;bot_username&gt;</code> is case insensitive. 1-64 characters.",
-      "[:constraints :string]" : {
-        "from" : 1,
-        "to" : 64
+      "constraints" : {
+        "string" : {
+          "from" : 1,
+          "to" : 64
+        }
       }
     }, {
       "name" : "title",
       "type" : "String",
       "required" : true,
       "description" : "Sticker set title, 1-64 characters",
-      "[:constraints :string]" : {
-        "from" : 1,
-        "to" : 64
+      "constraints" : {
+        "string" : {
+          "from" : 1,
+          "to" : 64
+        }
       }
     }, {
       "name" : "stickers",
@@ -17636,8 +17730,10 @@
       "required" : false,
       "description" : "A JSON-serialized list of 0-20 search keywords for the sticker with total length of up to 64 characters",
       "json_serialized" : true,
-      "[:constraints :string]" : {
-        "to" : 64
+      "constraints" : {
+        "string" : {
+          "to" : 64
+        }
       }
     } ]
   }, {
@@ -17672,9 +17768,11 @@
       "type" : "String",
       "required" : true,
       "description" : "Sticker set title, 1-64 characters",
-      "[:constraints :string]" : {
-        "from" : 1,
-        "to" : 64
+      "constraints" : {
+        "string" : {
+          "from" : 1,
+          "to" : 64
+        }
       }
     } ]
   }, {
@@ -17903,18 +18001,22 @@
       "type" : "String",
       "required" : true,
       "description" : "Product name, 1-32 characters",
-      "[:constraints :string]" : {
-        "from" : 1,
-        "to" : 32
+      "constraints" : {
+        "string" : {
+          "from" : 1,
+          "to" : 32
+        }
       }
     }, {
       "name" : "description",
       "type" : "String",
       "required" : true,
       "description" : "Product description, 1-255 characters",
-      "[:constraints :string]" : {
-        "from" : 1,
-        "to" : 255
+      "constraints" : {
+        "string" : {
+          "from" : 1,
+          "to" : 255
+        }
       }
     }, {
       "name" : "payload",
@@ -18067,18 +18169,22 @@
       "type" : "String",
       "required" : true,
       "description" : "Product name, 1-32 characters",
-      "[:constraints :string]" : {
-        "from" : 1,
-        "to" : 32
+      "constraints" : {
+        "string" : {
+          "from" : 1,
+          "to" : 32
+        }
       }
     }, {
       "name" : "description",
       "type" : "String",
       "required" : true,
       "description" : "Product description, 1-255 characters",
-      "[:constraints :string]" : {
-        "from" : 1,
-        "to" : 255
+      "constraints" : {
+        "string" : {
+          "from" : 1,
+          "to" : 255
+        }
       }
     }, {
       "name" : "payload",
