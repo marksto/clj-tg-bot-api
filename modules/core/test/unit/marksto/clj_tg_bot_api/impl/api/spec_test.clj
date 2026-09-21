@@ -1,5 +1,6 @@
 (ns marksto.clj-tg-bot-api.impl.api.spec-test
   (:require
+   [clojure.string :as str]
    [clojure.test :refer [deftest is testing]]
    [marksto.clj-tg-bot-api.impl.api.spec :as sut]
    [schema.core :as s]))
@@ -35,6 +36,18 @@
               :when (some? params-schema)]
         (is (some? (s/checker params-schema))
             (format "The '%s' method params schema must build a checker" name))))))
+
+(deftest array-total-length-constraint-is-enforced
+  (let [{:keys [methods]} (sut/get-tg-bot-api-spec)
+        {:keys [params-schema]} (some #(when (= "setStickerKeywords" (:name %)) %)
+                                      methods)]
+    (is (nil? (s/check params-schema {:sticker  "sticker-file-id"
+                                      :keywords ["cat" "kitten" "кот" "котёнок"]}))
+        "Keywords within the 64 characters in total must pass")
+    (is (some? (s/check params-schema {:sticker  "sticker-file-id"
+                                       :keywords [(str/join (repeat 32 \a))
+                                                  (str/join (repeat 33 \b))]}))
+        "Keywords over the 64 characters in total must fail, each being shorter")))
 
 ;;
 

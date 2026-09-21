@@ -156,10 +156,36 @@
           (and (if from (<= from str-length) true)
                (<= str-length to))))))
 
+(defn ->range-pred
+  [{:keys [from to]} measure]
+  (fn [obj]
+    (let [n (measure obj)]
+      (and (if from (<= from n) true)
+           (<= n to)))))
+
+(defmulti ->constraint-pred
+  "Builds a predicate for a single constraint, given the schema it guards."
+  {:arglists '([constraint params schema])}
+  (fn [constraint _params _schema] constraint))
+
+(defmethod ->constraint-pred :total_length
+  [_ params schema]
+  (when-not (= [s/Str] schema)
+    (throw (ex-info "The 'total_length' constraint requires string items"
+                    {:schema schema})))
+  (->range-pred params #(transduce (map count) + %)))
+
+(defn ->array-constraints-pred
+  [array-constraints schema]
+  (->> array-constraints
+       (map (fn [[constraint params]] (->constraint-pred constraint params schema)))
+       (apply every-pred)))
+
 (defn constrained-schema
-  [schema {:keys [string] :as _constraints}]
-  (condp = schema
-    s/Str (s/constrained schema (->string-constraints-pred string))))
+  [schema {:keys [string array] :as _constraints}]
+  (cond-> schema
+    string (s/constrained (->string-constraints-pred string) 'string-constraints)
+    array (s/constrained (->array-constraints-pred array schema) 'array-constraints)))
 
 (def type-schemas-ns (create-ns 'marksto.clj-tg-bot-api.impl.api.schemas))
 
@@ -206,9 +232,7 @@
   [*state type constraints]
   (let [schema (type->schema *state type)]
     (if constraints
-      (if (vector? schema)
-        (mapv #(constrained-schema % constraints) schema)
-        (constrained-schema schema constraints))
+      (constrained-schema schema constraints)
       schema)))
 
 (defn api-type:concrete->schema

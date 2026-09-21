@@ -7661,7 +7661,14 @@
       "name" : "keywords",
       "type" : [ "array", "String" ],
       "description" : "<em>Optional</em>. List of 0-20 search keywords for the sticker with total length of up to 64 characters. For “regular” and “custom_emoji” stickers only.",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "array" : {
+          "total_length" : {
+            "to" : 64
+          }
+        }
+      }
     } ]
   }, {
     "id" : "type/rich-message",
@@ -17726,7 +17733,14 @@
       "type" : [ "array", "String" ],
       "required" : false,
       "description" : "A JSON-serialized list of 0-20 search keywords for the sticker with total length of up to 64 characters",
-      "json_serialized" : true
+      "json_serialized" : true,
+      "constraints" : {
+        "array" : {
+          "total_length" : {
+            "to" : 64
+          }
+        }
+      }
     } ]
   }, {
     "id" : "method/set-sticker-mask-position",

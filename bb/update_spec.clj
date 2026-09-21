@@ -248,6 +248,15 @@
            (when after-entities-parsing
              {:after_entities_parsing true}))))
 
+(def array-constraints-re
+  #"total length of (?:up to )?(?:(\d+)-)?(\d+) characters")
+
+(defn parse-array-constraints [groups]
+  (let [[from to] (next groups)]
+    {:total_length (merge (when from
+                            {:from (parse-long from)})
+                          {:to (parse-long to)})}))
+
 (defn prepare-api-type-field
   [{:keys [description] :as field}]
   (let [optional? (-> (s/select s/first-child description)
@@ -260,7 +269,10 @@
         json-ser? (str/includes? desc-text "JSON-serialized")
         str-const (when (= "String" field-type)
                     (some-> (re-find string-constraints-re desc-text)
-                            (parse-string-constraints)))]
+                            (parse-string-constraints)))
+        arr-const (when (= [:array "String"] field-type)
+                    (some-> (re-find array-constraints-re desc-text)
+                            (parse-array-constraints)))]
     (cond-> (-> field
                 (update :name (comp keyword first :content))
                 (assoc :type field-type)
@@ -268,7 +280,8 @@
                 (update :description (comp render-html:nodes :content)))
             tdf-value (assoc :value tdf-value)
             json-ser? (assoc :json_serialized json-ser?)
-            str-const (assoc-in [:constraints :string] str-const))))
+            str-const (assoc-in [:constraints :string] str-const)
+            arr-const (assoc-in [:constraints :array] arr-const))))
 
 (defn get-api-type-field
   [col-names single-row-nodes]
@@ -298,14 +311,18 @@
         json-ser? (str/includes? desc-text "JSON-serialized")
         str-const (when (= "String" param-type)
                     (some-> (re-find string-constraints-re desc-text)
-                            (parse-string-constraints)))]
+                            (parse-string-constraints)))
+        arr-const (when (= [:array "String"] param-type)
+                    (some-> (re-find array-constraints-re desc-text)
+                            (parse-array-constraints)))]
     (cond-> (-> param
                 (update :name (comp keyword first :content))
                 (assoc :type param-type)
                 (update :required #(has-text? % "Yes"))
                 (update :description (comp render-html:nodes :content)))
             json-ser? (assoc :json_serialized json-ser?)
-            str-const (assoc-in [:constraints :string] str-const))))
+            str-const (assoc-in [:constraints :string] str-const)
+            arr-const (assoc-in [:constraints :array] arr-const))))
 
 (defn get-api-method-param
   [col-names single-row-nodes]
