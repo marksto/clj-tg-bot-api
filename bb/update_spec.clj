@@ -237,25 +237,40 @@
 ;; NB: We do not parse other constraints for strings, such as
 ;;     "with at most 2 line feeds" or "emoji are not allowed"
 ;;     or "only `A-Z`, `a-z`, `0-9`, `_` and `-` are allowed".
-(def string-constraints-re
+(def string-length-re
   #"(?:(\d+)-)?(\d+) characters(?:[^.;]*(after entit(?:y|ies) parsing))?")
 
-(defn parse-string-constraints [groups]
-  (let [[from to after-entities-parsing] (next groups)]
-    (merge {:length (merge (when from
-                             {:from (parse-long from)})
-                           {:to (parse-long to)})}
-           (when after-entities-parsing
-             {:after_entities_parsing true}))))
+(def string-byte-length-re
+  #"(?i)(?:(\d+)-)?(\d+) bytes")
+
+(defn parse-range-constraint
+  ([from to]
+   (parse-range-constraint from to nil))
+  ([from to unit]
+   (merge (when from {:from (parse-long from)})
+          {:to (parse-long to)}
+          (when unit {:unit unit}))))
+
+(defn parse-string-constraints [desc-text]
+  (let [{:keys [from to unit after-entities-parsing]}
+        (or (some-> (re-find string-length-re desc-text)
+                    (next)
+                    (->> (zipmap [:from :to :after-entities-parsing])))
+            (some-> (re-find string-byte-length-re desc-text)
+                    (next)
+                    (->> (zipmap [:from :to]))
+                    (assoc :unit "bytes")))]
+    (not-empty
+      (cond-> {}
+        to (assoc :length (parse-range-constraint from to unit))
+        after-entities-parsing (assoc :after_entities_parsing true)))))
 
 (def array-constraints-re
   #"total length of (?:up to )?(?:(\d+)-)?(\d+) characters")
 
 (defn parse-array-constraints [groups]
   (let [[from to] (next groups)]
-    {:total_length (merge (when from
-                            {:from (parse-long from)})
-                          {:to (parse-long to)})}))
+    {:total_length (parse-range-constraint from to)}))
 
 (defn prepare-api-type-field
   [{:keys [description] :as field}]
@@ -268,8 +283,7 @@
         tdf-value (last (re-find type-dependant-field-re desc-text))
         json-ser? (str/includes? desc-text "JSON-serialized")
         str-const (when (= "String" field-type)
-                    (some-> (re-find string-constraints-re desc-text)
-                            (parse-string-constraints)))
+                    (parse-string-constraints desc-text))
         arr-const (when (= [:array "String"] field-type)
                     (some-> (re-find array-constraints-re desc-text)
                             (parse-array-constraints)))]
@@ -310,8 +324,7 @@
         param-type (parse-data-type (:type param))
         json-ser? (str/includes? desc-text "JSON-serialized")
         str-const (when (= "String" param-type)
-                    (some-> (re-find string-constraints-re desc-text)
-                            (parse-string-constraints)))
+                    (parse-string-constraints desc-text))
         arr-const (when (= [:array "String"] param-type)
                     (some-> (re-find array-constraints-re desc-text)
                             (parse-array-constraints)))]

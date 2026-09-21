@@ -4142,7 +4142,16 @@
       "name" : "callback_data",
       "type" : "String",
       "description" : "<em>Optional</em>. Data to be sent in a <a href=\"#callbackquery\">callback query</a> to the bot when the button is pressed, 1-64 bytes",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "web_app",
       "type" : "type/web-app-info",
@@ -7810,7 +7819,16 @@
       "name" : "callback_data",
       "type" : "String",
       "description" : "<em>Optional</em>. Data to be sent in a <a href=\"#callbackquery\">callback query</a> to the bot when the button is pressed, 1-64 bytes",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "web_app",
       "type" : "type/web-app-info",
@@ -9656,7 +9674,16 @@
       "name" : "id",
       "type" : "String",
       "description" : "Unique identifier for this result, 1-64 Bytes",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "title",
       "type" : "String",
@@ -9713,7 +9740,16 @@
       "name" : "id",
       "type" : "String",
       "description" : "Unique identifier for this result, 1-64 bytes",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "photo_url",
       "type" : "String",
@@ -9799,7 +9835,16 @@
       "name" : "id",
       "type" : "String",
       "description" : "Unique identifier for this result, 1-64 bytes",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "gif_url",
       "type" : "String",
@@ -9890,7 +9935,16 @@
       "name" : "id",
       "type" : "String",
       "description" : "Unique identifier for this result, 1-64 bytes",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "mpeg4_url",
       "type" : "String",
@@ -9981,7 +10035,16 @@
       "name" : "id",
       "type" : "String",
       "description" : "Unique identifier for this result, 1-64 bytes",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "video_url",
       "type" : "String",
@@ -10077,7 +10140,16 @@
       "name" : "id",
       "type" : "String",
       "description" : "Unique identifier for this result, 1-64 bytes",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "audio_url",
       "type" : "String",
@@ -10148,7 +10220,16 @@
       "name" : "id",
       "type" : "String",
       "description" : "Unique identifier for this result, 1-64 bytes",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "voice_url",
       "type" : "String",
@@ -10214,7 +10295,16 @@
       "name" : "id",
       "type" : "String",
       "description" : "Unique identifier for this result, 1-64 bytes",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "title",
       "type" : "String",
@@ -10300,7 +10390,16 @@
       "name" : "id",
       "type" : "String",
       "description" : "Unique identifier for this result, 1-64 Bytes",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "latitude",
       "type" : "Float",
@@ -10377,7 +10476,16 @@
       "name" : "id",
       "type" : "String",
       "description" : "Unique identifier for this result, 1-64 Bytes",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "latitude",
       "type" : "Float",
@@ -10459,7 +10567,16 @@
       "name" : "id",
       "type" : "String",
       "description" : "Unique identifier for this result, 1-64 Bytes",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "phone_number",
       "type" : "String",
@@ -10479,7 +10596,16 @@
       "name" : "vcard",
       "type" : "String",
       "description" : "<em>Optional</em>. Additional data about the contact in the form of a <a href=\"https://en.wikipedia.org/wiki/VCard\">vCard</a>, 0-2048 bytes",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 0,
+            "to" : 2048,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "reply_markup",
       "type" : "type/inline-keyboard-markup",
@@ -10521,7 +10647,16 @@
       "name" : "id",
       "type" : "String",
       "description" : "Unique identifier for this result, 1-64 bytes",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "game_short_name",
       "type" : "String",
@@ -10548,7 +10683,16 @@
       "name" : "id",
       "type" : "String",
       "description" : "Unique identifier for this result, 1-64 bytes",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "photo_file_id",
       "type" : "String",
@@ -10619,7 +10763,16 @@
       "name" : "id",
       "type" : "String",
       "description" : "Unique identifier for this result, 1-64 bytes",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "gif_file_id",
       "type" : "String",
@@ -10685,7 +10838,16 @@
       "name" : "id",
       "type" : "String",
       "description" : "Unique identifier for this result, 1-64 bytes",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "mpeg4_file_id",
       "type" : "String",
@@ -10751,7 +10913,16 @@
       "name" : "id",
       "type" : "String",
       "description" : "Unique identifier for this result, 1-64 bytes",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "sticker_file_id",
       "type" : "String",
@@ -10783,7 +10954,16 @@
       "name" : "id",
       "type" : "String",
       "description" : "Unique identifier for this result, 1-64 bytes",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "title",
       "type" : "String",
@@ -10849,7 +11029,16 @@
       "name" : "id",
       "type" : "String",
       "description" : "Unique identifier for this result, 1-64 bytes",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "video_file_id",
       "type" : "String",
@@ -10920,7 +11109,16 @@
       "name" : "id",
       "type" : "String",
       "description" : "Unique identifier for this result, 1-64 bytes",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "voice_file_id",
       "type" : "String",
@@ -10981,7 +11179,16 @@
       "name" : "id",
       "type" : "String",
       "description" : "Unique identifier for this result, 1-64 bytes",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "audio_file_id",
       "type" : "String",
@@ -11179,7 +11386,16 @@
       "name" : "vcard",
       "type" : "String",
       "description" : "<em>Optional</em>. Additional data about the contact in the form of a <a href=\"https://en.wikipedia.org/wiki/VCard\">vCard</a>, 0-2048 bytes",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 0,
+            "to" : 2048,
+            "unit" : "bytes"
+          }
+        }
+      }
     } ]
   }, {
     "id" : "type/input-invoice-message-content",
@@ -11216,7 +11432,16 @@
       "name" : "payload",
       "type" : "String",
       "description" : "Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use it for your internal processes.",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 128,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "provider_token",
       "type" : "String",
@@ -13794,7 +14019,16 @@
       "name" : "payload",
       "type" : "String",
       "required" : false,
-      "description" : "Bot-defined paid media payload, 0-128 bytes. This will not be displayed to the user, use it for your internal processes."
+      "description" : "Bot-defined paid media payload, 0-128 bytes. This will not be displayed to the user, use it for your internal processes.",
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 0,
+            "to" : 128,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "caption",
       "type" : "String",
@@ -14173,7 +14407,16 @@
       "name" : "vcard",
       "type" : "String",
       "required" : false,
-      "description" : "Additional data about the contact in the form of a <a href=\"https://en.wikipedia.org/wiki/VCard\">vCard</a>, 0-2048 bytes"
+      "description" : "Additional data about the contact in the form of a <a href=\"https://en.wikipedia.org/wiki/VCard\">vCard</a>, 0-2048 bytes",
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 0,
+            "to" : 2048,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "disable_notification",
       "type" : "Boolean",
@@ -18152,7 +18395,15 @@
       "name" : "next_offset",
       "type" : "String",
       "required" : false,
-      "description" : "Pass the offset that a client should send in the next query with the same text to receive more results. Pass an empty string if there are no more results or if you don't support pagination. Offset length can't exceed 64 bytes."
+      "description" : "Pass the offset that a client should send in the next query with the same text to receive more results. Pass an empty string if there are no more results or if you don't support pagination. Offset length can't exceed 64 bytes.",
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "button",
       "type" : "type/inline-query-results-button",
@@ -18210,7 +18461,16 @@
       "name" : "payload",
       "type" : "String",
       "required" : true,
-      "description" : "Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use it for your internal processes."
+      "description" : "Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use it for your internal processes.",
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 128,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "provider_token",
       "type" : "String",
@@ -18382,7 +18642,16 @@
       "name" : "payload",
       "type" : "String",
       "required" : true,
-      "description" : "Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use it for your internal processes."
+      "description" : "Bot-defined invoice payload, 1-128 bytes. This will not be displayed to the user, use it for your internal processes.",
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 128,
+            "unit" : "bytes"
+          }
+        }
+      }
     }, {
       "name" : "provider_token",
       "type" : "String",

@@ -22,6 +22,7 @@
   (:import
    (java.io File InputStream)
    (java.net URI URL)
+   (java.nio.charset StandardCharsets)
    (java.nio.file Path)
    (schema.core NamedSchema)))
 
@@ -159,16 +160,22 @@
   {:arglists '([constraint params modifiers schema])}
   (fn [constraint _params _modifiers _schema] constraint))
 
+(def length-unit->measure
+  {"chars" count
+   "bytes" #(alength (.getBytes ^String % StandardCharsets/UTF_8))})
+
 (defmethod ->constraint-pred :length
-  [_ params {:keys [after_entities_parsing]} schema]
+  [_ {:keys [unit] :as params} {:keys [after_entities_parsing]} schema]
   (when-not (= s/Str schema)
     (throw (ex-info "The 'length' constraint requires a string"
                     {:schema schema})))
-  ;; TODO: Impl the `after_entities_parsing`-related logic. Pre-parse an `obj`?
-  ;;       Is the juice worth the squeeze though? Probably not, or vary rarely.
-  (if after_entities_parsing
-    (constantly true)
-    (->range-pred params count)))
+  (if-some [measure (length-unit->measure (or unit "chars"))]
+    ;; TODO: Impl the `after_entities_parsing`-related logic. Pre-parse an `obj`?
+    ;;       Is the juice worth the squeeze though? Probably not, or vary rarely.
+    (if after_entities_parsing
+      (constantly true)
+      (->range-pred params measure))
+    (throw (ex-info "Unsupported 'length' constraint unit" {:unit unit}))))
 
 (defmethod ->constraint-pred :total_length
   [_ params _modifiers schema]

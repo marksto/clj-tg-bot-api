@@ -49,6 +49,17 @@
                                                   (str/join (repeat 33 \b))]}))
         "Keywords over the 64 characters in total must fail, each being shorter")))
 
+(deftest byte-length-constraint-is-enforced
+  (let [{:keys [types]} (sut/get-tg-bot-api-spec)
+        {:keys [schema]} (some #(when (= "InlineKeyboardButton" (:name %)) %)
+                               types)]
+    (is (nil? (s/check schema {:text          "Tap me"
+                               :callback_data (str/join (repeat 64 \a))}))
+        "Callback data within the 64 bytes must pass")
+    (is (some? (s/check schema {:text          "Tap me"
+                                :callback_data (str/join (repeat 33 \ж))}))
+        "Callback data over the 64 bytes must fail, being only 33 characters")))
+
 ;;
 
 (comment
