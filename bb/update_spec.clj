@@ -238,7 +238,7 @@
 ;;     "with at most 2 line feeds" or "emoji are not allowed"
 ;;     or "only `A-Z`, `a-z`, `0-9`, `_` and `-` are allowed".
 (def string-constraints-re
-  #"(?:(\d+)-)?(\d+) characters(?:.*(after entities parsing))?")
+  #"(?:(\d+)-)?(\d+) characters(?:[^.;]*(after entit(?:y|ies) parsing))?")
 
 (defn parse-string-constraints [groups]
   (let [[from to after-entities-parsing] (next groups)]

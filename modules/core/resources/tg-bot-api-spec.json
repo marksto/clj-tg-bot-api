@@ -16811,7 +16811,8 @@
       "constraints" : {
         "string" : {
           "from" : 1,
-          "to" : 4096
+          "to" : 4096,
+          "after_entities_parsing" : true
         }
       }
     }, {
@@ -17154,7 +17155,8 @@
       "constraints" : {
         "string" : {
           "from" : 1,
-          "to" : 4096
+          "to" : 4096,
+          "after_entities_parsing" : true
         }
       }
     }, {
