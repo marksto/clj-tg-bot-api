@@ -255,13 +255,15 @@
                       (text)
                       (str/starts-with? "Optional"))
         desc-text (text description)
+        field-type (parse-data-type (:type field))
         tdf-value (last (re-find type-dependant-field-re desc-text))
         json-ser? (str/includes? desc-text "JSON-serialized")
-        str-const (some-> (re-find string-constraints-re desc-text)
-                          (parse-string-constraints))]
+        str-const (when (= "String" field-type)
+                    (some-> (re-find string-constraints-re desc-text)
+                            (parse-string-constraints)))]
     (cond-> (-> field
                 (update :name (comp keyword first :content))
-                (update :type parse-data-type)
+                (assoc :type field-type)
                 (assoc :required (not optional?))
                 (update :description (comp render-html:nodes :content)))
             tdf-value (assoc :value tdf-value)
@@ -292,12 +294,14 @@
 (defn prepare-api-method-param
   [{:keys [description] :as param}]
   (let [desc-text (text description)
+        param-type (parse-data-type (:type param))
         json-ser? (str/includes? desc-text "JSON-serialized")
-        str-const (some-> (re-find string-constraints-re desc-text)
-                          (parse-string-constraints))]
+        str-const (when (= "String" param-type)
+                    (some-> (re-find string-constraints-re desc-text)
+                            (parse-string-constraints)))]
     (cond-> (-> param
                 (update :name (comp keyword first :content))
-                (update :type parse-data-type)
+                (assoc :type param-type)
                 (update :required #(has-text? % "Yes"))
                 (update :description (comp render-html:nodes :content)))
             json-ser? (assoc :json_serialized json-ser?)
