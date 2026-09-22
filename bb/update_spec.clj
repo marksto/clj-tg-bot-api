@@ -250,11 +250,16 @@
 (defn ->chars-pattern [char-classes]
   (str "[" (str/join char-classes) "]*"))
 
-(def char-range-or-char-re #"(?:.-.|.)")
+;; NB: Deliberately narrow, since an item ends up in a character class as is,
+;;     where the likes of `^`, `]` and `\` would silently distort it.
+(def char-range-or-char-re #"(?:[A-Za-z0-9]-[A-Za-z0-9]|[A-Za-z0-9_-])")
 
 (defn parse-enumerated-chars [{:keys [head tail]}]
-  (let [items (conj (str/split head #",\s*") tail)]
-    (when (every? #(re-matches char-range-or-char-re %) items)
+  (let [items (conj (str/split head #",\s*") tail)
+        unparsable (removev #(re-matches char-range-or-char-re %) items)]
+    (if (seq unparsable)
+      (log/warnf "Unparsable enumerated chars %s in %s"
+                 (pr-str unparsable) (pr-str items))
       (let [{ranges true chars false} (group-by #(= 3 (count %)) items)]
         (->chars-pattern (concat ranges (sort-by #(= "-" %) chars)))))))
 
@@ -266,10 +271,12 @@
    "underscores"               "_"})
 
 (defn parse-prose-chars [{:keys [prose]}]
-  (let [items (str/split prose #",\s*|\s+and\s+")
-        char-classes (map #(prose->char-class (str/lower-case %)) items)]
-    (when (every? some? char-classes)
-      (->chars-pattern char-classes))))
+  (let [items (mapv str/lower-case (str/split prose #",\s*|\s+and\s+"))
+        unparsable (removev prose->char-class items)]
+    (if (seq unparsable)
+      (log/warnf "Unparsable prose chars %s in %s"
+                 (pr-str unparsable) (pr-str items))
+      (->chars-pattern (map prose->char-class items)))))
 
 ;; NB: This regexp is Java-specific, but we don't care much.
 (def no-emoji-pattern "[^\\p{IsExtended_Pictographic}]*")
