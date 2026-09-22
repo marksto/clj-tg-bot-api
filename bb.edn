@@ -1,6 +1,7 @@
 {:paths ["bb" "resources"]
  :deps  {;; Including only the libs that are not built-in into `bb`
          camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
+         inflections/inflections             {:mvn/version "0.15.0"}
          org.clj-commons/hickory             {:mvn/version "0.7.7"}}
  :tasks
  {:requires ([babashka.cli :as cli]

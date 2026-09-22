@@ -66,7 +66,8 @@
                                (some (fn [m] (when (= % (:name m)) m)))
                                :params-schema)
         set-webhook (params-schema-of "setWebhook")
-        set-custom-title (params-schema-of "setChatAdministratorCustomTitle")]
+        set-custom-title (params-schema-of "setChatAdministratorCustomTitle")
+        new-sticker-set (params-schema-of "createNewStickerSet")]
     (testing "an enumerated character set"
       (let [->params #(hash-map :url "https://example.com/hook" :secret_token %)]
         (is (nil? (s/check set-webhook (->params "s3cret_token-42")))
@@ -78,7 +79,18 @@
         (is (nil? (s/check set-custom-title (->params "Admin 1")))
             "A custom title of mere digits and letters must pass")
         (is (some? (s/check set-custom-title (->params "Admin \uD83D\uDE00")))
-            "A custom title with an emoji must fail")))))
+            "A custom title with an emoji must fail")))
+    (testing "a character set with a prefix and a repetition rule"
+      (let [->params #(hash-map :user_id 1 :name % :title "Animals"
+                                :stickers [{:sticker    "sticker-file-id"
+                                            :format     "static"
+                                            :emoji_list ["\uD83D\uDC31"]}])]
+        (is (nil? (s/check new-sticker-set (->params "animals_by_mybot")))
+            "A sticker set name of the allowed shape must pass")
+        (is (some? (s/check new-sticker-set (->params "1animals_by_mybot")))
+            "A sticker set name not beginning with a letter must fail")
+        (is (some? (s/check new-sticker-set (->params "animals__by_mybot")))
+            "A sticker set name with consecutive underscores must fail")))))
 
 ;;
 

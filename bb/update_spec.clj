@@ -24,7 +24,8 @@
    [clojure.walk :as walk]
    [hickory.core :as h]
    [hickory.render :as r]
-   [hickory.select :as s]))
+   [hickory.select :as s]
+   [inflections.core :as inf]))
 
 ;;; Utils
 
@@ -237,8 +238,7 @@
 ;; TODO: Address some or all of these string constraint cases.
 ;; NB: We do not parse other constraints for strings, such as:
 ;;     - "with at most 2 line feeds"
-;;     - "must begin with a letter"
-;;     - "can't contain consecutive underscores"
+;;     - "must end in `_by_<bot_username>`"
 (def desc-text-re
   {:length              #"(?i)(?:(\d+)-)?(\d+) characters"
    :byte-length         #"(?i)(?:(\d+)-)?(\d+) bytes"
@@ -246,10 +246,19 @@
    :allowed-chars       #"(?i)only (?:characters )?([^.]+?) and (\S+) are allowed"
    :allowed-chars-prose #"(?i)can contain only ([^.]+)"
    :disallow-emoji      #"(?i)emoji are not allowed"
+   :begins-with         #"(?i)must begin with an? (\w+)"
+   :no-consecutive      #"(?i)can't contain consecutive (\w+)"
    :aep-modifier        #"(?i)after entit(?:y|ies) parsing"})
 
-(defn ->chars-pattern [char-classes]
-  (str "[" (str/join char-classes) "]*"))
+(defn ->string-pattern
+  [{:keys [char-classes begins-with guards]}]
+  (when (or char-classes begins-with guards)
+    (let [chars (or (when (seq char-classes)
+                      (str "[" (str/join char-classes) "]"))
+                    "[\\s\\S]")]
+      (str begins-with
+           (if guards (str "(?:" chars guards ")") chars)
+           "*"))))
 
 (def meta-character? #{"\\" "]" "^" "[" "&" "-"})
 
@@ -268,14 +277,18 @@
                  (pr-str unparsable) (pr-str items))
       (let [{ranges true chars false} (group-by #(= 3 (count %)) items)
             escaped-chars (->> chars (sort-by #(= "-" %)) (map escape-char))]
-        (->chars-pattern (concat ranges escaped-chars))))))
+        (concat ranges escaped-chars)))))
 
 (def prose->char-class
   {"lowercase english letters" "a-z"
    "uppercase english letters" "A-Z"
    "english letters"           "A-Za-z"
+   "letters"                   "A-Za-z"
    "digits"                    "0-9"
    "underscores"               "_"})
+
+(defn noun->char-class [noun]
+  (prose->char-class (inf/plural (str/lower-case noun))))
 
 (defn parse-prose-chars [{:keys [prose]}]
   (let [items (mapv str/lower-case (str/split prose #",\s*|\s+and\s+"))
@@ -283,10 +296,21 @@
     (if (seq unparsable)
       (log/warnf "Unparsable prose chars %s in %s"
                  (pr-str unparsable) (pr-str items))
-      (->chars-pattern (map prose->char-class items)))))
+      (map prose->char-class items))))
+
+(defn parse-begins-with [{:keys [noun]}]
+  (if-some [char-class (noun->char-class noun)]
+    (str "[" char-class "]")
+    (log/warnf "Unparsable begins-with noun %s" (pr-str noun))))
+
+(defn parse-no-consecutive [{:keys [noun]}]
+  (let [char-class (noun->char-class noun)]
+    (if (= 1 (count char-class))
+      (str "(?<!" char-class char-class ")")
+      (log/warnf "Unparsable no-consecutive noun %s" (pr-str noun)))))
 
 ;; NB: This regexp is Java-specific, but we don't care much.
-(def no-emoji-pattern "[^\\p{IsExtended_Pictographic}]*")
+(def not-an-emoji-char-class "^\\p{IsExtended_Pictographic}")
 
 (defn parse-range-constraint
   ([{:keys [from to]}]
@@ -319,12 +343,19 @@
                    (some-> (re-search desc-text :byte-length [:from :to])
                            (parse-range-constraint)
                            (assoc :unit "bytes")))
-        pattern (or (some-> (re-search desc-text :allowed-chars [:head :tail])
-                            (parse-enumerated-chars))
-                    (some-> (re-search desc-text :allowed-chars-prose [:prose])
-                            (parse-prose-chars))
-                    (when (re-find (get desc-text-re :disallow-emoji) desc-text)
-                      no-emoji-pattern))
+        char-classes (or (some-> (re-search desc-text :allowed-chars [:head :tail])
+                                 (parse-enumerated-chars))
+                         (some-> (re-search desc-text :allowed-chars-prose [:prose])
+                                 (parse-prose-chars))
+                         (when (re-find (get desc-text-re :disallow-emoji) desc-text)
+                           [not-an-emoji-char-class]))
+        begins-with (some-> (re-search desc-text :begins-with [:noun])
+                            (parse-begins-with))
+        guards (some-> (re-search desc-text :no-consecutive [:noun])
+                       (parse-no-consecutive))
+        pattern (->string-pattern {:char-classes char-classes
+                                   :begins-with  begins-with
+                                   :guards       guards})
         aep-mod? (re-find (get desc-text-re :aep-modifier) desc-text)]
     (cond-> nil
       length (assoc :length length)
