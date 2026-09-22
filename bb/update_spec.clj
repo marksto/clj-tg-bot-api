@@ -238,23 +238,25 @@
 ;;     - "with at most 2 line feeds"
 ;;     - "must begin with a letter"
 ;;     - "can't contain consecutive underscores"
-(def string-length-re
-  #"(?:(\d+)-)?(\d+) characters(?:[^.;]*(after entit(?:y|ies) parsing))?")
+(def desc-text-re
+  {:length              #"(?i)(?:(\d+)-)?(\d+) characters"
+   :byte-length         #"(?i)(?:(\d+)-)?(\d+) bytes"
+   :total-length        #"(?i)total length of (?:up to )?(?:(\d+)-)?(\d+) characters"
+   :allowed-chars       #"(?i)only (?:characters )?([^.]+?) and (\S+) are allowed"
+   :allowed-chars-prose #"(?i)can contain only ([^.]+)"
+   :disallow-emoji      #"(?i)emoji are not allowed"
+   :aep-modifier        #"(?i)after entit(?:y|ies) parsing"})
 
-(def string-byte-length-re
-  #"(?i)(?:(\d+)-)?(\d+) bytes")
+(defn ->chars-pattern [char-classes]
+  (str "[" (str/join char-classes) "]*"))
 
-(def string-allowed-chars-re
-  #"(?i)only (?:characters )?([^.]+?) and (\S+) are allowed")
+(def char-range-or-char-re #"(?:.-.|.)")
 
-(def string-allowed-chars-prose-re
-  #"(?i)can contain only ([^.]+)")
-
-(def string-emoji-re
-  #"(?i)emoji are not allowed")
-
-(def char-range-or-char-re
-  #"(?:.-.|.)")
+(defn parse-enumerated-chars [{:keys [head tail]}]
+  (let [items (conj (str/split head #",\s*") tail)]
+    (when (every? #(re-matches char-range-or-char-re %) items)
+      (let [{ranges true chars false} (group-by #(= 3 (count %)) items)]
+        (->chars-pattern (concat ranges (sort-by #(= "-" %) chars)))))))
 
 (def prose->char-class
   {"lowercase english letters" "a-z"
@@ -263,60 +265,68 @@
    "digits"                    "0-9"
    "underscores"               "_"})
 
-(def no-emoji-pattern "[^\\p{IsExtended_Pictographic}]*")
-
-(defn ->chars-pattern [char-classes]
-  (str "[" (str/join char-classes) "]*"))
-
-(defn parse-enumerated-chars [head tail]
-  (let [items (conj (str/split head #",\s*") tail)]
-    (when (every? #(re-matches char-range-or-char-re %) items)
-      (let [{ranges true chars false} (group-by #(= 3 (count %)) items)]
-        (->chars-pattern (concat ranges (sort-by #(= "-" %) chars)))))))
-
-(defn parse-prose-chars [prose]
+(defn parse-prose-chars [{:keys [prose]}]
   (let [items (str/split prose #",\s*|\s+and\s+")
         char-classes (map #(prose->char-class (str/lower-case %)) items)]
     (when (every? some? char-classes)
       (->chars-pattern char-classes))))
 
+;; NB: This regexp is Java-specific, but we don't care much.
+(def no-emoji-pattern "[^\\p{IsExtended_Pictographic}]*")
+
 (defn parse-range-constraint
+  ([{:keys [from to]}]
+   (parse-range-constraint from to))
   ([from to]
-   (parse-range-constraint from to nil))
-  ([from to unit]
-   (merge (when from {:from (parse-long from)})
-          {:to (parse-long to)}
-          (when unit {:unit unit}))))
+   (merge (when from
+            {:from (parse-long from)})
+          {:to (parse-long to)})))
+
+(defn check-match [groups group-ks]
+  (when (not= (count groups) (count group-ks))
+    (throw (ex-info "Found groups do not match keys" {:groups   (vec groups)
+                                                      :group-ks group-ks})))
+  groups)
+
+(defn re-find* [re s group-ks]
+  (some-> (re-find re s)
+          (next)
+          (check-match group-ks)
+          (->> (zipmap group-ks)
+               (into {} (remove (comp nil? val)))
+               (not-empty))))
+
+(defn re-search [desc-text re-key group-ks]
+  (re-find* (get desc-text-re re-key) desc-text group-ks))
 
 (defn parse-string-constraints [desc-text]
-  (let [{:keys [from to unit after-entities-parsing]}
-        (or (some-> (re-find string-length-re desc-text)
-                    (next)
-                    (->> (zipmap [:from :to :after-entities-parsing])))
-            (some-> (re-find string-byte-length-re desc-text)
-                    (next)
-                    (->> (zipmap [:from :to]))
-                    (assoc :unit "bytes")))
-        [_ chars-head chars-tail] (re-find string-allowed-chars-re desc-text)
-        [_ chars-prose] (re-find string-allowed-chars-prose-re desc-text)
-        pattern (or (when chars-head
-                      (parse-enumerated-chars chars-head chars-tail))
-                    (when chars-prose
-                      (parse-prose-chars chars-prose))
-                    (when (re-find string-emoji-re desc-text)
-                      no-emoji-pattern))]
-    (not-empty
-      (cond-> {}
-        to (assoc :length (parse-range-constraint from to unit))
-        pattern (assoc :pattern pattern)
-        after-entities-parsing (assoc :after_entities_parsing true)))))
+  (let [length (or (some-> (re-search desc-text :length [:from :to])
+                           (parse-range-constraint))
+                   (some-> (re-search desc-text :byte-length [:from :to])
+                           (parse-range-constraint)
+                           (assoc :unit "bytes")))
+        pattern (or (some-> (re-search desc-text :allowed-chars [:head :tail])
+                            (parse-enumerated-chars))
+                    (some-> (re-search desc-text :allowed-chars-prose [:prose])
+                            (parse-prose-chars))
+                    (when (re-find (get desc-text-re :disallow-emoji) desc-text)
+                      no-emoji-pattern))
+        aep-mod? (re-find (get desc-text-re :aep-modifier) desc-text)]
+    (cond-> nil
+      length (assoc :length length)
+      pattern (assoc :pattern pattern)
+      aep-mod? (assoc :after_entities_parsing true))))
 
-(def array-constraints-re
-  #"total length of (?:up to )?(?:(\d+)-)?(\d+) characters")
+(defn array-type? [type]
+  (and (vector? type) (= :array (first type))))
 
-(defn parse-array-constraints [groups]
-  (let [[from to] (next groups)]
-    {:total_length (parse-range-constraint from to)}))
+(defn parse-array-constraints [type desc-text]
+  (let [element-type (second type)
+        total-length (when (= "String" element-type)
+                       (some-> (re-search desc-text :total-length [:from :to])
+                               (parse-range-constraint)))]
+    (cond-> nil
+      total-length (assoc :total_length total-length))))
 
 (defn prepare-api-type-field
   [{:keys [description] :as field}]
@@ -330,9 +340,8 @@
         json-ser? (str/includes? desc-text "JSON-serialized")
         str-const (when (= "String" field-type)
                     (parse-string-constraints desc-text))
-        arr-const (when (= [:array "String"] field-type)
-                    (some-> (re-find array-constraints-re desc-text)
-                            (parse-array-constraints)))]
+        arr-const (when (array-type? field-type)
+                    (parse-array-constraints field-type desc-text))]
     (cond-> (-> field
                 (update :name (comp keyword first :content))
                 (assoc :type field-type)
@@ -371,9 +380,8 @@
         json-ser? (str/includes? desc-text "JSON-serialized")
         str-const (when (= "String" param-type)
                     (parse-string-constraints desc-text))
-        arr-const (when (= [:array "String"] param-type)
-                    (some-> (re-find array-constraints-re desc-text)
-                            (parse-array-constraints)))]
+        arr-const (when (array-type? param-type)
+                    (parse-array-constraints param-type desc-text))]
     (cond-> (-> param
                 (update :name (comp keyword first :content))
                 (assoc :type param-type)
