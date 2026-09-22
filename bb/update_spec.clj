@@ -240,22 +240,34 @@
 ;;     - "with at most 2 line feeds"
 ;;     - "must end in `_by_<bot_username>`"
 (def desc-text-re
-  {:length              #"(?i)(?:(\d+)-)?(\d+) characters"
-   :byte-length         #"(?i)(?:(\d+)-)?(\d+) bytes"
-   :total-length        #"(?i)total length of (?:up to )?(?:(\d+)-)?(\d+) characters"
-   :allowed-chars       #"(?i)only (?:characters )?([^.]+?) and (\S+) are allowed"
-   :allowed-chars-prose #"(?i)can contain only ([^.]+)"
-   :disallowed-chars    #"(?i)(\w+) are not allowed"
-   :begins-with         #"(?i)must begin with an? (\w+)"
-   :no-consecutive      #"(?i)can't contain consecutive (\w+)"
-   :aep-modifier        #"(?i)after entit(?:y|ies) parsing"})
+  {:length               #"(?i)(?:(\d+)-)?(\d+) characters"
+   :byte-length          #"(?i)(?:(\d+)-)?(\d+) bytes"
+   :total-length         #"(?i)total length of (?:up to )?(?:(\d+)-)?(\d+) characters"
+   :allowed-chars-listed #"(?i)only (?:characters )?([^.]+?) and (\S+) are allowed"
+   :allowed-chars-named  #"(?i)can contain only ([^.]+)"
+   :disallowed-chars     #"(?i)(\w+) are not allowed"
+   :begins-with          #"(?i)must begin with an? (\w+)"
+   :no-consecutive       #"(?i)can't contain consecutive (\w+)"
+   :aep-modifier         #"(?i)after entit(?:y|ies) parsing"})
+
+(defn ->char-class [char-classes]
+  ;; NB: In a character class the `^` negates only when leading,
+  ;;     while the `-` is a literal only when trailing. Sorting.
+  (str "[" (str/join (sort-by #(case % "^" 0, "-" 2, 1) char-classes)) "]"))
+
+(defn ->char-classes [items item->char-class]
+  (let [unparsable (removev item->char-class items)]
+    (if (seq unparsable)
+      (log/warnf "Unparsable char class %s in %s"
+                 (pr-str unparsable) (pr-str items))
+      (mapv item->char-class items))))
 
 (defn ->string-pattern
   [{:keys [char-classes begins-with guards]}]
   (when (or char-classes begins-with guards)
-    (let [chars (or (when (seq char-classes)
-                      (str "[" (str/join char-classes) "]"))
-                    "[\\s\\S]")]
+    (let [chars (if (seq char-classes)
+                  (->char-class char-classes)
+                  "[\\s\\S]")]
       (str begins-with
            (if guards (str "(?:" chars guards ")") chars)
            "*"))))
@@ -269,15 +281,13 @@
 ;;     into an invalid range, while a single char is more permissive.
 (def char-range-or-char-re #"(?:A-Z|a-z|0-9|.)")
 
-(defn parse-enumerated-chars [{:keys [head tail]}]
-  (let [items (conj (str/split head #",\s*") tail)
-        unparsable (removev #(re-matches char-range-or-char-re %) items)]
-    (if (seq unparsable)
-      (log/warnf "Unparsable enumerated chars %s in %s"
-                 (pr-str unparsable) (pr-str items))
-      (let [{ranges true chars false} (group-by #(= 3 (count %)) items)
-            escaped-chars (->> chars (sort-by #(= "-" %)) (map escape-char))]
-        (concat ranges escaped-chars)))))
+(defn listed-char->char-class [item]
+  (when (re-matches char-range-or-char-re item)
+    (escape-char item)))
+
+(defn parse-listed-chars [{:keys [head tail]}]
+  (->char-classes (conj (str/split head #",\s*") tail)
+                  listed-char->char-class))
 
 (def prose->char-class
   {"lowercase english letters" "a-z"
@@ -294,18 +304,13 @@
 (defn noun->char-class [noun]
   (prose->char-class (inf/plural (str/lower-case noun))))
 
-(defn parse-prose-chars [{:keys [prose]}]
-  (let [items (mapv str/lower-case (str/split prose #",\s*|\s+and\s+"))
-        unparsable (removev prose->char-class items)]
-    (if (seq unparsable)
-      (log/warnf "Unparsable prose chars %s in %s"
-                 (pr-str unparsable) (pr-str items))
-      (map prose->char-class items))))
+(defn parse-named-chars [{:keys [prose]}]
+  (->char-classes (mapv str/lower-case (str/split prose #",\s*|\s+and\s+"))
+                  prose->char-class))
 
 (defn parse-begins-with [{:keys [noun]}]
-  (if-some [char-class (noun->char-class noun)]
-    (str "[" char-class "]")
-    (log/warnf "Unparsable begins-with noun %s" (pr-str noun))))
+  (some-> (->char-classes [noun] noun->char-class)
+          (->char-class)))
 
 (defn parse-no-consecutive [{:keys [noun]}]
   (let [char-class (noun->char-class noun)]
@@ -314,9 +319,8 @@
       (log/warnf "Unparsable no-consecutive noun %s" (pr-str noun)))))
 
 (defn parse-disallowed-chars [{:keys [noun]}]
-  (if-some [char-class (noun->char-class noun)]
-    ["^" char-class]
-    (log/warnf "Unparsable disallowed chars noun %s" (pr-str noun))))
+  (some->> (->char-classes [noun] noun->char-class)
+           (cons "^")))
 
 (defn parse-range-constraint
   ([{:keys [from to]}]
@@ -349,10 +353,10 @@
                    (some-> (re-search desc-text :byte-length [:from :to])
                            (parse-range-constraint)
                            (assoc :unit "bytes")))
-        char-classes (or (some-> (re-search desc-text :allowed-chars [:head :tail])
-                                 (parse-enumerated-chars))
-                         (some-> (re-search desc-text :allowed-chars-prose [:prose])
-                                 (parse-prose-chars))
+        char-classes (or (some-> (re-search desc-text :allowed-chars-listed [:head :tail])
+                                 (parse-listed-chars))
+                         (some-> (re-search desc-text :allowed-chars-named [:prose])
+                                 (parse-named-chars))
                          (some-> (re-search desc-text :disallowed-chars [:noun])
                                  (parse-disallowed-chars)))
         begins-with (some-> (re-search desc-text :begins-with [:noun])
