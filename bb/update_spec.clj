@@ -234,6 +234,7 @@
 (def type-dependant-field-re
   #".+(?:(must be)|(always)) [\"“]?([a-z0-9_]+)[\"”]?$")
 
+;; TODO: Address some or all of these string constraint cases.
 ;; NB: We do not parse other constraints for strings, such as:
 ;;     - "with at most 2 line feeds"
 ;;     - "must begin with a letter"
@@ -250,9 +251,14 @@
 (defn ->chars-pattern [char-classes]
   (str "[" (str/join char-classes) "]*"))
 
-;; NB: Deliberately narrow, since an item ends up in a character class as is,
-;;     where the likes of `^`, `]` and `\` would silently distort it.
-(def char-range-or-char-re #"(?:[A-Za-z0-9]-[A-Za-z0-9]|[A-Za-z0-9_-])")
+(def meta-character? #{"\\" "]" "^" "[" "&" "-"})
+
+(defn escape-char [ch]
+  (cond->> ch (and (meta-character? ch) (not= "-" ch)) (str "\\")))
+
+;; NB: Ranges are kept narrow, since nonsense endpoints would compile
+;;     into an invalid range, while a single char is more permissive.
+(def char-range-or-char-re #"(?:A-Z|a-z|0-9|.)")
 
 (defn parse-enumerated-chars [{:keys [head tail]}]
   (let [items (conj (str/split head #",\s*") tail)
@@ -260,8 +266,9 @@
     (if (seq unparsable)
       (log/warnf "Unparsable enumerated chars %s in %s"
                  (pr-str unparsable) (pr-str items))
-      (let [{ranges true chars false} (group-by #(= 3 (count %)) items)]
-        (->chars-pattern (concat ranges (sort-by #(= "-" %) chars)))))))
+      (let [{ranges true chars false} (group-by #(= 3 (count %)) items)
+            escaped-chars (->> chars (sort-by #(= "-" %)) (map escape-char))]
+        (->chars-pattern (concat ranges escaped-chars))))))
 
 (def prose->char-class
   {"lowercase english letters" "a-z"
