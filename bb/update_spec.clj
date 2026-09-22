@@ -245,7 +245,7 @@
    :total-length        #"(?i)total length of (?:up to )?(?:(\d+)-)?(\d+) characters"
    :allowed-chars       #"(?i)only (?:characters )?([^.]+?) and (\S+) are allowed"
    :allowed-chars-prose #"(?i)can contain only ([^.]+)"
-   :disallow-emoji      #"(?i)emoji are not allowed"
+   :disallowed-chars    #"(?i)(\w+) are not allowed"
    :begins-with         #"(?i)must begin with an? (\w+)"
    :no-consecutive      #"(?i)can't contain consecutive (\w+)"
    :aep-modifier        #"(?i)after entit(?:y|ies) parsing"})
@@ -285,7 +285,11 @@
    "english letters"           "A-Za-z"
    "letters"                   "A-Za-z"
    "digits"                    "0-9"
-   "underscores"               "_"})
+   "underscores"               "_"
+   ;; NB: This char class is Java-specific, but we don't care much.
+   "emoji"                     "\\p{IsExtended_Pictographic}"})
+
+(inf/add-uncountable! "emoji")
 
 (defn noun->char-class [noun]
   (prose->char-class (inf/plural (str/lower-case noun))))
@@ -309,8 +313,10 @@
       (str "(?<!" char-class char-class ")")
       (log/warnf "Unparsable no-consecutive noun %s" (pr-str noun)))))
 
-;; NB: This regexp is Java-specific, but we don't care much.
-(def not-an-emoji-char-class "^\\p{IsExtended_Pictographic}")
+(defn parse-disallowed-chars [{:keys [noun]}]
+  (if-some [char-class (noun->char-class noun)]
+    ["^" char-class]
+    (log/warnf "Unparsable disallowed chars noun %s" (pr-str noun))))
 
 (defn parse-range-constraint
   ([{:keys [from to]}]
@@ -347,8 +353,8 @@
                                  (parse-enumerated-chars))
                          (some-> (re-search desc-text :allowed-chars-prose [:prose])
                                  (parse-prose-chars))
-                         (when (re-find (get desc-text-re :disallow-emoji) desc-text)
-                           [not-an-emoji-char-class]))
+                         (some-> (re-search desc-text :disallowed-chars [:noun])
+                                 (parse-disallowed-chars)))
         begins-with (some-> (re-search desc-text :begins-with [:noun])
                             (parse-begins-with))
         guards (some-> (re-search desc-text :no-consecutive [:noun])
