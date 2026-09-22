@@ -78,13 +78,25 @@
       (let [->params #(hash-map :chat_id 1 :user_id 2 :custom_title %)]
         (is (nil? (s/check set-custom-title (->params "Admin 1")))
             "A custom title of mere digits and letters must pass")
-        (is (some? (s/check set-custom-title (->params "Admin \uD83D\uDE00")))
-            "A custom title with an emoji must fail")))
+        (is (nil? (s/check set-custom-title (->params "#1 Boss 2*3")))
+            "A custom title with the keycap base chars must pass")
+        (is (nil? (s/check set-custom-title (->params "✓ ok")))
+            "A custom title with a non-emoji dingbat must pass")
+        (is (some? (s/check set-custom-title (->params "Admin 😃")))
+            "A custom title with an emoji must fail")
+        #_(is (some? (s/check set-custom-title (->params "1️⃣")))
+              "A custom title with a keycap must fail")
+        (is (some? (s/check set-custom-title (->params "🇺🇸")))
+            "A custom title with a flag must fail")
+        (is (some? (s/check set-custom-title (->params "Acme™")))
+            "A custom title with a pictographic sign must fail")
+        (is (some? (s/check set-custom-title (->params "© marksto")))
+            "A custom title with a pictographic sign must fail")))
     (testing "a character set with a prefix and a repetition rule"
       (let [->params #(hash-map :user_id 1 :name % :title "Animals"
                                 :stickers [{:sticker    "sticker-file-id"
                                             :format     "static"
-                                            :emoji_list ["\uD83D\uDC31"]}])]
+                                            :emoji_list ["🐱"]}])]
         (is (nil? (s/check new-sticker-set (->params "animals_by_mybot")))
             "A sticker set name of the allowed shape must pass")
         (is (some? (s/check new-sticker-set (->params "1animals_by_mybot")))

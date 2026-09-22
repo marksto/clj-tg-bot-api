@@ -15180,7 +15180,7 @@
             "from" : 0,
             "to" : 16
           },
-          "pattern" : "[^\\p{IsExtended_Pictographic}]*"
+          "pattern" : "[^\\p{IsEmoji}&&[^0-9#*]]*"
         }
       }
     } ]
@@ -15210,7 +15210,7 @@
             "from" : 0,
             "to" : 16
           },
-          "pattern" : "[^\\p{IsExtended_Pictographic}]*"
+          "pattern" : "[^\\p{IsEmoji}&&[^0-9#*]]*"
         }
       }
     } ]

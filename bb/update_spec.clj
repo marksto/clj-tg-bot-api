@@ -297,7 +297,7 @@
    "digits"                    "0-9"
    "underscores"               "_"
    ;; NB: This char class is Java-specific, but we don't care much.
-   "emoji"                     "\\p{IsExtended_Pictographic}"})
+   "emoji"                     "\\p{IsEmoji}&&[^0-9#*]"})
 
 (inf/add-uncountable! "emoji")
 
