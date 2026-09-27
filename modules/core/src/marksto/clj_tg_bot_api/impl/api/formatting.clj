@@ -12,6 +12,13 @@
   (:require
    [clojure.string :as str]))
 
+(def lang-char-class
+  "An alias of a supported language is made of letters, digits, `-`, `#`, `+`
+   and `.`. Being over-permissive here is harmless anyway, since the language
+   is dropped from the text either way.
+   Source: https://github.com/TelegramMessenger/libprisma#supported-languages"
+  "[A-Za-z0-9+#._-]")
+
 (defmulti strip-entities
   "Removes Telegram Bot API message formatting markup from the given `text`
    according to the syntax rules of the specified `parse-mode`.
@@ -71,7 +78,32 @@
 
 ;;; Markdown style
 
-;; TODO: Strip the legacy `Markdown` markup as well.
+;; NB: The entities cannot nest here, and only `_`, `*`, `` ` ``, `[` are
+;;     escapable — and only outside an entity. That leaves every unescaped
+;;     marker droppable on sight, with no pairing to keep track of, since
+;;     an unbalanced one makes the text invalid for the server anyway.
+(def md:pre-pattern (str "```(?:" lang-char-class "*\\n)?(.*?)\\n?```"))
+(def md:code-pattern "`([^`]*)`")
+(def md:link-pattern "\\[([^\\]]*)\\]\\([^)]*\\)")
+(def md:escape-pattern "\\\\([_*`\\[])")
+(def md:marker-pattern "[_*]")
+
+;; NB: The order of the alternatives is what makes a marker literal inside
+;;     a `pre` or a `code` entity, and it is also the order of the capture
+;;     groups that `->markdown-text` goes on to destructure.
+(def markdown-token-re
+  (re-pattern (str "(?s)" md:pre-pattern
+                   "|" md:code-pattern
+                   "|" md:link-pattern
+                   "|" md:escape-pattern
+                   "|" md:marker-pattern)))
+
+(defn- ->markdown-text
+  [[_ pre-body code-body link-text escaped-char]]
+  (or pre-body code-body link-text escaped-char #_marker ""))
+
+(defmethod strip-entities "Markdown" [_ text]
+  (str/replace text markdown-token-re ->markdown-text))
 
 ;;; MarkdownV2 style
 

@@ -122,6 +122,14 @@
           "A markup of 4103 characters holding 4097 of them must fail")
       (is (nil? (s/check params-schema (->params (str/join (repeat 4096 "&amp;")) "HTML")))
           "An entity per character must be measured as a single character"))
+    (testing "a legacy Markdown text is measured once the markup is stripped"
+      (is (nil? (s/check params-schema (->params (str "*" at-limit "*") "Markdown")))
+          "A markup of 4098 characters holding 4096 of them must pass")
+      (is (some? (s/check params-schema (->params (str "*" over-limit "*") "Markdown")))
+          "A markup of 4099 characters holding 4097 of them must fail")
+      (is (nil? (s/check params-schema (->params (str "[" at-limit "](http://e.com/)")
+                                         "Markdown")))
+          "A link URL must not be measured, only its text"))
     (testing "a parse mode we cannot strip yet is left to the server"
       (is (nil? (s/check params-schema (->params over-limit "MarkdownV2")))
           "A text over the limit must pass, since its length is unknown"))))

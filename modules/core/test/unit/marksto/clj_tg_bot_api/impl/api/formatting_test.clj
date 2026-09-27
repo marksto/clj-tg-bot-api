@@ -45,6 +45,29 @@
     (testing "an entity that does not decode is left as is"
       (is= "&nosuch; &#99999999999;" "&nosuch; &#99999999999;"))))
 
+(deftest strip-entities:markdown-test
+  (let [is= (partial stripped-as-is= "Markdown")]
+    (testing "every supported syntax"
+      (is= "*bold text*" "bold text")
+      (is= "_italic text_" "italic text")
+      (is= "[inline URL](http://www.example.com/)" "inline URL")
+      (is= "[inline mention](tg://user?id=123456789)" "inline mention")
+      (is= "`inline fixed-width code`" "inline fixed-width code")
+      (is= "```\npre-formatted block\n```" "pre-formatted block")
+      (is= "```python\npy block\n```" "py block"))
+    (testing "escaping, as in the docs examples"
+      (is= "_snake_\\__case_" "snake_case")
+      (is= "*2*\\**2=4*" "2*2=4")
+      (is= "\\`not code\\`" "`not code`")
+      (is= "\\[not a link](x)" "[not a link](x)"))
+    (testing "only `_`, `*`, `` ` `` and `[` are escapable, so the rest stays as is"
+      (is= "\\]\\~\\." "\\]\\~\\."))
+    (testing "no other entity kind exists here, so its markup stays a plain text"
+      (is= "~strikethrough~ ||spoiler|| >quote" "~strikethrough~ ||spoiler|| >quote"))
+    (testing "a marker inside an entity stays a plain text"
+      (is= "`*not bold*`" "*not bold*")
+      (is= "```\n*not bold*\n```" "*not bold*"))))
+
 (deftest strip-entities:unknown-parse-mode-test
   (testing "an unsupported parse-mode strips to nothing known"
     (doseq [parse-mode [nil "markdown" "html" "MarkdownV3" "Whatever"]]
