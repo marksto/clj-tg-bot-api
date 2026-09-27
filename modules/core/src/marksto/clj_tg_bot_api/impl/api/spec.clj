@@ -24,7 +24,7 @@
    (java.net URI URL)
    (java.nio.charset StandardCharsets)
    (java.nio.file Path)
-   (schema.core NamedSchema)))
+   (schema.core Constrained NamedSchema)))
 
 (defn get-json-serialized-paths
   [api-element]
@@ -107,14 +107,16 @@
     basic-type->schema
     ["Boolean" "True" "String" "Integer" "Float"]))
 
-;; NB: At the moment is as simple as this.
-(def api-type-schema? map?)
+(defn unwrap-schema [schema]
+  (if (or (instance? NamedSchema schema)
+          (instance? Constrained schema))
+    (recur (:schema schema))
+    schema))
 
-(defn get-required-keys
-  [map-schema]
-  (-> (if (instance? NamedSchema map-schema)
-        (:schema map-schema) ; unwrap named
-        map-schema)
+(def api-type-schema? (comp map? unwrap-schema))
+
+(defn get-required-keys [map-schema]
+  (-> (unwrap-schema map-schema)
       (utils/filter-keys keyword?)
       (utils/keyset)))
 
@@ -165,16 +167,12 @@
    "bytes" #(alength (.getBytes ^String % StandardCharsets/UTF_8))})
 
 (defmethod ->constraint-pred :length
-  [_ {:keys [unit] :as params} {:keys [after_entities_parsing]} schema]
+  [_ {:keys [unit] :as params} _modifiers schema]
   (when-not (= s/Str schema)
     (throw (ex-info "The 'length' constraint requires a string"
                     {:schema schema})))
   (if-some [measure (length-unit->measure (or unit "chars"))]
-    ;; TODO: Impl the `after_entities_parsing`-related logic. Pre-parse an `obj`?
-    ;;       Is the juice worth the squeeze though? Probably not, or vary rarely.
-    (if after_entities_parsing
-      (constantly true)
-      (->range-pred params measure))
+    (->range-pred params measure)
     (throw (ex-info "Unsupported 'length' constraint unit" {:unit unit}))))
 
 (defmethod ->constraint-pred :pattern
@@ -192,7 +190,7 @@
                     {:schema schema})))
   (->range-pred params #(transduce (map count) + %)))
 
-(def constraint-modifiers #{:after_entities_parsing})
+(def constraint-modifiers #{})
 
 (defn ->constraints-pred
   [constraints schema]
@@ -202,11 +200,26 @@
                 (->constraint-pred constraint params modifiers schema)))
          (apply every-pred any?))))
 
+(declare deferred-constraints?)
+
+(defn ->constraints-error-symbol [category]
+  (symbol (str (name category) "-constraints")))
+
 (defn constrained-schema
-  [schema {:keys [string array] :as _constraints}]
-  (cond-> schema
-    string (s/constrained (->constraints-pred string schema) 'string-constraints)
-    array (s/constrained (->constraints-pred array schema) 'array-constraints)))
+  "Gives a constrained `schema` as `:schema`, plus as `:deferred` whatever
+   constraints only the whole map can check, together with the very schema
+   they are to be checked with."
+  [schema constraints]
+  (let [{deferred  true
+         immediate false} (group-by (comp deferred-constraints? val) constraints)]
+    (cond-> {:schema (reduce (fn [constrained-schema [category category-constraints]]
+                               (s/constrained constrained-schema
+                                              (->constraints-pred category-constraints schema)
+                                              (->constraints-error-symbol category)))
+                             schema
+                             immediate)}
+            (seq deferred)
+            (assoc :deferred {:schema schema :constraints (into {} deferred)}))))
 
 (def type-schemas-ns (create-ns 'marksto.clj-tg-bot-api.impl.api.schemas))
 
@@ -222,15 +235,92 @@
 (defn has-type-schema-var? [type-name]
   (boolean (ns-resolve type-schemas-ns (type-schema-symbol type-name))))
 
-(def ->field-name (comp keyword :name))
+;; NB: An "attr" is whatever an API element is made of — a field of an API type
+;;     or a param of an API method. The two are shaped alike, so all the schema
+;;     building below is stated in these neutral terms.
+
+(def ->attr-name (comp keyword :name))
+
+(defn get-attr-value
+  [obj attr-name]
+  (or (get obj attr-name)
+      (get obj (csk/->kebab-case attr-name))))
 
 (defn ->type-pred
   [type-dependant-field subtype]
-  (let [field-name (->field-name type-dependant-field)]
+  (let [attr-name (->attr-name type-dependant-field)]
     (fn [obj]
       (= (some :value (:fields subtype))
-         (or (get obj field-name)
-             (get obj (csk/->kebab-case field-name)))))))
+         (get-attr-value obj attr-name)))))
+
+;;; Types > Schemas > Cross-attribute constraints
+
+(defn ->parse-mode-name
+  [attr-name attr-names]
+  (let [own-name (keyword (str (name attr-name) "_parse_mode"))]
+    (if (contains? attr-names own-name) own-name :parse_mode)))
+
+(defmulti ->value-resolver
+  "Builds a fn that, given the whole map and the raw value, resolves the value
+   the constraints must be checked against, or `::unresolved` when it can't be
+   determined. Consumes the modifier it is built for."
+  {:arglists '([modifier attr attr-names])}
+  (fn [modifier _attr _attr-names] modifier))
+
+(defmethod ->value-resolver :after_entities_parsing
+  [_ attr attr-names]
+  (let [parse-mode-name (->parse-mode-name (->attr-name attr) attr-names)]
+    (fn [obj value]
+      ;; TODO: Strip the markup and hand that over, once a parse mode is set.
+      (if (get-attr-value obj parse-mode-name)
+        ::unresolved
+        value))))
+
+(def sibling-modifiers
+  "A set of modifiers that resolve a value to check against the sibling attrs,
+   so the constraints they alter can only be checked on the whole map."
+  #{:after_entities_parsing})
+
+(defn deferred-constraints? [constraints]
+  (boolean (some sibling-modifiers (keys constraints))))
+
+(defn ->deferred-constraints-pred
+  [{:keys [attr schema constraints]} attr-names]
+  (let [attr-name (->attr-name attr)
+        resolvers (->> (vals constraints)
+                       (mapcat keys)
+                       (filter sibling-modifiers)
+                       (distinct)
+                       (mapv #(->value-resolver % attr attr-names)))
+        ;; NB: A resolver consumes its own modifier, so whatever is left
+        ;;     gets checked exactly as an unmodified constraint would be.
+        pred (->> (vals constraints)
+                  (map #(->constraints-pred (apply dissoc % sibling-modifiers) schema))
+                  (apply every-pred any?))]
+    (fn [obj]
+      (let [value (reduce (fn [value value-resolver]
+                            (if (= ::unresolved value)
+                              value
+                              (value-resolver obj value)))
+                          (get-attr-value obj attr-name)
+                          resolvers)]
+        (or (nil? value) (= ::unresolved value) (pred value))))))
+
+(defn ->attrs-constraints-pred
+  [deferred attrs]
+  (let [attr-names (into #{} (map ->attr-name) attrs)]
+    (when-some [preds (->> deferred
+                           (mapv #(->deferred-constraints-pred % attr-names))
+                           (not-empty))]
+      (apply every-pred preds))))
+
+;; TODO: Cater for the relational cross-attr constraints as well, such as
+;;       "can't be used together with", "required if", "must be empty if".
+(defn attrs-constrained-schema
+  [map-schema deferred attrs]
+  (if-some [pred (->attrs-constraints-pred deferred attrs)]
+    (s/constrained map-schema pred 'attrs-constraints)
+    map-schema))
 
 (defn type->schema
   [*state type]
@@ -254,21 +344,44 @@
   (let [schema (type->schema *state type)]
     (if constraints
       (constrained-schema schema constraints)
-      schema)))
+      {:schema schema})))
+
+;; NB: An attr both contributes its own schema and may defer some constraints
+;;     to the whole type/params map, so the two are gathered in a single pass.
+(defn ->attrs-schema
+  [->attr-schema attrs]
+  (reduce (fn [acc attr]
+            (let [{:keys [key schema deferred]} (->attr-schema attr)]
+              (cond-> (assoc-in acc [:schema key] schema)
+                      deferred (update :deferred conj (assoc deferred :attr attr)))))
+          {:schema   {}
+           :deferred []}
+          attrs))
+
+(defn api-type:field-type->schema
+  [*state type constraints]
+  (let [{type-name :name} (get-in @*state [:id->api-type type])]
+    ;; NB: The order within a cycle is arbitrary, so a subtype may be parsed
+    ;;     after a supertype that unites it, in which case there's no schema
+    ;;     to look up yet, and only a `s/recursive` ref can stand in for it.
+    (if (has-type-schema-var? type-name)
+      {:schema (s/recursive (type-schema-var type-name))}
+      (constrained-type->schema *state type constraints))))
+
+(defn api-type:field->attr-schema
+  [*state {:keys [required type constraints] :as field}]
+  (-> *state
+      (api-type:field-type->schema type constraints)
+      (assoc :key (cond-> (->attr-name field)
+                          (not required) (s/optional-key)))))
 
 (defn api-type:concrete->schema
   [*state name fields]
-  (-> {}
-      (utils/index-by ->field-name fields)
-      (utils/update-kvs
-        (fn [field-name {:keys [required type constraints]}]
-          (let [{type-name :name} (get-in @*state [:id->api-type type])
-                field-schema (if (has-type-schema-var? type-name)
-                               (s/recursive (type-schema-var type-name))
-                               (constrained-type->schema *state type constraints))]
-            [(cond-> field-name (not required) (s/optional-key))
-             field-schema])))
-      (s/named name)))
+  (let [{:keys [schema deferred]}
+        (->attrs-schema #(api-type:field->attr-schema *state %) fields)]
+    (-> schema
+        (attrs-constrained-schema deferred fields)
+        (s/named name))))
 
 (defn api-type:subtype->schema
   [*state api-subtype-id]
@@ -323,11 +436,12 @@
 
 (def api-method-prefix "method/")
 
-(defn api-method-param->param-schema
+(defn api-method:param->attr-schema
   [*state {:keys [name type required constraints]}]
-  (let [param-key (cond-> (keyword name) (not required) (s/optional-key))
-        param-val (constrained-type->schema *state type constraints)]
-    [param-key param-val]))
+  (-> *state
+      (constrained-type->schema type constraints)
+      (assoc :key (cond-> (keyword name)
+                          (not required) (s/optional-key)))))
 
 (defn api-method-param-of-input-type?
   [{:keys [type]}]
@@ -336,7 +450,9 @@
 
 (defn api-method-params->params-schema
   [*state params]
-  (into {} (map #(api-method-param->param-schema *state %) params)))
+  (let [{:keys [schema deferred]}
+        (->attrs-schema #(api-method:param->attr-schema *state %) params)]
+    (attrs-constrained-schema schema deferred params)))
 
 (defn parse:api-method
   [*state {:keys [params] :as api-method}]
@@ -451,7 +567,7 @@
               incl-edited? (or (not edited?)
                                (str/starts-with? name "edited"))]
           (if (and incl-message? incl-edited?)
-            (conj acc {:name (->field-name field)})
+            (conj acc {:name (->attr-name field)})
             acc)))
       []
       update-fields)))

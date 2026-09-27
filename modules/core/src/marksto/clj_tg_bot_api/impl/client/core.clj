@@ -292,6 +292,9 @@
 (comment
   (def client (->client {:bot-token (System/getenv "BOT_AUTH_TOKEN")}))
 
+  (explore client)
+  (explore client :send-message)
+
   ;; CHECK WITH ALL SUPPORTED HTTP CLIENTS
 
   ;; Error Handling
