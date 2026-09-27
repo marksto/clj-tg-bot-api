@@ -68,6 +68,59 @@
       (is= "`*not bold*`" "*not bold*")
       (is= "```\n*not bold*\n```" "*not bold*"))))
 
+(deftest strip-entities:markdown-v2-test
+  (let [is= (partial stripped-as-is= "MarkdownV2")]
+    (testing "every supported syntax"
+      (is= "*bold \\*text*" "bold *text")
+      (is= "_italic \\*text_" "italic *text")
+      (is= "__underline__" "underline")
+      (is= "~strikethrough~" "strikethrough")
+      (is= "||spoiler||" "spoiler")
+      (is= "[inline URL](http://www.example.com/)" "inline URL")
+      (is= "[inline mention](tg://user?id=123456789)" "inline mention")
+      (is= "![👍](tg://emoji?id=5368324170671202286)" "👍")
+      (is= "`inline fixed-width code`" "inline fixed-width code")
+      (is= "```\npre-formatted block\n```" "pre-formatted block")
+      (is= "```python\npy block\n```" "py block"))
+    (testing "every date-time entity format"
+      (doseq [dt-fmt ["&format=wDT" "&format=t" "&format=r" ""]]
+        (is= (str "![22:45 tomorrow](tg://time?unix=1647531900" dt-fmt ")")
+             "22:45 tomorrow")))
+    (testing "nesting, as in the docs example"
+      (is= (str "*bold _italic bold ~italic bold strikethrough "
+                "||italic bold strikethrough spoiler||~ "
+                "__underline italic bold___ bold*")
+           (str "bold italic bold italic bold strikethrough "
+                "italic bold strikethrough spoiler "
+                "underline italic bold bold")))
+    (testing "block quotations"
+      (is= ">Quote started\n>Quote continued\n>The last line"
+           "Quote started\nQuote continued\nThe last line")
+      (is= "**>Expandable started\n>The last line||"
+           "Expandable started\nThe last line"))
+    (testing "the `__` ambiguity, as resolved in the docs"
+      (is= "___italic underline_**__" "italic underline")
+      (is= "**" ""))
+    (testing "any character with code 1 to 126 is escapable anywhere"
+      (is= "\\_\\*\\[\\]\\(\\)\\~\\`\\>\\#\\+\\-\\=\\|\\{\\}\\.\\!"
+           "_*[]()~`>#+-=|{}.!")
+      (is= "a \\\\ b" "a \\ b"))
+    (testing "inside `pre` and `code` a backtick and a backslash are escaped"
+      (is= "`a \\` b`" "a ` b")
+      (is= "```\na \\\\ b\n```" "a \\ b"))
+    (testing "inside the URL part a closing paren and a backslash are escaped"
+      (is= "[x](http://e.com/a\\)b)" "x"))
+    (testing "an unpaired marker fails the parse, leaving the plain text unknown"
+      (doseq [text ["*bold" "_italic" "~strike" "`code" "[x" "a ] b" "(x)" "!x"]]
+        (is= text nil)))
+    ;; NB: Allowing an empty entity is what lets the docs' `**` separator parse,
+    ;;     and it also makes a doubled marker a whole entity of its own. Such a
+    ;;     text is invalid for the server either way, so measuring it is as good
+    ;;     as leaving its length unknown.
+    (testing "a doubled unpaired marker parses as an empty entity instead"
+      (is= "__underline" "underline")
+      (is= "||spoiler" "spoiler"))))
+
 (deftest strip-entities:unknown-parse-mode-test
   (testing "an unsupported parse-mode strips to nothing known"
     (doseq [parse-mode [nil "markdown" "html" "MarkdownV3" "Whatever"]]

@@ -10,7 +10,8 @@
   "See https://core.telegram.org/bots/api#formatting-options for details."
   {:author "Mark Sto (@marksto)"}
   (:require
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [instaparse.core :as insta]))
 
 (def lang-char-class
   "An alias of a supported language is made of letters, digits, `-`, `#`, `+`
@@ -107,4 +108,53 @@
 
 ;;; MarkdownV2 style
 
-;; TODO: Strip the `MarkdownV2` markup as well.
+;; NB: Entities do nest here, and every marker is escapable, so a grammar
+;;     earns its keep over a scan. It depends on:
+;;     - the choice is ordered (`/`), not free (`|`), since a free choice
+;;       makes every marker ambiguous w/ the plain text containing it;
+;;     - deliberately no catch-all rule, so that an unpaired marker fails
+;;       the parse instead of being counted as a plain text character.
+(def md2:grammar
+  (str "
+document       = node*
+<node>         = pre / code / custom-emoji / link / quote-mark / spoiler
+                 / underline / bold / italic / strike / expand-mark
+                 / escaped / chars
+
+pre            = <'```'> lang? <nl?> pre-body <nl?> <'```'>
+<lang>         = <#'" lang-char-class "+'>
+<nl>           = <#'\\n'>
+pre-body       = pre-char*
+code           = <'`'> code-body <'`'>
+code-body      = code-char*
+<pre-char>     = escaped-tick / #'[^`\\\\\\n]' / #'\\n(?!```)'
+<code-char>    = escaped-tick / #'[^`\\\\\\n]'
+<escaped-tick> = <'\\\\'> #'[`\\\\]'
+
+quote-mark     = <#'(?:\\*\\*)?>'>
+expand-mark    = <'||'>
+underline      = <'__'> node* <'__'>
+bold           = <'*'> node* <'*'>
+italic         = <'_'> node* <'_'>
+strike         = <'~'> node* <'~'>
+spoiler        = <'||'> node* <'||'>
+
+custom-emoji   = <'!['> node* <']('> url <')'>
+link           = <'['> node* <']('> url <')'>
+<url>          = <#'(?:\\\\.|[^)])*'>
+
+escaped        = <'\\\\'> #'[\\u0001-\\u007E]'
+chars          = #'[^*_~|`\\[\\]()\\\\!>]+'
+"))
+
+(def *md2:parser (delay (insta/parser md2:grammar)))
+
+(defn- ->markdown-v2-text [ast]
+  (->> (tree-seq vector? rest ast)
+       (filter string?)
+       (apply str)))
+
+(defmethod strip-entities "MarkdownV2" [_ text]
+  (let [ast (@*md2:parser text)]
+    (when-not (insta/failure? ast)
+      (->markdown-v2-text ast))))
