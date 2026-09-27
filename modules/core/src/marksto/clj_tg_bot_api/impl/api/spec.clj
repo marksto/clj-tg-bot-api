@@ -16,6 +16,7 @@
    [clojure.tools.logging :as log]
    [flatland.ordered.map :refer [ordered-map]]
    [jsonista.core :as json]
+   [marksto.clj-tg-bot-api.impl.api.formatting :as fmt]
    [marksto.clj-tg-bot-api.impl.utils :as utils]
    [martian.schema-tools :as mct]
    [schema.core :as s])
@@ -271,9 +272,8 @@
   [_ attr attr-names]
   (let [parse-mode-name (->parse-mode-name (->attr-name attr) attr-names)]
     (fn [obj value]
-      ;; TODO: Strip the markup and hand that over, once a parse mode is set.
-      (if (get-attr-value obj parse-mode-name)
-        ::unresolved
+      (if-some [parse-mode (get-attr-value obj parse-mode-name)]
+        (or (fmt/strip-entities parse-mode value) ::unresolved)
         value))))
 
 (def sibling-modifiers

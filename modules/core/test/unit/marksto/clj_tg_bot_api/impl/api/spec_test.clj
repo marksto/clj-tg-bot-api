@@ -104,6 +104,28 @@
         (is (some? (s/check new-sticker-set (->params "animals__by_mybot")))
             "A sticker set name with consecutive underscores must fail")))))
 
+(deftest after-entities-parsing-length-is-enforced
+  (let [{:keys [methods]} (sut/get-tg-bot-api-spec)
+        {:keys [params-schema]} (some #(when (= "sendMessage" (:name %)) %) methods)
+        ->params #(cond-> {:chat_id 1 :text %1} %2 (assoc :parse_mode %2))
+        at-limit (str/join (repeat 4096 \a))
+        over-limit (str/join (repeat 4097 \a))]
+    (testing "a plain text is what the server gets, so it is measured as is"
+      (is (nil? (s/check params-schema (->params at-limit nil)))
+          "A text within the 4096 characters must pass")
+      (is (some? (s/check params-schema (->params over-limit nil)))
+          "A text over the 4096 characters must fail"))
+    (testing "an HTML-styled text is measured once the markup is stripped"
+      (is (nil? (s/check params-schema (->params (str "<b>" at-limit "</b>") "HTML")))
+          "A markup of 4102 characters holding 4096 of them must pass")
+      (is (some? (s/check params-schema (->params (str "<b>" over-limit "</b>") "HTML")))
+          "A markup of 4103 characters holding 4097 of them must fail")
+      (is (nil? (s/check params-schema (->params (str/join (repeat 4096 "&amp;")) "HTML")))
+          "An entity per character must be measured as a single character"))
+    (testing "a parse mode we cannot strip yet is left to the server"
+      (is (nil? (s/check params-schema (->params over-limit "MarkdownV2")))
+          "A text over the limit must pass, since its length is unknown"))))
+
 ;;
 
 (comment
