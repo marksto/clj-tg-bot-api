@@ -14667,7 +14667,10 @@
       "required" : false,
       "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
       "json_serialized" : true
-    } ]
+    } ],
+    "constraints" : {
+      "at_most_one" : [ [ "close_date", "open_period" ] ]
+    }
   }, {
     "id" : "method/send-checklist",
     "name" : "sendChecklist",

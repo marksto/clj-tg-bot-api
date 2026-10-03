@@ -306,19 +306,43 @@
                           resolvers)]
         (or (nil? value) (= ::unresolved value) (pred value))))))
 
+(defmulti ->relation-pred
+  "Builds a predicate for a single relation between the attrs of an API element,
+   given the groups of attr names it holds for."
+  {:arglists '([relation attr-name-groups])}
+  (fn [relation _attr-name-groups] relation))
+
+;; TODO: Cater for the rest of the relations as well, such as "required if".
+(defmethod ->relation-pred :at_most_one
+  [_ attr-name-groups]
+  (let [preds (for [attr-names (map #(map keyword %) attr-name-groups)]
+                (fn [obj]
+                  (-> (filter #(some? (get-attr-value obj %)) attr-names)
+                      (count)
+                      (<= 1))))]
+    (apply every-pred preds)))
+
+(defn ->attrs-relations-pred
+  [constraints]
+  (when-some [preds (->> constraints
+                         (mapv (fn [[relation attr-name-groups]]
+                                 (->relation-pred relation attr-name-groups)))
+                         (not-empty))]
+    (apply every-pred preds)))
+
 (defn ->attrs-constraints-pred
-  [deferred attrs]
+  [deferred attrs constraints]
   (let [attr-names (into #{} (map ->attr-name) attrs)]
-    (when-some [preds (->> deferred
-                           (mapv #(->deferred-constraints-pred % attr-names))
+    (when-some [preds (->> (conj (mapv #(->deferred-constraints-pred % attr-names)
+                                       deferred)
+                                 (->attrs-relations-pred constraints))
+                           (remove nil?)
                            (not-empty))]
       (apply every-pred preds))))
 
-;; TODO: Cater for the relational cross-attr constraints as well, such as
-;;       "can't be used together with", "required if", "must be empty if".
 (defn attrs-constrained-schema
-  [map-schema deferred attrs]
-  (if-some [pred (->attrs-constraints-pred deferred attrs)]
+  [map-schema deferred attrs constraints]
+  (if-some [pred (->attrs-constraints-pred deferred attrs constraints)]
     (s/constrained map-schema pred 'attrs-constraints)
     map-schema))
 
@@ -376,11 +400,11 @@
                           (not required) (s/optional-key)))))
 
 (defn api-type:concrete->schema
-  [*state name fields]
+  [*state name fields constraints]
   (let [{:keys [schema deferred]}
         (->attrs-schema #(api-type:field->attr-schema *state %) fields)]
     (-> schema
-        (attrs-constrained-schema deferred fields)
+        (attrs-constrained-schema deferred fields constraints)
         (s/named name))))
 
 (defn api-type:subtype->schema
@@ -408,10 +432,10 @@
       name)))
 
 (defn api-type->schema
-  [*state {:keys [id name fields subtypes] :as _api-type}]
+  [*state {:keys [id name fields subtypes constraints] :as _api-type}]
   (let [schema (cond
                  (some? fields)
-                 (api-type:concrete->schema *state name fields)
+                 (api-type:concrete->schema *state name fields constraints)
 
                  (some? subtypes)
                  (api-type:supertype->schema *state name subtypes)
@@ -449,19 +473,19 @@
       (contains? (set (flatten type)) input-file-api-type-id)))
 
 (defn api-method-params->params-schema
-  [*state params]
+  [*state params constraints]
   (let [{:keys [schema deferred]}
         (->attrs-schema #(api-method:param->attr-schema *state %) params)]
-    (attrs-constrained-schema schema deferred params)))
+    (attrs-constrained-schema schema deferred params constraints)))
 
 (defn parse:api-method
-  [*state {:keys [params] :as api-method}]
+  [*state {:keys [params constraints] :as api-method}]
   (let [json-serialized-paths (get-json-serialized-paths params)]
     (cond-> api-method
 
             (some? params)
             (assoc :params-schema
-                   (api-method-params->params-schema *state params))
+                   (api-method-params->params-schema *state params constraints))
 
             (some api-method-param-of-input-type? params)
             (assoc :uploads-file? true)

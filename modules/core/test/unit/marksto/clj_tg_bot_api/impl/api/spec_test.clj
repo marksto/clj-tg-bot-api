@@ -144,6 +144,22 @@
       (is (nil? (s/check params-schema (->params over-limit "UnknownStyle")))
           "A text over the limit must pass, since its length is unknown"))))
 
+(deftest at-most-one-relation-is-enforced
+  ;; NB: `sendPoll` states "Can't be used together with close_date" on its
+  ;;     `open_period`, and the very same the other way round.
+  (let [{:keys [methods]} (sut/get-tg-bot-api-spec)
+        {:keys [params-schema]} (some #(when (= "sendPoll" (:name %)) %) methods)
+        ->params #(merge {:chat_id 1 :question "q" :options [{:text "a"}]} %)]
+    (is (nil? (s/check params-schema (->params {})))
+        "Neither of the two mutually exclusive params must pass")
+    (is (nil? (s/check params-schema (->params {:open_period 60})))
+        "The one of the two must pass")
+    (is (nil? (s/check params-schema (->params {:close_date 1700000000})))
+        "The other of the two must pass")
+    (is (some? (s/check params-schema (->params {:open_period 60
+                                                 :close_date 1700000000})))
+        "Both of the two at once must fail")))
+
 ;;
 
 (comment

@@ -222,6 +222,22 @@
       :description description}
      rest']))
 
+;;;; Parsing > API Element > Constraints
+
+;; NB: Both sides of a relation declare it, hence the dedup. Only the adjacent
+;;     duplicates ever collapse, which is what both inner+outer sorts are for.
+(defn ->element-constraints [attrs]
+  (update-vals (->> attrs (mapcat :relations) (group-by key))
+               #(->> % (map (comp vec sort val)) (sort) (dedupe) (vec))))
+
+(defn lift-attrs-relations
+  [element attrs-key]
+  (let [attrs (get element attrs-key)
+        attrs' (mapv #(dissoc % :relations) attrs)
+        element-constraints (->element-constraints attrs)]
+    (cond-> (assoc element attrs-key attrs')
+      (seq element-constraints) (assoc :constraints element-constraints))))
+
 ;;;; Parsing > API Element > API Type
 
 (defn col-name->attr-key
@@ -248,7 +264,8 @@
    :disallowed-chars     #"(?i)(\w+) are not allowed"
    :begins-with          #"(?i)must begin with an? (\w+)"
    :no-consecutive       #"(?i)can't contain consecutive (\w+)"
-   :aep-modifier         #"(?i)after entit(?:y|ies) parsing"})
+   :aep-modifier         #"(?i)after entit(?:y|ies) parsing"
+   :mutual-exclusion     #"(?i)can't be used together with ([a-z_]+)"})
 
 (defn ->char-class [char-classes]
   ;; NB: In a character class the `^` negates only when leading,
@@ -383,29 +400,37 @@
     (cond-> nil
       total-length (assoc :total_length total-length))))
 
+(defn parse-attr-relations [attr-name desc-text]
+  (when-some [{:keys [other-attr-name]}
+              (re-search desc-text :mutual-exclusion [:other-attr-name])]
+    {:at_most_one #{attr-name (keyword other-attr-name)}}))
+
 (defn prepare-api-type-field
   [{:keys [description] :as field}]
   (let [optional? (-> (s/select s/first-child description)
                       (first)
                       (text)
                       (str/starts-with? "Optional"))
-        desc-text (text description)
+        field-name (-> field :name :content first keyword)
         field-type (parse-data-type (:type field))
+        desc-text (text description)
         tdf-value (last (re-find type-dependant-field-re desc-text))
         json-ser? (str/includes? desc-text "JSON-serialized")
         str-const (when (= "String" field-type)
                     (parse-string-constraints desc-text))
         arr-const (when (array-type? field-type)
-                    (parse-array-constraints field-type desc-text))]
+                    (parse-array-constraints field-type desc-text))
+        attr-rels (parse-attr-relations field-name desc-text)]
     (cond-> (-> field
-                (update :name (comp keyword first :content))
+                (assoc :name field-name)
                 (assoc :type field-type)
                 (assoc :required (not optional?))
                 (update :description (comp render-html:nodes :content)))
             tdf-value (assoc :value tdf-value)
             json-ser? (assoc :json_serialized json-ser?)
             str-const (assoc-in [:constraints :string] str-const)
-            arr-const (assoc-in [:constraints :array] arr-const))))
+            arr-const (assoc-in [:constraints :array] arr-const)
+            attr-rels (assoc :relations attr-rels))))
 
 (defn get-api-type-field
   [col-names single-row-nodes]
@@ -419,32 +444,36 @@
 
 (defn get-api-type
   [col-names row-nodes]
-  (reduce (fn [type-acc single-row-nodes]
-            (let [field (get-api-type-field col-names single-row-nodes)]
-              (update type-acc :fields conj field)))
-          {:kind   :type
-           :fields []}
-          row-nodes))
+  (-> (fn [type-acc single-row-nodes]
+        (let [field (get-api-type-field col-names single-row-nodes)]
+          (update type-acc :fields conj field)))
+      (reduce {:kind   :type
+               :fields []}
+              row-nodes)
+      (lift-attrs-relations :fields)))
 
 ;;;; Parsing > API Element > API Method
 
 (defn prepare-api-method-param
   [{:keys [description] :as param}]
-  (let [desc-text (text description)
+  (let [param-name (-> param :name :content first keyword)
         param-type (parse-data-type (:type param))
+        desc-text (text description)
         json-ser? (str/includes? desc-text "JSON-serialized")
         str-const (when (= "String" param-type)
                     (parse-string-constraints desc-text))
         arr-const (when (array-type? param-type)
-                    (parse-array-constraints param-type desc-text))]
+                    (parse-array-constraints param-type desc-text))
+        attr-rels (parse-attr-relations param-name desc-text)]
     (cond-> (-> param
-                (update :name (comp keyword first :content))
+                (assoc :name param-name)
                 (assoc :type param-type)
                 (update :required #(has-text? % "Yes"))
                 (update :description (comp render-html:nodes :content)))
             json-ser? (assoc :json_serialized json-ser?)
             str-const (assoc-in [:constraints :string] str-const)
-            arr-const (assoc-in [:constraints :array] arr-const))))
+            arr-const (assoc-in [:constraints :array] arr-const)
+            attr-rels (assoc :relations attr-rels))))
 
 (defn get-api-method-param
   [col-names single-row-nodes]
@@ -458,13 +487,14 @@
 
 (defn get-api-method
   [col-names row-nodes]
-  (reduce (fn [method-acc single-row-nodes]
-            (let [param (get-api-method-param col-names single-row-nodes)]
-              (update method-acc :params conj param)))
-          {:kind   :method
-           :params []
-           #_#_:returns nil} ; no need for the return type in Clojure
-          row-nodes))
+  (-> (fn [method-acc single-row-nodes]
+        (let [param (get-api-method-param col-names single-row-nodes)]
+          (update method-acc :params conj param)))
+      (reduce {:kind   :method
+               :params []
+               #_#_:returns nil} ; no need for the return type in Clojure
+              row-nodes)
+      (lift-attrs-relations :params)))
 
 ;;;; Parsing > API Element > Table
 
