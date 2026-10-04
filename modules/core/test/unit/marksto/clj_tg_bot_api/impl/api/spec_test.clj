@@ -114,6 +114,137 @@
                       'array-constraints)
         "Keywords over the 64 characters in total must fail, each being shorter")))
 
+(deftest number-in-constraint-is-enforced
+  (testing "a span trailing the prose"
+    ;; NB: `sendLocation` states "measured in meters; 0-1500" on its
+    ;;     `horizontal_accuracy`, which is a Float rather than an Integer.
+    (let [send-location (params-schema-of "sendLocation")]
+      (is (nil? (s/check send-location
+                         {:chat_id             1
+                          :latitude            51.5
+                          :longitude           -0.12
+                          :horizontal_accuracy 1500.0}))
+          "An accuracy right at the upper bound must pass")
+      (is (rejected-by? send-location
+                        {:chat_id             1
+                         :latitude            51.5
+                         :longitude           -0.12
+                         :horizontal_accuracy 1500.5}
+                        'number-constraints)
+          "An accuracy over the upper bound must fail")))
+  (testing "a span stated as a sentence of its own"
+    ;; NB: `sendLocation` states "Must be between 1 and 360 if specified"
+    ;;     on its `heading`.
+    (let [send-location (params-schema-of "sendLocation")]
+      (is (nil? (s/check send-location
+                         {:chat_id   1
+                          :latitude  51.5
+                          :longitude -0.12
+                          :heading   360}))
+          "A heading right at the upper bound must pass")
+      (is (rejected-by? send-location
+                        {:chat_id   1
+                         :latitude  51.5
+                         :longitude -0.12
+                         :heading   0}
+                        'number-constraints)
+          "A heading under the lower bound must fail")))
+  (testing "a span stated as the accepted values"
+    ;; NB: `getUpdates` states "Values between 1-100 are accepted" on `limit`.
+    (let [get-updates (params-schema-of "getUpdates")]
+      (is (nil? (s/check get-updates {:limit 100}))
+          "A limit right at the upper bound must pass")
+      (is (rejected-by? get-updates {:limit 101} 'number-constraints)
+          "A limit over the upper bound must fail")))
+  (testing "a field of a type rather than a param of a method"
+    ;; NB: `Birthdate` states "Month of the user's birth; 1-12" on its `month`.
+    (let [birthdate (type-schema-of "Birthdate")]
+      (is (nil? (s/check birthdate {:day 29 :month 12}))
+          "A month right at the upper bound must pass")
+      (is (rejected-by? birthdate {:day 29 :month 13} 'number-constraints)
+          "A month over the upper bound must fail")))
+  (testing "a span together with the exact values stated beside it"
+    ;; NB: `sendLocation` states "must be between 60 and 86400, or 0x7FFFFFFF
+    ;;     for live locations that can be edited indefinitely" on its
+    ;;     `live_period`, and then "Must be 0 for ephemeral messages", so all
+    ;;     three of the terms admit a value on their own.
+    (let [send-location (params-schema-of "sendLocation")]
+      (is (nil? (s/check send-location
+                         {:chat_id     1
+                          :latitude    51.5
+                          :longitude   -0.12
+                          :live_period 60}))
+          "A period right at the span's lower bound must pass")
+      (is (nil? (s/check send-location
+                         {:chat_id     1
+                          :latitude    51.5
+                          :longitude   -0.12
+                          :live_period 86400}))
+          "A period right at the span's upper bound must pass")
+      (is (nil? (s/check send-location
+                         {:chat_id     1
+                          :latitude    51.5
+                          :longitude   -0.12
+                          :live_period 0x7FFFFFFF}))
+          "The exact value standing for an indefinite period must pass")
+      (is (nil? (s/check send-location
+                         {:chat_id     1
+                          :latitude    51.5
+                          :longitude   -0.12
+                          :live_period 0}))
+          "The exact value standing for an ephemeral message must pass")
+      (is (rejected-by? send-location
+                        {:chat_id     1
+                         :latitude    51.5
+                         :longitude   -0.12
+                         :live_period 59}
+                        'number-constraints)
+          "A period just under the span must fail, no exact value matching it")
+      (is (rejected-by? send-location
+                        {:chat_id     1
+                         :latitude    51.5
+                         :longitude   -0.12
+                         :live_period 86401}
+                        'number-constraints)
+          "A period just over the span must fail, no exact value matching it")))
+  (testing "the exact values alone"
+    ;; NB: `giftPremiumSubscription` states "must be one of 3, 6, or 12" on
+    ;;     its `month_count`, which bounds nothing yet admits just the three.
+    (let [gift-premium (params-schema-of "giftPremiumSubscription")]
+      (is (nil? (s/check gift-premium
+                         {:user_id 1 :star_count 1000 :month_count 3}))
+          "The least of the exact values must pass")
+      (is (nil? (s/check gift-premium
+                         {:user_id 1 :star_count 1000 :month_count 12}))
+          "The greatest of the exact values must pass")
+      (is (rejected-by? gift-premium
+                        {:user_id 1 :star_count 1000 :month_count 4}
+                        'number-constraints)
+          "A value between two of the exact ones must fail")
+      (is (rejected-by? gift-premium
+                        {:user_id 1 :star_count 1000 :month_count 24}
+                        'number-constraints)
+          "A value beyond all the exact ones must fail")))
+  (testing "a span whose bound the docs spell out as a product"
+    ;; NB: `BusinessOpeningHoursInterval` states "; 0 - 7 * 24 * 60" on its
+    ;;     `opening_minute` and "; 0 - 8 * 24 * 60" on its `closing_minute`,
+    ;;     a week's worth of minutes left unmultiplied.
+    (let [opening-hours (type-schema-of "BusinessOpeningHoursInterval")]
+      (is (nil? (s/check opening-hours
+                         {:opening_minute 10080
+                          :closing_minute 11520}))
+          "Minutes right at either upper bound must pass")
+      (is (rejected-by? opening-hours
+                        {:opening_minute 10081
+                         :closing_minute 11520}
+                        'number-constraints)
+          "A minute over the evaluated product must fail")
+      (is (rejected-by? opening-hours
+                        {:opening_minute 10080
+                         :closing_minute 11521}
+                        'number-constraints)
+          "The two bounds must differ, the one week from the other"))))
+
 (deftest byte-length-constraint-is-enforced
   (let [inline-kbd-button (type-schema-of "InlineKeyboardButton")]
     (is (nil? (s/check inline-kbd-button

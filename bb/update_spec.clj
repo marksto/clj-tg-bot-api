@@ -255,16 +255,18 @@
 
 ;; TODO: Address some or all of these string constraint cases.
 ;; NB: We do not parse other constraints for strings, such as:
-;;     - "with at most 2 line feeds"
-;;     - "must end in `_by_<bot_username>`"
+;;     - "with at most 2 line feeds" (no need to check for it)
+;;     - "must end in `_by_<bot_username>`" (impossible to check)
 ;;     - "must be a superset|subset of"
 (def desc-text-re
-  {:length               #"(?i)(?:(\d+)-)?(\d+) characters"
-   :byte-length          #"(?i)(?:(\d+)-)?(\d+) bytes"
-   :total-length         #"(?i)total length of (?:up to )?(?:(\d+)-)?(\d+) characters"
+  {:in-span              #"(?i)(?:[;,] |between |from )(-?\d+(?:\s*\*\s*\d+)*)(?:\s*-\s*| and | to )(-?\d+(?:\s*\*\s*\d+)*)"
+   :in-values            #"(?i)must (?:be one of |always be |be )([^.;]+)"
    :size-of-list         #"(?i)(?:list|array) of (?:up to )?(?:(\d+)-)?(\d+)\s"
    :size-in-range        #"(?i)(?:up to|include) (?:(\d+)-)?(\d+) items"
    :size-max-limit       #"(?i)at most (\d+) [^.]*?can be specified"
+   :total-length         #"(?i)total length of (?:up to )?(?:(\d+)-)?(\d+) characters"
+   :length               #"(?i)(?:(\d+)-)?(\d+) characters"
+   :byte-length          #"(?i)(?:(\d+)-)?(\d+) bytes"
    :allowed-chars-listed #"(?i)only (?:characters )?([^.]+?) and (\S+) are allowed"
    :allowed-chars-named  #"(?i)can contain only ([^.]+)"
    :disallowed-chars     #"(?i)(\w+) are not allowed"
@@ -372,6 +374,67 @@
 (defn re-search [desc-text re-key group-ks]
   (re-find* (get desc-text-re re-key) desc-text group-ks))
 
+(defn number-type? [type]
+  (contains? #{"Integer" "Float"} type))
+
+(def lead-number-re
+  #"(?i)^\s*(?:(?:and|or)\s+)?(0x[0-9A-Fa-f]+|-?\d+(?:\s*\*\s*\d+)*)\b")
+
+;; NB: Only the number a term leads with counts, which is what tells the value
+;;     in "1000 for 3 months" from the condition it is stated under.
+(defn parse-numeric [term]
+  (when-some [[_ number-str] (re-find lead-number-re term)]
+    (if (str/starts-with? (str/lower-case number-str) "0x")
+      (Long/parseLong (subs number-str 2) 16)
+      (->> (re-seq #"-?\d+" number-str)
+           (map parse-long)
+           (reduce *)))))
+
+(def parens-re #"\([^)]*\)")
+
+;; NB: A parenthetical only ever restates the value next to it — "(30 days)",
+;;     "(0x6FB9F0)" — so it goes before the clause is split into terms.
+(defn parse-numerics [clause]
+  (-> (str/replace clause parens-re "")
+      (str/split #",|\bor\b")
+      (->> (keep parse-numeric))))
+
+(defn span-covers? [span value]
+  (let [{:keys [from to]} span]
+    (and (or (nil? from) (<= from value))
+         (<= value to))))
+
+(defn ->term-bound [term]
+  (if (map? term) (or (:from term) (:to term)) term))
+
+;; NB: We do not parse other constraints for numbers, such as:
+;;     - "no more than 2628000 seconds in the future" (current time offset)
+;;     - "Should be positive" (advisory, and contradicted by a default of 0)
+(defn parse-number-constraints [desc-text]
+  ;; NB: A description states the values an attr admits as terms — a span or
+  ;;     an exact one — and the terms do compose. Joined by an "or" they are
+  ;;     a union, which is precisely what the constraint checks.
+  (let [spans (->> (re-seq (get desc-text-re :in-span) desc-text)
+                   (map (fn [[_ from to]]
+                          {:from (parse-numeric from)
+                           :to   (parse-numeric to)}))
+                   (distinct))]
+    ;; NB: Several spans at once are joined by an "and", each conditioned on
+    ;;     something invisible from here — a currency, a base emoji — since
+    ;;     two unconditional spans for one value make no sense. That logical
+    ;;     contradiction is what this veto rests on.
+    (when (<= (count spans) 1)
+      (let [span (first spans)
+            values (->> (re-seq (get desc-text-re :in-values) desc-text)
+                        (mapcat (comp parse-numerics second))
+                        (remove #(and span (span-covers? span %)))
+                        (distinct))
+            terms (->> (cond-> (vec values) span (conj span))
+                       (sort-by ->term-bound)
+                       (vec))]
+        (when (seq terms)
+          {:in terms})))))
+
 (defn parse-string-constraints [desc-text]
   (let [length (or (some-> (re-search desc-text :length [:from :to])
                            (parse-range-constraint))
@@ -446,6 +509,8 @@
         desc-text (text description)
         tdf-value (last (re-find type-dependant-field-re desc-text))
         json-ser? (str/includes? desc-text "JSON-serialized")
+        num-const (when (number-type? field-type)
+                    (parse-number-constraints desc-text))
         str-const (when (= "String" field-type)
                     (parse-string-constraints desc-text))
         arr-const (when (array-type? field-type)
@@ -458,6 +523,7 @@
                 (update :description (comp render-html:nodes :content)))
             tdf-value (assoc :value tdf-value)
             json-ser? (assoc :json_serialized json-ser?)
+            num-const (assoc-in [:constraints :number] num-const)
             str-const (assoc-in [:constraints :string] str-const)
             arr-const (assoc-in [:constraints :array] arr-const)
             attr-rels (assoc :relations attr-rels))))
@@ -490,6 +556,8 @@
         param-type (parse-data-type (:type param))
         desc-text (text description)
         json-ser? (str/includes? desc-text "JSON-serialized")
+        num-const (when (number-type? param-type)
+                    (parse-number-constraints desc-text))
         str-const (when (= "String" param-type)
                     (parse-string-constraints desc-text))
         arr-const (when (array-type? param-type)
@@ -501,6 +569,7 @@
                 (update :required #(has-text? % "Yes"))
                 (update :description (comp render-html:nodes :content)))
             json-ser? (assoc :json_serialized json-ser?)
+            num-const (assoc-in [:constraints :number] num-const)
             str-const (assoc-in [:constraints :string] str-const)
             arr-const (assoc-in [:constraints :array] arr-const)
             attr-rels (assoc :relations attr-rels))))

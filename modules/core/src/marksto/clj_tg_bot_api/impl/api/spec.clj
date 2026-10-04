@@ -151,17 +151,47 @@
      (apply s/cond-pre schemas))))
 
 (defn ->range-pred
-  [{:keys [from to]} measure]
-  (fn [obj]
-    (let [n (measure obj)]
-      (and (if from (<= from n) true)
-           (<= n to)))))
+  ([range]
+   (->range-pred range identity))
+  ([{:keys [from to]} measure]
+   (fn [obj]
+     (let [n (measure obj)]
+       (and (if from (<= from n) true)
+            (<= n to))))))
 
 (defmulti ->constraint-pred
   "Builds a predicate for a single constraint, given the modifiers that alter
    the way it is checked and the schema it guards."
   {:arglists '([constraint params modifiers schema])}
   (fn [constraint _params _modifiers _schema] constraint))
+
+(defn ->term-pred
+  "Builds a pred for a single term an `in` constraint admits, which is either
+   an inclusive span or an exact value."
+  [term]
+  (if (map? term) (->range-pred term) #(== term %)))
+
+(defmethod ->constraint-pred :in
+  [_ terms _modifiers schema]
+  (when-not (contains? #{s/Int Floating} schema)
+    (throw (ex-info "The 'in' constraint requires a number" {:schema schema})))
+  ;; NB: The terms of an `in` are a union — any one of them admits the value —
+  ;;     in contrast to the constraints of a category, which all have to hold.
+  (apply some-fn (map ->term-pred terms)))
+
+(defmethod ->constraint-pred :size
+  [_ params _modifiers schema]
+  (when-not (vector? schema)
+    (throw (ex-info "The 'size' constraint requires an array"
+                    {:schema schema})))
+  (->range-pred params count))
+
+(defmethod ->constraint-pred :total_length
+  [_ params _modifiers schema]
+  (when-not (= [s/Str] schema)
+    (throw (ex-info "The 'total_length' constraint requires string items"
+                    {:schema schema})))
+  (->range-pred params #(transduce (map count) + %)))
 
 (def length-unit->measure
   {"chars" count
@@ -183,20 +213,6 @@
                     {:schema schema})))
   (let [pattern-re (re-pattern pattern)]
     #(some? (re-matches pattern-re %))))
-
-(defmethod ->constraint-pred :size
-  [_ params _modifiers schema]
-  (when-not (vector? schema)
-    (throw (ex-info "The 'size' constraint requires an array"
-                    {:schema schema})))
-  (->range-pred params count))
-
-(defmethod ->constraint-pred :total_length
-  [_ params _modifiers schema]
-  (when-not (= [s/Str] schema)
-    (throw (ex-info "The 'total_length' constraint requires string items"
-                    {:schema schema})))
-  (->range-pred params #(transduce (map count) + %)))
 
 (def constraint-modifiers #{})
 

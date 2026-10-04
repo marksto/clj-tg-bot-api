@@ -2713,7 +2713,15 @@
       "name" : "horizontal_accuracy",
       "type" : "Float",
       "description" : "<em>Optional</em>. The radius of uncertainty for the location, measured in meters; 0-1500",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 0,
+            "to" : 1500
+          } ]
+        }
+      }
     }, {
       "name" : "live_period",
       "type" : "Integer",
@@ -2723,7 +2731,15 @@
       "name" : "heading",
       "type" : "Integer",
       "description" : "<em>Optional</em>. The direction in which user is moving, in degrees; 1-360. For active live locations only.",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 360
+          } ]
+        }
+      }
     }, {
       "name" : "proximity_alert_radius",
       "type" : "Integer",
@@ -2999,7 +3015,15 @@
       "name" : "rotation_angle",
       "type" : "Integer",
       "description" : "Clockwise rotation angle of the background fill in degrees; 0-359",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 0,
+            "to" : 359
+          } ]
+        }
+      }
     } ]
   }, {
     "id" : "type/background-fill-freeform-gradient",
@@ -3044,7 +3068,15 @@
       "name" : "dark_theme_dimming",
       "type" : "Integer",
       "description" : "Dimming of the background in dark themes, as a percentage; 0-100",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 0,
+            "to" : 100
+          } ]
+        }
+      }
     } ]
   }, {
     "id" : "type/background-type-wallpaper",
@@ -3066,7 +3098,15 @@
       "name" : "dark_theme_dimming",
       "type" : "Integer",
       "description" : "Dimming of the background in dark themes, as a percentage; 0-100",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 0,
+            "to" : 100
+          } ]
+        }
+      }
     }, {
       "name" : "is_blurred",
       "type" : "True",
@@ -3103,7 +3143,15 @@
       "name" : "intensity",
       "type" : "Integer",
       "description" : "Intensity of the pattern when it is shown above the filled background; 0-100",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 0,
+            "to" : 100
+          } ]
+        }
+      }
     }, {
       "name" : "is_inverted",
       "type" : "True",
@@ -3987,7 +4035,15 @@
       "name" : "max_quantity",
       "type" : "Integer",
       "description" : "<em>Optional</em>. The maximum number of users to be selected; 1-10. Defaults to 1.",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 10
+          } ]
+        }
+      }
     }, {
       "name" : "request_name",
       "type" : "Boolean",
@@ -4455,7 +4511,15 @@
       "name" : "member_limit",
       "type" : "Integer",
       "description" : "<em>Optional</em>. The maximum number of users that can be members of the chat simultaneously after joining the chat via this invite link; 1-99999",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 99999
+          } ]
+        }
+      }
     }, {
       "name" : "pending_join_request_count",
       "type" : "Integer",
@@ -5078,12 +5142,28 @@
       "name" : "day",
       "type" : "Integer",
       "description" : "Day of the user's birth; 1-31",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 31
+          } ]
+        }
+      }
     }, {
       "name" : "month",
       "type" : "Integer",
       "description" : "Month of the user's birth; 1-12",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 12
+          } ]
+        }
+      }
     }, {
       "name" : "year",
       "type" : "Integer",
@@ -5136,12 +5216,28 @@
       "name" : "opening_minute",
       "type" : "Integer",
       "description" : "The minute's sequence number in a week, starting on Monday, marking the start of the time interval during which the business is open; 0 - 7 * 24 * 60",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 0,
+            "to" : 10080
+          } ]
+        }
+      }
     }, {
       "name" : "closing_minute",
       "type" : "Integer",
       "description" : "The minute's sequence number in a week, starting on Monday, marking the end of the time interval during which the business is open; 0 - 8 * 24 * 60",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 0,
+            "to" : 11520
+          } ]
+        }
+      }
     } ]
   }, {
     "id" : "type/business-opening-hours",
@@ -5214,7 +5310,15 @@
       "name" : "rotation_angle",
       "type" : "Float",
       "description" : "The clockwise rotation angle of the rectangle, in degrees; 0-360",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 0,
+            "to" : 360
+          } ]
+        }
+      }
     }, {
       "name" : "corner_radius_percentage",
       "type" : "Float",
@@ -6223,7 +6327,15 @@
       "name" : "nanostar_amount",
       "type" : "Integer",
       "description" : "<em>Optional</em>. The number of 1/1000000000 shares of Telegram Stars; from -999999999 to 999999999; can be negative if and only if <em>amount</em> is non-positive",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : -999999999,
+            "to" : 999999999
+          } ]
+        }
+      }
     } ]
   }, {
     "id" : "type/bot-command",
@@ -7117,7 +7229,15 @@
       "name" : "horizontal_accuracy",
       "type" : "Float",
       "description" : "<em>Optional</em>. The radius of uncertainty for the location, measured in meters; 0-1500",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 0,
+            "to" : 1500
+          } ]
+        }
+      }
     } ]
   }, {
     "id" : "type/input-media-photo",
@@ -7566,7 +7686,15 @@
       "name" : "duration",
       "type" : "Float",
       "description" : "<em>Optional</em>. Precise duration of the video in seconds; 0-60",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 0,
+            "to" : 60
+          } ]
+        }
+      }
     }, {
       "name" : "cover_frame_timestamp",
       "type" : "Float",
@@ -8567,7 +8695,15 @@
       "name" : "size",
       "type" : "Integer",
       "description" : "Relative size of the text font; 1-6, 1 is the largest, 6 is the smallest",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 6
+          } ]
+        }
+      }
     } ]
   }, {
     "id" : "type/rich-block-preformatted",
@@ -9142,7 +9278,15 @@
       "name" : "size",
       "type" : "Integer",
       "description" : "Relative size of the text font; 1-6, 1 is the largest, 6 is the smallest",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 6
+          } ]
+        }
+      }
     } ]
   }, {
     "id" : "type/input-rich-block-preformatted",
@@ -9440,17 +9584,41 @@
       "name" : "zoom",
       "type" : "Integer",
       "description" : "<em>Optional</em>. Map zoom level; 0-24",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 0,
+            "to" : 24
+          } ]
+        }
+      }
     }, {
       "name" : "width",
       "type" : "Integer",
       "description" : "<em>Optional</em>. Map width; 0-10000",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 0,
+            "to" : 10000
+          } ]
+        }
+      }
     }, {
       "name" : "height",
       "type" : "Integer",
       "description" : "<em>Optional</em>. Map height; 0-10000",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 0,
+            "to" : 10000
+          } ]
+        }
+      }
     }, {
       "name" : "caption",
       "type" : "type/rich-block-caption",
@@ -10476,22 +10644,54 @@
       "name" : "horizontal_accuracy",
       "type" : "Float",
       "description" : "<em>Optional</em>. The radius of uncertainty for the location, measured in meters; 0-1500",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 0,
+            "to" : 1500
+          } ]
+        }
+      }
     }, {
       "name" : "live_period",
       "type" : "Integer",
       "description" : "<em>Optional</em>. Period in seconds during which the location can be updated, must be between 60 and 86400, or 0x7FFFFFFF for live locations that can be edited indefinitely",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 60,
+            "to" : 86400
+          }, 2147483647 ]
+        }
+      }
     }, {
       "name" : "heading",
       "type" : "Integer",
       "description" : "<em>Optional</em>. For live locations, a direction in which the user is moving, in degrees. Must be between 1 and 360 if specified.",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 360
+          } ]
+        }
+      }
     }, {
       "name" : "proximity_alert_radius",
       "type" : "Integer",
       "description" : "<em>Optional</em>. For live locations, a maximum distance for proximity alerts about approaching another chat member, in meters. Must be between 1 and 100000 if specified.",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 100000
+          } ]
+        }
+      }
     }, {
       "name" : "reply_markup",
       "type" : "type/inline-keyboard-markup",
@@ -11356,22 +11556,54 @@
       "name" : "horizontal_accuracy",
       "type" : "Float",
       "description" : "<em>Optional</em>. The radius of uncertainty for the location, measured in meters; 0-1500",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 0,
+            "to" : 1500
+          } ]
+        }
+      }
     }, {
       "name" : "live_period",
       "type" : "Integer",
       "description" : "<em>Optional</em>. Period in seconds during which the location can be updated, must be between 60 and 86400, or 0x7FFFFFFF for live locations that can be edited indefinitely",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 60,
+            "to" : 86400
+          }, 2147483647 ]
+        }
+      }
     }, {
       "name" : "heading",
       "type" : "Integer",
       "description" : "<em>Optional</em>. For live locations, a direction in which the user is moving, in degrees. Must be between 1 and 360 if specified.",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 360
+          } ]
+        }
+      }
     }, {
       "name" : "proximity_alert_radius",
       "type" : "Integer",
       "description" : "<em>Optional</em>. For live locations, a maximum distance for proximity alerts about approaching another chat member, in meters. Must be between 1 and 100000 if specified.",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 100000
+          } ]
+        }
+      }
     } ]
   }, {
     "id" : "type/input-venue-message-content",
@@ -12008,7 +12240,15 @@
       "name" : "nanostar_amount",
       "type" : "Integer",
       "description" : "<em>Optional</em>. The number of 1/1000000000 shares of Telegram Stars received by the affiliate; from -999999999 to 999999999; can be negative for refunds",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : -999999999,
+            "to" : 999999999
+          } ]
+        }
+      }
     } ]
   }, {
     "id" : "type/transaction-partner",
@@ -12194,7 +12434,15 @@
       "name" : "nanostar_amount",
       "type" : "Integer",
       "description" : "<em>Optional</em>. The number of 1/1000000000 shares of Telegram Stars transferred by the transaction; from 0 to 999999999",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 0,
+            "to" : 999999999
+          } ]
+        }
+      }
     }, {
       "name" : "date",
       "type" : "Integer",
@@ -12682,7 +12930,15 @@
       "name" : "limit",
       "type" : "Integer",
       "required" : false,
-      "description" : "Limits the number of updates to be retrieved. Values between 1-100 are accepted. Defaults to 100."
+      "description" : "Limits the number of updates to be retrieved. Values between 1-100 are accepted. Defaults to 100.",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 100
+          } ]
+        }
+      }
     }, {
       "name" : "timeout",
       "type" : "Integer",
@@ -12720,7 +12976,15 @@
       "name" : "max_connections",
       "type" : "Integer",
       "required" : false,
-      "description" : "The maximum allowed number of simultaneous HTTPS connections to the webhook for update delivery, 1-100. Defaults to <em>40</em>. Use lower values to limit the load on your bot's server, and higher values to increase your bot's throughput."
+      "description" : "The maximum allowed number of simultaneous HTTPS connections to the webhook for update delivery, 1-100. Defaults to <em>40</em>. Use lower values to limit the load on your bot's server, and higher values to increase your bot's throughput.",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 100
+          } ]
+        }
+      }
     }, {
       "name" : "allowed_updates",
       "type" : [ "array", "String" ],
@@ -14089,7 +14353,15 @@
       "name" : "star_count",
       "type" : "Integer",
       "required" : true,
-      "description" : "The number of Telegram Stars that must be paid to buy access to the media; 1-25000"
+      "description" : "The number of Telegram Stars that must be paid to buy access to the media; 1-25000",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 25000
+          } ]
+        }
+      }
     }, {
       "name" : "media",
       "type" : [ "array", "type/input-paid-media" ],
@@ -14290,22 +14562,54 @@
       "name" : "horizontal_accuracy",
       "type" : "Float",
       "required" : false,
-      "description" : "The radius of uncertainty for the location, measured in meters; 0-1500"
+      "description" : "The radius of uncertainty for the location, measured in meters; 0-1500",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 0,
+            "to" : 1500
+          } ]
+        }
+      }
     }, {
       "name" : "live_period",
       "type" : "Integer",
       "required" : false,
-      "description" : "Period in seconds during which the location will be updated (see <a href=\"https://telegram.org/blog/live-locations\">Live Locations</a>), must be between 60 and 86400, or 0x7FFFFFFF for live locations that can be edited indefinitely. Must be 0 for ephemeral messages."
+      "description" : "Period in seconds during which the location will be updated (see <a href=\"https://telegram.org/blog/live-locations\">Live Locations</a>), must be between 60 and 86400, or 0x7FFFFFFF for live locations that can be edited indefinitely. Must be 0 for ephemeral messages.",
+      "constraints" : {
+        "number" : {
+          "in" : [ 0, {
+            "from" : 60,
+            "to" : 86400
+          }, 2147483647 ]
+        }
+      }
     }, {
       "name" : "heading",
       "type" : "Integer",
       "required" : false,
-      "description" : "For live locations, a direction in which the user is moving, in degrees. Must be between 1 and 360 if specified."
+      "description" : "For live locations, a direction in which the user is moving, in degrees. Must be between 1 and 360 if specified.",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 360
+          } ]
+        }
+      }
     }, {
       "name" : "proximity_alert_radius",
       "type" : "Integer",
       "required" : false,
-      "description" : "For live locations, a maximum distance for proximity alerts about approaching another chat member, in meters. Must be between 1 and 100000 if specified."
+      "description" : "For live locations, a maximum distance for proximity alerts about approaching another chat member, in meters. Must be between 1 and 100000 if specified.",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 100000
+          } ]
+        }
+      }
     }, {
       "name" : "disable_notification",
       "type" : "Boolean",
@@ -14703,7 +15007,15 @@
       "name" : "open_period",
       "type" : "Integer",
       "required" : false,
-      "description" : "Amount of time in seconds the poll will be active after creation, 5-2628000. Can't be used together with <em>close_date</em>."
+      "description" : "Amount of time in seconds the poll will be active after creation, 5-2628000. Can't be used together with <em>close_date</em>.",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 5,
+            "to" : 2628000
+          } ]
+        }
+      }
     }, {
       "name" : "close_date",
       "type" : "Integer",
@@ -15024,7 +15336,15 @@
       "name" : "limit",
       "type" : "Integer",
       "required" : false,
-      "description" : "Limits the number of photos to be retrieved. Values between 1-100 are accepted. Defaults to 100."
+      "description" : "Limits the number of photos to be retrieved. Values between 1-100 are accepted. Defaults to 100.",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 100
+          } ]
+        }
+      }
     } ]
   }, {
     "id" : "method/get-user-profile-audios",
@@ -15045,7 +15365,15 @@
       "name" : "limit",
       "type" : "Integer",
       "required" : false,
-      "description" : "Limits the number of audios to be retrieved. Values between 1-100 are accepted. Defaults to 100."
+      "description" : "Limits the number of audios to be retrieved. Values between 1-100 are accepted. Defaults to 100.",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 100
+          } ]
+        }
+      }
     } ]
   }, {
     "id" : "method/set-user-emoji-status",
@@ -15423,7 +15751,15 @@
       "name" : "member_limit",
       "type" : "Integer",
       "required" : false,
-      "description" : "The maximum number of users that can be members of the chat simultaneously after joining the chat via this invite link; 1-99999"
+      "description" : "The maximum number of users that can be members of the chat simultaneously after joining the chat via this invite link; 1-99999",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 99999
+          } ]
+        }
+      }
     }, {
       "name" : "creates_join_request",
       "type" : "Boolean",
@@ -15467,7 +15803,15 @@
       "name" : "member_limit",
       "type" : "Integer",
       "required" : false,
-      "description" : "The maximum number of users that can be members of the chat simultaneously after joining the chat via this invite link; 1-99999"
+      "description" : "The maximum number of users that can be members of the chat simultaneously after joining the chat via this invite link; 1-99999",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 99999
+          } ]
+        }
+      }
     }, {
       "name" : "creates_join_request",
       "type" : "Boolean",
@@ -15501,12 +15845,25 @@
       "name" : "subscription_period",
       "type" : "Integer",
       "required" : true,
-      "description" : "The number of seconds the subscription will be active for before the next payment. Currently, it must always be 2592000 (30 days)."
+      "description" : "The number of seconds the subscription will be active for before the next payment. Currently, it must always be 2592000 (30 days).",
+      "constraints" : {
+        "number" : {
+          "in" : [ 2592000 ]
+        }
+      }
     }, {
       "name" : "subscription_price",
       "type" : "Integer",
       "required" : true,
-      "description" : "The amount of Telegram Stars a user must pay initially and after each subsequent subscription period to be a member of the chat; 1-10000"
+      "description" : "The amount of Telegram Stars a user must pay initially and after each subsequent subscription period to be a member of the chat; 1-10000",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 10000
+          } ]
+        }
+      }
     } ]
   }, {
     "id" : "method/edit-chat-subscription-invite-link",
@@ -15832,7 +16189,15 @@
       "name" : "limit",
       "type" : "Integer",
       "required" : true,
-      "description" : "The maximum number of messages to return; 1-20"
+      "description" : "The maximum number of messages to return; 1-20",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 20
+          } ]
+        }
+      }
     } ]
   }, {
     "id" : "method/set-chat-sticker-set",
@@ -15893,7 +16258,12 @@
       "name" : "icon_color",
       "type" : "Integer",
       "required" : false,
-      "description" : "Color of the topic icon in RGB format. Currently, must be one of 7322096 (0x6FB9F0), 16766590 (0xFFD67E), 13338331 (0xCB86DB), 9367192 (0x8EEE98), 16749490 (0xFF93B2), or 16478047 (0xFB6F5F)."
+      "description" : "Color of the topic icon in RGB format. Currently, must be one of 7322096 (0x6FB9F0), 16766590 (0xFFD67E), 13338331 (0xCB86DB), 9367192 (0x8EEE98), 16749490 (0xFF93B2), or 16478047 (0xFB6F5F).",
+      "constraints" : {
+        "number" : {
+          "in" : [ 7322096, 9367192, 13338331, 16478047, 16749490, 16766590 ]
+        }
+      }
     }, {
       "name" : "icon_custom_emoji_id",
       "type" : "String",
@@ -16535,12 +16905,22 @@
       "name" : "month_count",
       "type" : "Integer",
       "required" : true,
-      "description" : "Number of months the Telegram Premium subscription will be active for the user; must be one of 3, 6, or 12"
+      "description" : "Number of months the Telegram Premium subscription will be active for the user; must be one of 3, 6, or 12",
+      "constraints" : {
+        "number" : {
+          "in" : [ 3, 6, 12 ]
+        }
+      }
     }, {
       "name" : "star_count",
       "type" : "Integer",
       "required" : true,
-      "description" : "Number of Telegram Stars to pay for the Telegram Premium subscription; must be 1000 for 3 months, 1500 for 6 months, and 2500 for 12 months"
+      "description" : "Number of Telegram Stars to pay for the Telegram Premium subscription; must be 1000 for 3 months, 1500 for 6 months, and 2500 for 12 months",
+      "constraints" : {
+        "number" : {
+          "in" : [ 1000, 1500, 2500 ]
+        }
+      }
     }, {
       "name" : "text",
       "type" : "String",
@@ -16850,7 +17230,15 @@
       "name" : "star_count",
       "type" : "Integer",
       "required" : true,
-      "description" : "Number of Telegram Stars to transfer; 1-10000"
+      "description" : "Number of Telegram Stars to transfer; 1-10000",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 10000
+          } ]
+        }
+      }
     } ]
   }, {
     "id" : "method/get-business-account-gifts",
@@ -16911,7 +17299,15 @@
       "name" : "limit",
       "type" : "Integer",
       "required" : false,
-      "description" : "The maximum number of gifts to be returned; 1-100. Defaults to 100."
+      "description" : "The maximum number of gifts to be returned; 1-100. Defaults to 100.",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 100
+          } ]
+        }
+      }
     } ]
   }, {
     "id" : "method/get-user-gifts",
@@ -16962,7 +17358,15 @@
       "name" : "limit",
       "type" : "Integer",
       "required" : false,
-      "description" : "The maximum number of gifts to be returned; 1-100. Defaults to 100."
+      "description" : "The maximum number of gifts to be returned; 1-100. Defaults to 100.",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 100
+          } ]
+        }
+      }
     } ]
   }, {
     "id" : "method/get-chat-gifts",
@@ -17023,7 +17427,15 @@
       "name" : "limit",
       "type" : "Integer",
       "required" : false,
-      "description" : "The maximum number of gifts to be returned; 1-100. Defaults to 100."
+      "description" : "The maximum number of gifts to be returned; 1-100. Defaults to 100.",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 100
+          } ]
+        }
+      }
     } ]
   }, {
     "id" : "method/convert-gift-to-stars",
@@ -17112,7 +17524,12 @@
       "name" : "active_period",
       "type" : "Integer",
       "required" : true,
-      "description" : "Period after which the story is moved to the archive, in seconds; must be one of <code>6 * 3600</code>, <code>12 * 3600</code>, <code>86400</code>, or <code>2 * 86400</code>"
+      "description" : "Period after which the story is moved to the archive, in seconds; must be one of <code>6 * 3600</code>, <code>12 * 3600</code>, <code>86400</code>, or <code>2 * 86400</code>",
+      "constraints" : {
+        "number" : {
+          "in" : [ 21600, 43200, 86400, 172800 ]
+        }
+      }
     }, {
       "name" : "caption",
       "type" : "String",
@@ -17179,7 +17596,12 @@
       "name" : "active_period",
       "type" : "Integer",
       "required" : true,
-      "description" : "Period after which the story is moved to the archive, in seconds; must be one of <code>6 * 3600</code>, <code>12 * 3600</code>, <code>86400</code>, or <code>2 * 86400</code>"
+      "description" : "Period after which the story is moved to the archive, in seconds; must be one of <code>6 * 3600</code>, <code>12 * 3600</code>, <code>86400</code>, or <code>2 * 86400</code>",
+      "constraints" : {
+        "number" : {
+          "in" : [ 21600, 43200, 86400, 172800 ]
+        }
+      }
     }, {
       "name" : "post_to_chat_page",
       "type" : "Boolean",
@@ -17550,17 +17972,41 @@
       "name" : "horizontal_accuracy",
       "type" : "Float",
       "required" : false,
-      "description" : "The radius of uncertainty for the location, measured in meters; 0-1500"
+      "description" : "The radius of uncertainty for the location, measured in meters; 0-1500",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 0,
+            "to" : 1500
+          } ]
+        }
+      }
     }, {
       "name" : "heading",
       "type" : "Integer",
       "required" : false,
-      "description" : "Direction in which the user is moving, in degrees. Must be between 1 and 360 if specified."
+      "description" : "Direction in which the user is moving, in degrees. Must be between 1 and 360 if specified.",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 360
+          } ]
+        }
+      }
     }, {
       "name" : "proximity_alert_radius",
       "type" : "Integer",
       "required" : false,
-      "description" : "The maximum distance for proximity alerts about approaching another chat member, in meters. Must be between 1 and 100000 if specified."
+      "description" : "The maximum distance for proximity alerts about approaching another chat member, in meters. Must be between 1 and 100000 if specified.",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 100000
+          } ]
+        }
+      }
     }, {
       "name" : "reply_markup",
       "type" : "type/inline-keyboard-markup",
@@ -18881,7 +19327,12 @@
       "name" : "subscription_period",
       "type" : "Integer",
       "required" : false,
-      "description" : "The number of seconds the subscription will be active for before the next payment. The currency must be set to “XTR” (Telegram Stars) if the parameter is used. Currently, it must always be 2592000 (30 days) if specified. Any number of subscriptions can be active for a given bot at the same time, including multiple concurrent subscriptions from the same user. Subscription price must no exceed 10000 Telegram Stars."
+      "description" : "The number of seconds the subscription will be active for before the next payment. The currency must be set to “XTR” (Telegram Stars) if the parameter is used. Currently, it must always be 2592000 (30 days) if specified. Any number of subscriptions can be active for a given bot at the same time, including multiple concurrent subscriptions from the same user. Subscription price must no exceed 10000 Telegram Stars.",
+      "constraints" : {
+        "number" : {
+          "in" : [ 2592000 ]
+        }
+      }
     }, {
       "name" : "max_tip_amount",
       "type" : "Integer",
@@ -19029,7 +19480,15 @@
       "name" : "limit",
       "type" : "Integer",
       "required" : false,
-      "description" : "The maximum number of transactions to be retrieved. Values between 1-100 are accepted. Defaults to 100."
+      "description" : "The maximum number of transactions to be retrieved. Values between 1-100 are accepted. Defaults to 100.",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 1,
+            "to" : 100
+          } ]
+        }
+      }
     } ]
   }, {
     "id" : "method/refund-star-payment",
