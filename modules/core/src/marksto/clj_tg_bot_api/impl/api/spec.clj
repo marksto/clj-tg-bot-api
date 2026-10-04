@@ -329,6 +329,15 @@
   [_ attr-name-groups]
   (->attrs-presence-pred attr-name-groups #(>= % 1)))
 
+(defmethod ->relation-pred :required_with
+  [_ attr-name-groups]
+  (let [preds (for [[required-attr-name other-attr-name]
+                    (map #(map keyword %) attr-name-groups)]
+                (fn [obj]
+                  (or (nil? (get-attr-value obj other-attr-name))
+                      (some? (get-attr-value obj required-attr-name)))))]
+    (apply every-pred preds)))
+
 (defn ->attrs-relations-pred
   [constraints]
   (when-some [preds (->> constraints

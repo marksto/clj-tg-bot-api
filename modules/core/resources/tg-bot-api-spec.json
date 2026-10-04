@@ -15633,7 +15633,10 @@
       "type" : "Integer",
       "required" : false,
       "description" : "Identifier of the message to unpin. Required if <em>business_connection_id</em> is specified. If not specified, the most recent pinned message (by sending date) will be unpinned."
-    } ]
+    } ],
+    "constraints" : {
+      "required_with" : [ [ "message_id", "business_connection_id" ] ]
+    }
   }, {
     "id" : "method/unpin-all-chat-messages",
     "name" : "unpinAllChatMessages",

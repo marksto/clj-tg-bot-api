@@ -322,6 +322,29 @@
                           'attrs-constraints)
             "Neither a text nor a rich message must fail")))))
 
+(deftest required-with-relation-is-enforced
+  (testing "a single relation that only holds the one way round"
+    ;; NB: `message_id` is "Required if `business_connection_id` is specified"
+    ;;     for `unpinChatMessage`, and there's nothing the other way round.
+    (let [unpin-message (params-schema-of "unpinChatMessage")]
+      (is (nil? (s/check unpin-message
+                         {:chat_id                1
+                          :business_connection_id "id"
+                          :message_id             2}))
+          "Both of the two must pass")
+      (is (rejected-by? unpin-message
+                        {:chat_id                1
+                         :business_connection_id "id"}
+                        'attrs-constraints)
+          "The other one without the required one must fail")
+      (is (nil? (s/check unpin-message
+                         {:chat_id    1
+                          :message_id 2}))
+          "The required one without the other one must pass")
+      (is (nil? (s/check unpin-message
+                         {:chat_id 1}))
+          "Neither of the two must pass"))))
+
 ;;
 
 (comment

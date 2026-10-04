@@ -224,11 +224,13 @@
 
 ;;;; Parsing > API Element > Constraints
 
-;; NB: Both sides of a relation declare it, hence the dedup. Only the adjacent
-;;     duplicates ever collapse, which is what both inner+outer sorts are for.
+;; NB: Both sides of a mutual relation declare it, hence the dedup. Only the
+;;     adjacent duplicates ever collapse, which is what the sort is for. The
+;;     group itself arrives already ordered, since only the relation knows
+;;     whether that order carries a meaning.
 (defn ->element-constraints [attrs]
   (update-vals (->> attrs (mapcat :relations) (group-by key))
-               #(->> % (map (comp vec sort val)) (sort) (dedupe) (vec))))
+               #(->> % (map val) (sort) (dedupe) (vec))))
 
 (defn lift-attrs-relations
   [element attrs-key]
@@ -266,7 +268,8 @@
    :no-consecutive       #"(?i)can't contain consecutive (\w+)"
    :aep-modifier         #"(?i)after entit(?:y|ies) parsing"
    :mutual-exclusion     #"(?i)can't be used together with ([a-z0-9_]+)"
-   :mutual-requirement   #"(?i)required if ([a-z0-9_]+) (?:is not|isn't) specified"})
+   :mutual-requirement   #"(?i)required if ([a-z0-9_]+) (?:is not|isn't) specified"
+   :cond-requirement     #"(?i)required if ([a-z0-9_]+) is specified"})
 
 (defn ->char-class [char-classes]
   ;; NB: In a character class the `^` negates only when leading,
@@ -404,16 +407,22 @@
 (defn parse-mutual-exclusion [attr-name desc-text]
   (when-some [{:keys [other-attr-name]}
               (re-search desc-text :mutual-exclusion [:other-attr-name])]
-    {:at_most_one #{attr-name (keyword other-attr-name)}}))
+    {:at_most_one (vec (sort [attr-name (keyword other-attr-name)]))}))
 
 (defn parse-mutual-requirement [attr-name desc-text]
   (when-some [{:keys [other-attr-name]}
               (re-search desc-text :mutual-requirement [:other-attr-name])]
-    {:at_least_one #{attr-name (keyword other-attr-name)}}))
+    {:at_least_one (vec (sort [attr-name (keyword other-attr-name)]))}))
+
+(defn parse-cond-requirement [attr-name desc-text]
+  (when-some [{:keys [other-attr-name]}
+              (re-search desc-text :cond-requirement [:other-attr-name])]
+    {:required_with [attr-name (keyword other-attr-name)]}))
 
 (defn parse-attr-relations [attr-name desc-text]
   (merge (parse-mutual-exclusion attr-name desc-text)
-         (parse-mutual-requirement attr-name desc-text)))
+         (parse-mutual-requirement attr-name desc-text)
+         (parse-cond-requirement attr-name desc-text)))
 
 (defn prepare-api-type-field
   [{:keys [description] :as field}]
