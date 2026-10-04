@@ -5,6 +5,27 @@
    [marksto.clj-tg-bot-api.impl.api.spec :as sut]
    [schema.core :as s]))
 
+(defn- checker-error
+  "Gives the exception a `schema` fails to build a checker with, if any."
+  [schema]
+  (try (s/checker schema) nil (catch Throwable t t)))
+
+(defn- rejected-by?
+  [schema params constraint]
+  (str/includes? (pr-str (s/check schema params)) (name constraint)))
+
+(defn- type-schema-of [type]
+  (->> (:types (sut/get-tg-bot-api-spec))
+       (some #(when (= type (:name %)) %))
+       :schema))
+
+(defn- params-schema-of [method]
+  (->> (:methods (sut/get-tg-bot-api-spec))
+       (some #(when (= method (:name %)) %))
+       :params-schema))
+
+;;; Spec-wide Invariants
+
 (deftest tg-bot-api-spec-parses-well
   (let [{:keys [types methods] :as tg-bot-api-spec} (sut/get-tg-bot-api-spec)]
     (is (some? tg-bot-api-spec)
@@ -29,182 +50,277 @@
     ;;     is how an unresolvable reference reaches the API method callers.
     (testing "API types"
       (doseq [{:keys [name schema]} types]
-        (is (some? (s/checker schema))
+        (is (nil? (checker-error schema))
             (format "The '%s' type schema must build a checker" name))))
     (testing "API methods"
       (doseq [{:keys [name params-schema]} methods
               :when (some? params-schema)]
-        (is (some? (s/checker params-schema))
+        (is (nil? (checker-error params-schema))
             (format "The '%s' method params schema must build a checker" name))))))
 
+;;; Constraints
+
 (deftest array-total-length-constraint-is-enforced
-  (let [{:keys [methods]} (sut/get-tg-bot-api-spec)
-        {:keys [params-schema]} (some #(when (= "setStickerKeywords" (:name %)) %)
-                                      methods)]
-    (is (nil? (s/check params-schema {:sticker  "sticker-file-id"
-                                      :keywords ["cat" "kitten" "кот" "котёнок"]}))
+  (let [set-sticker-kwds (params-schema-of "setStickerKeywords")]
+    (is (nil? (s/check set-sticker-kwds
+                       {:sticker  "sticker-file-id"
+                        :keywords ["cat" "kitten" "кот" "котёнок"]}))
         "Keywords within the 64 characters in total must pass")
-    (is (some? (s/check params-schema {:sticker  "sticker-file-id"
-                                       :keywords [(str/join (repeat 32 \a))
-                                                  (str/join (repeat 33 \b))]}))
+    (is (rejected-by? set-sticker-kwds
+                      {:sticker  "sticker-file-id"
+                       :keywords [(str/join (repeat 32 \a))
+                                  (str/join (repeat 33 \b))]}
+                      'array-constraints)
         "Keywords over the 64 characters in total must fail, each being shorter")))
 
 (deftest byte-length-constraint-is-enforced
-  (let [{:keys [types]} (sut/get-tg-bot-api-spec)
-        {:keys [schema]} (some #(when (= "InlineKeyboardButton" (:name %)) %)
-                               types)]
-    (is (nil? (s/check schema {:text          "Tap me"
-                               :callback_data (str/join (repeat 64 \a))}))
+  (let [inline-kbd-button (type-schema-of "InlineKeyboardButton")]
+    (is (nil? (s/check inline-kbd-button
+                       {:text          "Tap me"
+                        :callback_data (str/join (repeat 64 \a))}))
         "Callback data within the 64 bytes must pass")
-    (is (some? (s/check schema {:text          "Tap me"
-                                :callback_data (str/join (repeat 33 \ж))}))
+    (is (rejected-by? inline-kbd-button
+                      {:text          "Tap me"
+                       :callback_data (str/join (repeat 33 \ж))}
+                      'string-constraints)
         "Callback data over the 64 bytes must fail, being only 33 characters")))
 
 (deftest pattern-constraint-is-enforced
-  (let [{:keys [methods]} (sut/get-tg-bot-api-spec)
-        params-schema-of #(->> methods
-                               (some (fn [m] (when (= % (:name m)) m)))
-                               :params-schema)
-        set-webhook (params-schema-of "setWebhook")
-        set-custom-title (params-schema-of "setChatAdministratorCustomTitle")
-        new-sticker-set (params-schema-of "createNewStickerSet")]
-    (testing "an enumerated character set"
-      (let [->params #(hash-map :url "https://example.com/hook" :secret_token %)]
-        (is (nil? (s/check set-webhook (->params "s3cret_token-42")))
-            "A secret token of the allowed characters must pass")
-        (is (some? (s/check set-webhook (->params "s3cret token")))
-            "A secret token with a disallowed character must fail")))
-    (testing "a character set banning emoji"
-      (let [->params #(hash-map :chat_id 1 :user_id 2 :custom_title %)]
-        (is (nil? (s/check set-custom-title (->params "Admin 1")))
-            "A custom title of mere digits and letters must pass")
-        (is (nil? (s/check set-custom-title (->params "#1 Boss 2*3")))
-            "A custom title with the keycap base chars must pass")
-        (is (nil? (s/check set-custom-title (->params "✓ ok")))
-            "A custom title with a non-emoji dingbat must pass")
-        (is (some? (s/check set-custom-title (->params "Admin 😃")))
-            "A custom title with an emoji must fail")
-        #_(is (some? (s/check set-custom-title (->params "1️⃣")))
-              "A custom title with a keycap must fail")
-        (is (some? (s/check set-custom-title (->params "🇺🇸")))
-            "A custom title with a flag must fail")
-        (is (some? (s/check set-custom-title (->params "Acme™")))
-            "A custom title with a pictographic sign must fail")
-        (is (some? (s/check set-custom-title (->params "© marksto")))
-            "A custom title with a pictographic sign must fail")))
-    (testing "a character set with a prefix and a repetition rule"
-      (let [->params #(hash-map :user_id 1 :name % :title "Animals"
-                                :stickers [{:sticker    "sticker-file-id"
-                                            :format     "static"
-                                            :emoji_list ["🐱"]}])]
-        (is (nil? (s/check new-sticker-set (->params "animals_by_mybot")))
-            "A sticker set name of the allowed shape must pass")
-        (is (some? (s/check new-sticker-set (->params "1animals_by_mybot")))
-            "A sticker set name not beginning with a letter must fail")
-        (is (some? (s/check new-sticker-set (->params "animals__by_mybot")))
-            "A sticker set name with consecutive underscores must fail")))))
+  (testing "an enumerated character set"
+    (let [set-webhook (params-schema-of "setWebhook")]
+      (is (nil? (s/check set-webhook
+                         {:url          "https://example.com/hook"
+                          :secret_token "s3cret_token-42"}))
+          "A secret token of the allowed characters must pass")
+      (is (rejected-by? set-webhook
+                        {:url          "https://example.com/hook"
+                         :secret_token "s3cret token"}
+                        'string-constraints)
+          "A secret token with a disallowed character must fail")))
+  (testing "a character set banning emoji"
+    (let [set-custom-title (params-schema-of "setChatAdministratorCustomTitle")]
+      (is (nil? (s/check set-custom-title
+                         {:chat_id 1 :user_id 2 :custom_title "Admin 1"}))
+          "A custom title of mere digits and letters must pass")
+      (is (nil? (s/check set-custom-title
+                         {:chat_id 1 :user_id 2 :custom_title "#1 Boss 2*3"}))
+          "A custom title with the keycap base chars must pass")
+      (is (nil? (s/check set-custom-title
+                         {:chat_id 1 :user_id 2 :custom_title "✓ ok"}))
+          "A custom title with a non-emoji dingbat must pass")
+      (is (rejected-by? set-custom-title
+                        {:chat_id 1 :user_id 2 :custom_title "Admin 😃"}
+                        'string-constraints)
+          "A custom title with an emoji must fail")
+      ;; NB: A keycap is out of reach for constraint. Its only `IsEmoji`
+      ;;     code point is the ASCII digit, which the pattern exempts on
+      ;;     purpose, the `U+FE0F` and the `U+20E3` that follow being an
+      ;;     `IsEmoji_Component` each, but not an `IsEmoji`.
+      #_(is (rejected-by? set-custom-title
+                          {:chat_id 1 :user_id 2 :custom_title "1️⃣"}
+                          'string-constraints)
+            "A custom title with a keycap must fail")
+      (is (rejected-by? set-custom-title
+                        {:chat_id 1 :user_id 2 :custom_title "🇺🇸"}
+                        'string-constraints)
+          "A custom title with a flag must fail")
+      (is (rejected-by? set-custom-title
+                        {:chat_id 1 :user_id 2 :custom_title "Acme™"}
+                        'string-constraints)
+          "A custom title with a trade mark pictographic sign must fail")
+      (is (rejected-by? set-custom-title
+                        {:chat_id 1 :user_id 2 :custom_title "© marksto"}
+                        'string-constraints)
+          "A custom title with a copyright pictographic sign must fail")))
+  (testing "a character set with a prefix and a repetition rule"
+    (let [new-sticker-set (params-schema-of "createNewStickerSet")]
+      (is (nil? (s/check new-sticker-set
+                         {:name     "animals_by_mybot"
+                          :user_id  1
+                          :title    "Animals"
+                          :stickers [{:sticker    "sticker-file-id"
+                                      :format     "static"
+                                      :emoji_list ["🐱"]}]}))
+          "A sticker set name of the allowed shape must pass")
+      (is (rejected-by? new-sticker-set
+                        {:name     "1animals_by_mybot"
+                         :user_id  1
+                         :title    "Animals"
+                         :stickers [{:sticker    "sticker-file-id"
+                                     :format     "static"
+                                     :emoji_list ["🐱"]}]}
+                        'string-constraints)
+          "A sticker set name not beginning with a letter must fail")
+      (is (rejected-by? new-sticker-set
+                        {:name     "animals__by_mybot"
+                         :user_id  1
+                         :title    "Animals"
+                         :stickers [{:sticker    "sticker-file-id"
+                                     :format     "static"
+                                     :emoji_list ["🐱"]}]}
+                        'string-constraints)
+          "A sticker set name with consecutive underscores must fail"))))
 
 (deftest after-entities-parsing-length-is-enforced
-  (let [{:keys [methods]} (sut/get-tg-bot-api-spec)
-        {:keys [params-schema]} (some #(when (= "sendMessage" (:name %)) %) methods)
-        ->params #(cond-> {:chat_id 1 :text %1} %2 (assoc :parse_mode %2))
+  (let [send-msg (params-schema-of "sendMessage")
         at-limit (str/join (repeat 4096 \a))
         over-limit (str/join (repeat 4097 \a))]
     (testing "a plain text is what the server gets, so it is measured as is"
-      (is (nil? (s/check params-schema (->params at-limit nil)))
+      (is (nil? (s/check send-msg
+                         {:chat_id 1
+                          :text    at-limit}))
           "A text within the 4096 characters must pass")
-      (is (some? (s/check params-schema (->params over-limit nil)))
+      (is (rejected-by? send-msg
+                        {:chat_id 1
+                         :text    over-limit}
+                        'attrs-constraints)
           "A text over the 4096 characters must fail"))
     (testing "an HTML-styled text is measured once the markup is stripped"
-      (is (nil? (s/check params-schema (->params (str "<b>" at-limit "</b>") "HTML")))
+      (is (nil? (s/check send-msg
+                         {:chat_id    1
+                          :text       (str "<b>" at-limit "</b>")
+                          :parse_mode "HTML"}))
           "A markup of 4102 characters holding 4096 of them must pass")
-      (is (some? (s/check params-schema (->params (str "<b>" over-limit "</b>") "HTML")))
+      (is (rejected-by? send-msg
+                        {:chat_id    1
+                         :text       (str "<b>" over-limit "</b>")
+                         :parse_mode "HTML"}
+                        'attrs-constraints)
           "A markup of 4103 characters holding 4097 of them must fail")
-      (is (nil? (s/check params-schema (->params (str/join (repeat 4096 "&amp;")) "HTML")))
+      (is (nil? (s/check send-msg
+                         {:chat_id    1
+                          :text       (str/join (repeat 4096 "&amp;"))
+                          :parse_mode "HTML"}))
           "An entity per character must be measured as a single character"))
     (testing "a legacy Markdown text is measured once the markup is stripped"
-      (is (nil? (s/check params-schema (->params (str "*" at-limit "*") "Markdown")))
+      (is (nil? (s/check send-msg
+                         {:chat_id    1
+                          :text       (str "*" at-limit "*")
+                          :parse_mode "Markdown"}))
           "A markup of 4098 characters holding 4096 of them must pass")
-      (is (some? (s/check params-schema (->params (str "*" over-limit "*") "Markdown")))
+      (is (rejected-by? send-msg
+                        {:chat_id    1
+                         :text       (str "*" over-limit "*")
+                         :parse_mode "Markdown"}
+                        'attrs-constraints)
           "A markup of 4099 characters holding 4097 of them must fail")
-      (is (nil? (s/check params-schema (->params (str "[" at-limit "](http://e.com/)")
-                                         "Markdown")))
+      (is (nil? (s/check send-msg
+                         {:chat_id    1
+                          :text       (str "[" at-limit "](http://e.com/)")
+                          :parse_mode "Markdown"}))
           "A link URL must not be measured, only its text"))
     (testing "a MarkdownV2 text is measured once the markup is stripped"
-      (is (nil? (s/check params-schema (->params (str "*" at-limit "*") "MarkdownV2")))
+      (is (nil? (s/check send-msg
+                         {:chat_id    1
+                          :text       (str "*" at-limit "*")
+                          :parse_mode "MarkdownV2"}))
           "A markup of 4098 characters holding 4096 of them must pass")
-      (is (some? (s/check params-schema (->params (str "*" over-limit "*") "MarkdownV2")))
+      (is (rejected-by? send-msg
+                        {:chat_id    1
+                         :text       (str "*" over-limit "*")
+                         :parse_mode "MarkdownV2"}
+                        'attrs-constraints)
           "A markup of 4099 characters holding 4097 of them must fail")
-      (is (nil? (s/check params-schema (->params (str/join (repeat 4096 "\\."))
-                                                 "MarkdownV2")))
+      (is (nil? (s/check send-msg
+                         {:chat_id    1
+                          :text       (str/join (repeat 4096 "\\."))
+                          :parse_mode "MarkdownV2"}))
           "An escape per character must be measured as a single character")
-      (is (nil? (s/check params-schema (->params (str "*" over-limit) "MarkdownV2")))
+      (is (nil? (s/check send-msg
+                         {:chat_id    1
+                          :text       (str "*" over-limit)
+                          :parse_mode "MarkdownV2"}))
           "An unterminated markup must pass, since its length is unknown"))
     (testing "a parse mode we do not know is left to the server"
-      (is (nil? (s/check params-schema (->params over-limit "UnknownStyle")))
+      (is (nil? (s/check send-msg
+                         {:chat_id    1
+                          :text       over-limit
+                          :parse_mode "UnknownStyle"}))
           "A text over the limit must pass, since its length is unknown"))))
 
 (deftest at-most-one-relation-is-enforced
-  ;; NB: `sendPoll` states "Can't be used together with close_date" on its
-  ;;     `open_period`, and the very same the other way round.
-  (let [{:keys [methods]} (sut/get-tg-bot-api-spec)
-        {:keys [params-schema]} (some #(when (= "sendPoll" (:name %)) %) methods)
-        ->params #(merge {:chat_id 1 :question "q" :options [{:text "a"}]} %)]
-    (is (nil? (s/check params-schema (->params {})))
-        "Neither of the two mutually exclusive params must pass")
-    (is (nil? (s/check params-schema (->params {:open_period 60})))
-        "The one of the two must pass")
-    (is (nil? (s/check params-schema (->params {:close_date 1700000000})))
-        "The other of the two must pass")
-    (is (some? (s/check params-schema (->params {:open_period 60
-                                                 :close_date 1700000000})))
-        "Both of the two at once must fail")))
+  (testing "a single relation between the two params"
+    ;; NB: `sendPoll` states "Can't be used together with close_date" on its
+    ;;     `open_period`, and the very same the other way round.
+    (let [send-poll (params-schema-of "sendPoll")]
+      (is (nil? (s/check send-poll
+                         {:chat_id 1 :question "q" :options [{:text "a"}]}))
+          "Neither of the two mutually exclusive params must pass")
+      (is (nil? (s/check send-poll
+                         {:chat_id     1 :question "q" :options [{:text "a"}]
+                          :open_period 60}))
+          "The one of the two must pass")
+      (is (nil? (s/check send-poll
+                         {:chat_id    1 :question "q" :options [{:text "a"}]
+                          :close_date 1700000000}))
+          "The other of the two must pass")
+      (is (rejected-by? send-poll
+                        {:chat_id     1 :question "q" :options [{:text "a"}]
+                         :open_period 60
+                         :close_date  1700000000}
+                        'attrs-constraints)
+          "Both of the two at once must fail"))))
 
 (deftest at-least-one-relation-is-enforced
-  (let [{:keys [methods]} (sut/get-tg-bot-api-spec)
-        params-schema-of #(->> methods
-                               (some (fn [m] (when (= % (:name m)) m)))
-                               :params-schema)]
-    (testing "a single relation between the two params"
-      ;; NB: A `sendGift` with both `user_id` and `chat_id` is accepted. The docs
-      ;;     only say each is required when the other is absent — they never say
-      ;;     the two are exclusive — so inferring `at_most_one` would be guessing,
-      ;;     and permissive is the safe direction.
-      (let [send-gift (params-schema-of "sendGift")
-            ->params #(merge {:gift_id "gift-id"} %)]
-        (is (nil? (s/check send-gift (->params {:user_id 1})))
-            "The one of the two must pass")
-        (is (nil? (s/check send-gift (->params {:chat_id 1})))
-            "The other of the two must pass")
-        (is (some? (s/check send-gift (->params {})))
-            "Neither of the two must fail")))
-    (testing "several relations at once"
-      ;; NB: `editMessageText` states a relation between its `chat_id` and
-      ;;     `inline_message_id`, another one between the latter and its
-      ;;     `message_id`, and one more between its `text` and the
-      ;;     `rich_message`. Each of the three is checked on its own, with
-      ;;     the other two satisfied.
-      (let [edit-text (params-schema-of "editMessageText")]
-        (testing "identifying the message to edit"
-          (let [->params #(assoc % :text "Hello, world!")]
-            (is (nil? (s/check edit-text (->params {:inline_message_id "id"})))
-                "An inline message ID alone must pass")
-            (is (nil? (s/check edit-text (->params {:chat_id 1 :message_id 2})))
-                "A chat ID together with a message ID must pass")
-            (is (some? (s/check edit-text (->params {:chat_id 1})))
-                "A chat ID without a message ID must fail")
-            (is (some? (s/check edit-text (->params {:message_id 2})))
-                "A message ID without a chat ID must fail")
-            (is (some? (s/check edit-text (->params {})))
-                "No identification whatsoever must fail")))
-        (testing "supplying the new message content"
-          (let [->params #(assoc % :inline_message_id "id")]
-            (is (nil? (s/check edit-text (->params {:text "Hello, world!"})))
-                "A text alone must pass")
-            (is (nil? (s/check edit-text (->params {:rich_message {}})))
-                "A rich message alone must pass")
-            (is (some? (s/check edit-text (->params {})))
-                "Neither a text nor a rich message must fail")))))))
+  (testing "a single relation between the two params"
+    ;; NB: A `sendGift` with both `user_id` and `chat_id` is accepted. The docs
+    ;;     only say each is required when the other is absent — they never say
+    ;;     the two are exclusive — so inferring `at_most_one` would be guessing,
+    ;;     and permissive is the safe direction.
+    (let [send-gift (params-schema-of "sendGift")]
+      (is (nil? (s/check send-gift
+                         {:gift_id "gift-id" :user_id 1}))
+          "The one of the two must pass")
+      (is (nil? (s/check send-gift
+                         {:gift_id "gift-id" :chat_id 1}))
+          "The other of the two must pass")
+      (is (rejected-by? send-gift
+                        {:gift_id "gift-id"}
+                        'attrs-constraints)
+          "Neither of the two must fail")))
+  (testing "several relations at once"
+    ;; NB: `editMessageText` states a relation between its `chat_id` and
+    ;;     `inline_message_id`, another one between the latter and its
+    ;;     `message_id`, and one more between its `text` and the
+    ;;     `rich_message`. Each of the three is checked on its own, with
+    ;;     the other two satisfied.
+    (let [edit-text (params-schema-of "editMessageText")]
+      (testing "identifying the message to edit"
+        (is (nil? (s/check edit-text
+                           {:text              "Hello, world!"
+                            :inline_message_id "id"}))
+            "An inline message ID alone must pass")
+        (is (nil? (s/check edit-text
+                           {:text    "Hello, world!"
+                            :chat_id 1 :message_id 2}))
+            "A chat ID together with a message ID must pass")
+        (is (rejected-by? edit-text
+                          {:text    "Hello, world!"
+                           :chat_id 1}
+                          'attrs-constraints)
+            "A chat ID without a message ID must fail")
+        (is (rejected-by? edit-text
+                          {:text       "Hello, world!"
+                           :message_id 2}
+                          'attrs-constraints)
+            "A message ID without a chat ID must fail")
+        (is (rejected-by? edit-text
+                          {:text "Hello, world!"}
+                          'attrs-constraints)
+            "No identification whatsoever must fail"))
+      (testing "supplying the new message content"
+        (is (nil? (s/check edit-text
+                           {:text              "Hello, world!"
+                            :inline_message_id "id"}))
+            "A text alone must pass")
+        (is (nil? (s/check edit-text
+                           {:rich_message      {}
+                            :inline_message_id "id"}))
+            "A rich message alone must pass")
+        (is (rejected-by? edit-text
+                          {:inline_message_id "id"}
+                          'attrs-constraints)
+            "Neither a text nor a rich message must fail")))))
 
 ;;
 
