@@ -257,10 +257,14 @@
 ;; NB: We do not parse other constraints for strings, such as:
 ;;     - "with at most 2 line feeds"
 ;;     - "must end in `_by_<bot_username>`"
+;;     - "must be a superset|subset of"
 (def desc-text-re
   {:length               #"(?i)(?:(\d+)-)?(\d+) characters"
    :byte-length          #"(?i)(?:(\d+)-)?(\d+) bytes"
    :total-length         #"(?i)total length of (?:up to )?(?:(\d+)-)?(\d+) characters"
+   :size-of-list         #"(?i)(?:list|array) of (?:up to )?(?:(\d+)-)?(\d+)\s"
+   :size-in-range        #"(?i)(?:up to|include) (?:(\d+)-)?(\d+) items"
+   :size-max-limit       #"(?i)at most (\d+) [^.]*?can be specified"
    :allowed-chars-listed #"(?i)only (?:characters )?([^.]+?) and (\S+) are allowed"
    :allowed-chars-named  #"(?i)can contain only ([^.]+)"
    :disallowed-chars     #"(?i)(\w+) are not allowed"
@@ -398,10 +402,17 @@
 
 (defn parse-array-constraints [type desc-text]
   (let [element-type (second type)
+        size (or (some-> (re-search desc-text :size-of-list [:from :to])
+                         (parse-range-constraint))
+                 (some-> (re-search desc-text :size-in-range [:from :to])
+                         (parse-range-constraint))
+                 (some-> (re-search desc-text :size-max-limit [:to])
+                         (parse-range-constraint)))
         total-length (when (= "String" element-type)
                        (some-> (re-search desc-text :total-length [:from :to])
                                (parse-range-constraint)))]
     (cond-> nil
+      size (assoc :size size)
       total-length (assoc :total_length total-length))))
 
 (defn parse-mutual-exclusion [attr-name desc-text]

@@ -184,6 +184,13 @@
   (let [pattern-re (re-pattern pattern)]
     #(some? (re-matches pattern-re %))))
 
+(defmethod ->constraint-pred :size
+  [_ params _modifiers schema]
+  (when-not (vector? schema)
+    (throw (ex-info "The 'size' constraint requires an array"
+                    {:schema schema})))
+  (->range-pred params count))
+
 (defmethod ->constraint-pred :total_length
   [_ params _modifiers schema]
   (when-not (= [s/Str] schema)

@@ -60,6 +60,47 @@
 
 ;;; Constraints
 
+(deftest array-size-constraint-is-enforced
+  (testing "a bounded range of items"
+    (let [send-poll (params-schema-of "sendPoll")]
+      (is (nil? (s/check send-poll
+                         {:chat_id  1 :question "q"
+                          :options  (repeat 12 {:text "a"})}))
+          "Options right at the upper bound must pass")
+      (is (rejected-by? send-poll
+                        {:chat_id 1 :question "q"
+                         :options (repeat 13 {:text "a"})}
+                        'array-constraints)
+          "Options over the upper bound must fail")
+      (is (rejected-by? send-poll
+                        {:chat_id 1 :question "q"
+                         :options []}
+                        'array-constraints)
+          "Options under the lower bound must fail")))
+  (testing "an upper bound alone"
+    ;; NB: `setMyCommands` states "At most 100 commands can be specified",
+    ;;     naming no lower bound, so an empty list must stay acceptable.
+    (let [set-my-commands (params-schema-of "setMyCommands")]
+      (is (nil? (s/check set-my-commands
+                         {:commands []}))
+          "No commands at all must pass")
+      (is (rejected-by? set-my-commands
+                        {:commands (repeat 101 {:command "cmd" :description "d"})}
+                        'array-constraints)
+          "Commands over the upper bound must fail")))
+  (testing "a field of a type rather than a param of a method"
+    ;; NB: `InputChecklist` states "List of 1-30 tasks in the checklist".
+    (let [input-checklist (type-schema-of "InputChecklist")]
+      (is (nil? (s/check input-checklist
+                         {:title "t"
+                          :tasks (for [n (range 1 31)] {:id n :text "task"})}))
+          "Tasks right at the upper bound must pass")
+      (is (rejected-by? input-checklist
+                        {:title "t"
+                         :tasks (for [n (range 1 32)] {:id n :text "task"})}
+                        'array-constraints)
+          "Tasks over the upper bound must fail"))))
+
 (deftest array-total-length-constraint-is-enforced
   (let [set-sticker-kwds (params-schema-of "setStickerKeywords")]
     (is (nil? (s/check set-sticker-kwds

@@ -2674,7 +2674,15 @@
       "name" : "tasks",
       "type" : [ "array", "type/input-checklist-task" ],
       "description" : "List of 1-30 tasks in the checklist",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "from" : 1,
+            "to" : 30
+          }
+        }
+      }
     }, {
       "name" : "others_can_add_tasks",
       "type" : "Boolean",
@@ -3611,7 +3619,14 @@
       "name" : "winners",
       "type" : [ "array", "type/user" ],
       "description" : "List of up to 100 winners of the giveaway",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "to" : 100
+          }
+        }
+      }
     }, {
       "name" : "additional_chat_count",
       "type" : "Integer",
@@ -5780,7 +5795,15 @@
       "name" : "light_theme_other_colors",
       "type" : [ "array", "Integer" ],
       "description" : "List of 1-3 additional colors used in light themes; RGB format",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "from" : 1,
+            "to" : 3
+          }
+        }
+      }
     }, {
       "name" : "dark_theme_main_color",
       "type" : "Integer",
@@ -5790,7 +5813,15 @@
       "name" : "dark_theme_other_colors",
       "type" : [ "array", "Integer" ],
       "description" : "List of 1-3 additional colors used in dark themes; RGB format",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "from" : 1,
+            "to" : 3
+          }
+        }
+      }
     } ]
   }, {
     "id" : "type/unique-gift",
@@ -7704,7 +7735,15 @@
       "name" : "emoji_list",
       "type" : [ "array", "String" ],
       "description" : "List of 1-20 emoji associated with the sticker",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "from" : 1,
+            "to" : 20
+          }
+        }
+      }
     }, {
       "name" : "mask_position",
       "type" : "type/mask-position",
@@ -7717,6 +7756,10 @@
       "required" : false,
       "constraints" : {
         "array" : {
+          "size" : {
+            "from" : 0,
+            "to" : 20
+          },
           "total_length" : {
             "to" : 64
           }
@@ -9429,7 +9472,15 @@
       "name" : "buttons",
       "type" : [ "array", "type/rich-message-button" ],
       "description" : "List of 1-8 buttons to send",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "from" : 1,
+            "to" : 8
+          }
+        }
+      }
     }, {
       "name" : "align",
       "type" : "String",
@@ -11474,7 +11525,14 @@
       "type" : [ "array", "Integer" ],
       "description" : "<em>Optional</em>. A JSON-serialized Array of suggested amounts of tip in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed <em>max_tip_amount</em>.",
       "required" : false,
-      "json_serialized" : true
+      "json_serialized" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "to" : 4
+          }
+        }
+      }
     }, {
       "name" : "provider_data",
       "type" : "String",
@@ -12907,7 +12965,15 @@
       "type" : [ "array", "Integer" ],
       "required" : true,
       "description" : "A JSON-serialized list of 1-100 identifiers of messages in the chat <em>from_chat_id</em> to forward. The identifiers must be specified in a strictly increasing order.",
-      "json_serialized" : true
+      "json_serialized" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "from" : 1,
+            "to" : 100
+          }
+        }
+      }
     }, {
       "name" : "disable_notification",
       "type" : "Boolean",
@@ -13052,7 +13118,15 @@
       "type" : [ "array", "Integer" ],
       "required" : true,
       "description" : "A JSON-serialized list of 1-100 identifiers of messages in the chat <em>from_chat_id</em> to copy. The identifiers must be specified in a strictly increasing order.",
-      "json_serialized" : true
+      "json_serialized" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "from" : 1,
+            "to" : 100
+          }
+        }
+      }
     }, {
       "name" : "disable_notification",
       "type" : "Boolean",
@@ -14021,7 +14095,14 @@
       "type" : [ "array", "type/input-paid-media" ],
       "required" : true,
       "description" : "A JSON-serialized Array describing the media to be sent; up to 10 items",
-      "json_serialized" : true
+      "json_serialized" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "to" : 10
+          }
+        }
+      }
     }, {
       "name" : "payload",
       "type" : "String",
@@ -14129,7 +14210,15 @@
       "type" : [ "array", [ "or", [ "type/input-media-audio", "type/input-media-document", "type/input-media-live-photo", "type/input-media-photo", "type/input-media-video" ] ] ],
       "required" : true,
       "description" : "A JSON-serialized Array describing messages to be sent, must include 2-10 items",
-      "json_serialized" : true
+      "json_serialized" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "from" : 2,
+            "to" : 10
+          }
+        }
+      }
     }, {
       "name" : "disable_notification",
       "type" : "Boolean",
@@ -14511,7 +14600,15 @@
       "type" : [ "array", "type/input-poll-option" ],
       "required" : true,
       "description" : "A JSON-serialized list of 1-12 answer options",
-      "json_serialized" : true
+      "json_serialized" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "from" : 1,
+            "to" : 12
+          }
+        }
+      }
     }, {
       "name" : "is_anonymous",
       "type" : "Boolean",
@@ -14557,7 +14654,15 @@
       "type" : [ "array", "String" ],
       "required" : false,
       "description" : "A JSON-serialized list of 0-12 two-letter <a href=\"https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2\">ISO 3166-1 alpha-2</a> country codes indicating the countries from which users can vote in the poll; for channel chats only. Use “FT” as a country code to allow users with anonymous numbers to vote. If omitted or empty, then users from any country can participate in the poll.",
-      "json_serialized" : true
+      "json_serialized" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "from" : 0,
+            "to" : 12
+          }
+        }
+      }
     }, {
       "name" : "correct_option_ids",
       "type" : [ "array", "Integer" ],
@@ -16108,7 +16213,14 @@
       "type" : [ "array", "Integer" ],
       "required" : false,
       "description" : "A JSON-serialized list of up to 10 identifiers of users who will have access to the bot in addition to its owner. Ignored if <em>is_access_restricted</em> is <em>False</em>.",
-      "json_serialized" : true
+      "json_serialized" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "to" : 10
+          }
+        }
+      }
     } ]
   }, {
     "id" : "method/set-my-commands",
@@ -16120,7 +16232,14 @@
       "type" : [ "array", "type/bot-command" ],
       "required" : true,
       "description" : "A JSON-serialized list of bot commands to be set as the list of the bot's commands. At most 100 commands can be specified.",
-      "json_serialized" : true
+      "json_serialized" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "to" : 100
+          }
+        }
+      }
     }, {
       "name" : "scope",
       "type" : "type/bot-command-scope",
@@ -16553,7 +16672,15 @@
       "type" : [ "array", "Integer" ],
       "required" : true,
       "description" : "A JSON-serialized list of 1-100 identifiers of messages to delete. All messages must be from the same chat. See <a href=\"#deletemessage\">deleteMessage</a> for limitations on which messages can be deleted.",
-      "json_serialized" : true
+      "json_serialized" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "from" : 1,
+            "to" : 100
+          }
+        }
+      }
     } ]
   }, {
     "id" : "method/set-business-account-name",
@@ -17837,7 +17964,15 @@
       "type" : [ "array", "Integer" ],
       "required" : true,
       "description" : "A JSON-serialized list of 1-100 identifiers of messages to delete. See <a href=\"#deletemessage\">deleteMessage</a> for limitations on which messages can be deleted.",
-      "json_serialized" : true
+      "json_serialized" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "from" : 1,
+            "to" : 100
+          }
+        }
+      }
     } ]
   }, {
     "id" : "method/delete-ephemeral-message",
@@ -18007,7 +18142,14 @@
       "type" : [ "array", "String" ],
       "required" : true,
       "description" : "A JSON-serialized list of custom emoji identifiers. At most 200 custom emoji identifiers can be specified.",
-      "json_serialized" : true
+      "json_serialized" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "to" : 200
+          }
+        }
+      }
     } ]
   }, {
     "id" : "method/upload-sticker-file",
@@ -18072,7 +18214,15 @@
       "type" : [ "array", "type/input-sticker" ],
       "required" : true,
       "description" : "A JSON-serialized list of 1-50 initial stickers to be added to the sticker set",
-      "json_serialized" : true
+      "json_serialized" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "from" : 1,
+            "to" : 50
+          }
+        }
+      }
     }, {
       "name" : "sticker_type",
       "type" : "String",
@@ -18175,7 +18325,15 @@
       "type" : [ "array", "String" ],
       "required" : true,
       "description" : "A JSON-serialized list of 1-20 emoji associated with the sticker",
-      "json_serialized" : true
+      "json_serialized" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "from" : 1,
+            "to" : 20
+          }
+        }
+      }
     } ]
   }, {
     "id" : "method/set-sticker-keywords",
@@ -18195,6 +18353,10 @@
       "json_serialized" : true,
       "constraints" : {
         "array" : {
+          "size" : {
+            "from" : 0,
+            "to" : 20
+          },
           "total_length" : {
             "to" : 64
           }
@@ -18537,7 +18699,14 @@
       "type" : [ "array", "Integer" ],
       "required" : false,
       "description" : "A JSON-serialized Array of suggested amounts of tips in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed <em>max_tip_amount</em>.",
-      "json_serialized" : true
+      "json_serialized" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "to" : 4
+          }
+        }
+      }
     }, {
       "name" : "start_parameter",
       "type" : "String",
@@ -18723,7 +18892,14 @@
       "type" : [ "array", "Integer" ],
       "required" : false,
       "description" : "A JSON-serialized Array of suggested amounts of tips in the <em>smallest units</em> of the currency (integer, <strong>not</strong> float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be positive, passed in a strictly increased order and must not exceed <em>max_tip_amount</em>.",
-      "json_serialized" : true
+      "json_serialized" : true,
+      "constraints" : {
+        "array" : {
+          "size" : {
+            "to" : 4
+          }
+        }
+      }
     }, {
       "name" : "provider_data",
       "type" : "String",
