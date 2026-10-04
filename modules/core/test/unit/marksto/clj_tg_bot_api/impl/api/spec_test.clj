@@ -160,6 +160,52 @@
                                                  :close_date 1700000000})))
         "Both of the two at once must fail")))
 
+(deftest at-least-one-relation-is-enforced
+  (let [{:keys [methods]} (sut/get-tg-bot-api-spec)
+        params-schema-of #(->> methods
+                               (some (fn [m] (when (= % (:name m)) m)))
+                               :params-schema)]
+    (testing "a single relation between the two params"
+      ;; NB: A `sendGift` with both `user_id` and `chat_id` is accepted. The docs
+      ;;     only say each is required when the other is absent — they never say
+      ;;     the two are exclusive — so inferring `at_most_one` would be guessing,
+      ;;     and permissive is the safe direction.
+      (let [send-gift (params-schema-of "sendGift")
+            ->params #(merge {:gift_id "gift-id"} %)]
+        (is (nil? (s/check send-gift (->params {:user_id 1})))
+            "The one of the two must pass")
+        (is (nil? (s/check send-gift (->params {:chat_id 1})))
+            "The other of the two must pass")
+        (is (some? (s/check send-gift (->params {})))
+            "Neither of the two must fail")))
+    (testing "several relations at once"
+      ;; NB: `editMessageText` states a relation between its `chat_id` and
+      ;;     `inline_message_id`, another one between the latter and its
+      ;;     `message_id`, and one more between its `text` and the
+      ;;     `rich_message`. Each of the three is checked on its own, with
+      ;;     the other two satisfied.
+      (let [edit-text (params-schema-of "editMessageText")]
+        (testing "identifying the message to edit"
+          (let [->params #(assoc % :text "Hello, world!")]
+            (is (nil? (s/check edit-text (->params {:inline_message_id "id"})))
+                "An inline message ID alone must pass")
+            (is (nil? (s/check edit-text (->params {:chat_id 1 :message_id 2})))
+                "A chat ID together with a message ID must pass")
+            (is (some? (s/check edit-text (->params {:chat_id 1})))
+                "A chat ID without a message ID must fail")
+            (is (some? (s/check edit-text (->params {:message_id 2})))
+                "A message ID without a chat ID must fail")
+            (is (some? (s/check edit-text (->params {})))
+                "No identification whatsoever must fail")))
+        (testing "supplying the new message content"
+          (let [->params #(assoc % :inline_message_id "id")]
+            (is (nil? (s/check edit-text (->params {:text "Hello, world!"})))
+                "A text alone must pass")
+            (is (nil? (s/check edit-text (->params {:rich_message {}})))
+                "A rich message alone must pass")
+            (is (some? (s/check edit-text (->params {})))
+                "Neither a text nor a rich message must fail")))))))
+
 ;;
 
 (comment

@@ -312,15 +312,22 @@
   {:arglists '([relation attr-name-groups])}
   (fn [relation _attr-name-groups] relation))
 
-;; TODO: Cater for the rest of the relations as well, such as "required if".
-(defmethod ->relation-pred :at_most_one
-  [_ attr-name-groups]
+(defn ->attrs-presence-pred
+  [attr-name-groups present-count-ok?]
   (let [preds (for [attr-names (map #(map keyword %) attr-name-groups)]
                 (fn [obj]
                   (-> (filter #(some? (get-attr-value obj %)) attr-names)
                       (count)
-                      (<= 1))))]
+                      (present-count-ok?))))]
     (apply every-pred preds)))
+
+(defmethod ->relation-pred :at_most_one
+  [_ attr-name-groups]
+  (->attrs-presence-pred attr-name-groups #(<= % 1)))
+
+(defmethod ->relation-pred :at_least_one
+  [_ attr-name-groups]
+  (->attrs-presence-pred attr-name-groups #(>= % 1)))
 
 (defn ->attrs-relations-pred
   [constraints]

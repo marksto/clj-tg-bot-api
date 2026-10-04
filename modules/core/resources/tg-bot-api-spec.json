@@ -1532,7 +1532,10 @@
       "type" : "String",
       "description" : "<em>Optional</em>. Persistent identifier of the specific poll option to be replied to",
       "required" : false
-    } ]
+    } ],
+    "constraints" : {
+      "at_least_one" : [ [ "ephemeral_message_id", "message_id" ] ]
+    }
   }, {
     "id" : "type/ephemeral-message-parameters",
     "name" : "EphemeralMessageParameters",
@@ -16392,7 +16395,10 @@
       "required" : false,
       "description" : "A JSON-serialized list of special entities that appear in the gift text. It can be specified instead of <em>text_parse_mode</em>. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, “custom_emoji”, and “date_time” are ignored.",
       "json_serialized" : true
-    } ]
+    } ],
+    "constraints" : {
+      "at_least_one" : [ [ "chat_id", "user_id" ] ]
+    }
   }, {
     "id" : "method/gift-premium-subscription",
     "name" : "giftPremiumSubscription",
@@ -17260,7 +17266,10 @@
       "required" : false,
       "description" : "A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>",
       "json_serialized" : true
-    } ]
+    } ],
+    "constraints" : {
+      "at_least_one" : [ [ "chat_id", "inline_message_id" ], [ "inline_message_id", "message_id" ], [ "rich_message", "text" ] ]
+    }
   }, {
     "id" : "method/edit-message-caption",
     "name" : "editMessageCaption",
@@ -17322,7 +17331,10 @@
       "required" : false,
       "description" : "A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>",
       "json_serialized" : true
-    } ]
+    } ],
+    "constraints" : {
+      "at_least_one" : [ [ "chat_id", "inline_message_id" ], [ "inline_message_id", "message_id" ] ]
+    }
   }, {
     "id" : "method/edit-message-media",
     "name" : "editMessageMedia",
@@ -17360,7 +17372,10 @@
       "required" : false,
       "description" : "A JSON-serialized object for a new <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>",
       "json_serialized" : true
-    } ]
+    } ],
+    "constraints" : {
+      "at_least_one" : [ [ "chat_id", "inline_message_id" ], [ "inline_message_id", "message_id" ] ]
+    }
   }, {
     "id" : "method/edit-message-live-location",
     "name" : "editMessageLiveLocation",
@@ -17422,7 +17437,10 @@
       "required" : false,
       "description" : "A JSON-serialized object for a new <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>",
       "json_serialized" : true
-    } ]
+    } ],
+    "constraints" : {
+      "at_least_one" : [ [ "chat_id", "inline_message_id" ], [ "inline_message_id", "message_id" ] ]
+    }
   }, {
     "id" : "method/stop-message-live-location",
     "name" : "stopMessageLiveLocation",
@@ -17454,7 +17472,10 @@
       "required" : false,
       "description" : "A JSON-serialized object for a new <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>",
       "json_serialized" : true
-    } ]
+    } ],
+    "constraints" : {
+      "at_least_one" : [ [ "chat_id", "inline_message_id" ], [ "inline_message_id", "message_id" ] ]
+    }
   }, {
     "id" : "method/edit-message-checklist",
     "name" : "editMessageChecklist",
@@ -17519,7 +17540,10 @@
       "required" : false,
       "description" : "A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>",
       "json_serialized" : true
-    } ]
+    } ],
+    "constraints" : {
+      "at_least_one" : [ [ "chat_id", "inline_message_id" ], [ "inline_message_id", "message_id" ] ]
+    }
   }, {
     "id" : "method/stop-poll",
     "name" : "stopPoll",
@@ -17608,7 +17632,10 @@
       "required" : false,
       "description" : "A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>",
       "json_serialized" : true
-    } ]
+    } ],
+    "constraints" : {
+      "at_least_one" : [ [ "rich_message", "text" ] ]
+    }
   }, {
     "id" : "method/edit-ephemeral-message-media",
     "name" : "editEphemeralMessageMedia",
@@ -18976,7 +19003,10 @@
       "type" : "String",
       "required" : false,
       "description" : "Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message."
-    } ]
+    } ],
+    "constraints" : {
+      "at_least_one" : [ [ "chat_id", "inline_message_id" ], [ "inline_message_id", "message_id" ] ]
+    }
   }, {
     "id" : "method/get-game-high-scores",
     "name" : "getGameHighScores",
@@ -19002,6 +19032,9 @@
       "type" : "String",
       "required" : false,
       "description" : "Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message."
-    } ]
+    } ],
+    "constraints" : {
+      "at_least_one" : [ [ "chat_id", "inline_message_id" ], [ "inline_message_id", "message_id" ] ]
+    }
   } ]
 }

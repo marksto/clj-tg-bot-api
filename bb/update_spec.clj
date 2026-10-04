@@ -265,7 +265,8 @@
    :begins-with          #"(?i)must begin with an? (\w+)"
    :no-consecutive       #"(?i)can't contain consecutive (\w+)"
    :aep-modifier         #"(?i)after entit(?:y|ies) parsing"
-   :mutual-exclusion     #"(?i)can't be used together with ([a-z_]+)"})
+   :mutual-exclusion     #"(?i)can't be used together with ([a-z0-9_]+)"
+   :mutual-requirement   #"(?i)required if ([a-z0-9_]+) (?:is not|isn't) specified"})
 
 (defn ->char-class [char-classes]
   ;; NB: In a character class the `^` negates only when leading,
@@ -400,10 +401,19 @@
     (cond-> nil
       total-length (assoc :total_length total-length))))
 
-(defn parse-attr-relations [attr-name desc-text]
+(defn parse-mutual-exclusion [attr-name desc-text]
   (when-some [{:keys [other-attr-name]}
               (re-search desc-text :mutual-exclusion [:other-attr-name])]
     {:at_most_one #{attr-name (keyword other-attr-name)}}))
+
+(defn parse-mutual-requirement [attr-name desc-text]
+  (when-some [{:keys [other-attr-name]}
+              (re-search desc-text :mutual-requirement [:other-attr-name])]
+    {:at_least_one #{attr-name (keyword other-attr-name)}}))
+
+(defn parse-attr-relations [attr-name desc-text]
+  (merge (parse-mutual-exclusion attr-name desc-text)
+         (parse-mutual-requirement attr-name desc-text)))
 
 (defn prepare-api-type-field
   [{:keys [description] :as field}]
