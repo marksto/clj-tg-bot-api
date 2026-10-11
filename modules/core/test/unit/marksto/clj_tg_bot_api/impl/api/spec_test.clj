@@ -257,6 +257,57 @@
                       'string-constraints)
         "Callback data over the 64 bytes must fail, being only 33 characters")))
 
+(deftest string-enum-constraint-is-enforced
+  (testing "a param of a method, every member read past its own period"
+    ;; NB: The method states "must be one of “static” for a .WEBP or .PNG image,
+    ;;     “animated” for a .TGS animation, or “video” for a .WEBM video", where
+    ;;     every member but the first stands after a period, so all 3 have to be
+    ;;     read all the same.
+    (let [set-thumbnail (params-schema-of "setStickerSetThumbnail")]
+      (is (nil? (s/check set-thumbnail
+                         {:name "pack_by_bot" :user_id 1 :format "static"}))
+          "The member stated before any period must pass")
+      (is (nil? (s/check set-thumbnail
+                         {:name "pack_by_bot" :user_id 1 :format "animated"}))
+          "The member stated after the first period must pass")
+      (is (nil? (s/check set-thumbnail
+                         {:name "pack_by_bot" :user_id 1 :format "video"}))
+          "The member stated last must pass")
+      (is (rejected-by? set-thumbnail
+                        {:name "pack_by_bot" :user_id 1 :format "webp"}
+                        'string-constraints)
+          "A member that is not stated must fail")
+      (is (rejected-by? set-thumbnail
+                        {:name "pack_by_bot" :user_id 1 :format "STATIC"}
+                        'string-constraints)
+          "A stated member in another case must fail, the match being exact")))
+  (testing "a field of a type"
+    ;; NB: `MaskPosition` states "One of “forehead”, “eyes”, “mouth”, or
+    ;;     “chin”" on its `point`, with no "must be" to introduce it.
+    (let [mask-position (type-schema-of "MaskPosition")]
+      (is (nil? (s/check mask-position
+                         {:point "chin" :x_shift 0.0 :y_shift 0.0 :scale 1.0}))
+          "The last of the stated members must pass")
+      (is (rejected-by? mask-position
+                        {:point "nose" :x_shift 0.0 :y_shift 0.0 :scale 1.0}
+                        'string-constraints)
+          "A member that is not stated must fail")))
+  (testing "a length constraint standing beside the members"
+    ;; NB: Both have to hold, the constraints of a category being a conjunction,
+    ;;     which the members of an `enum` satisfy anyway.
+    (let [sticker-format (type-schema-of "InputSticker")]
+      (is (nil? (s/check sticker-format
+                         {:sticker    "sticker-file-id"
+                          :format     "video"
+                          :emoji_list ["\uD83D\uDE00"]}))
+          "A stated member must pass")
+      (is (rejected-by? sticker-format
+                        {:sticker    "sticker-file-id"
+                         :format     "webm"
+                         :emoji_list ["\uD83D\uDE00"]}
+                        'string-constraints)
+          "A member that is not stated must fail"))))
+
 (deftest pattern-constraint-is-enforced
   (testing "an enumerated character set"
     (let [set-webhook (params-schema-of "setWebhook")]

@@ -253,11 +253,10 @@
 (def type-dependant-field-re
   #".+(?:(must be)|(always)) [\"“]?([a-z0-9_]+)[\"”]?$")
 
-;; TODO: Address some or all of these string constraint cases.
 ;; NB: We do not parse other constraints for strings, such as:
 ;;     - "with at most 2 line feeds" (no need to check for it)
 ;;     - "must end in `_by_<bot_username>`" (impossible to check)
-;;     - "must be a superset|subset of"
+;;     - "must be a superset|subset of" (a one-off complicated case)
 (def desc-text-re
   {:in-span              #"(?i)(?:[;,] |between |from )(-?\d+(?:\s*\*\s*\d+)*)(?:\s*-\s*| and | to )(-?\d+(?:\s*\*\s*\d+)*)"
    :in-values            #"(?i)must (?:be one of |always be |be )([^.;]+)"
@@ -267,6 +266,7 @@
    :total-length         #"(?i)total length of (?:up to )?(?:(\d+)-)?(\d+) characters"
    :length               #"(?i)(?:(\d+)-)?(\d+) characters"
    :byte-length          #"(?i)(?:(\d+)-)?(\d+) bytes"
+   :enum-literals        #"(?i)one of (.+)"
    :allowed-chars-listed #"(?i)only (?:characters )?([^.]+?) and (\S+) are allowed"
    :allowed-chars-named  #"(?i)can contain only ([^.]+)"
    :disallowed-chars     #"(?i)(\w+) are not allowed"
@@ -435,6 +435,23 @@
         (when (seq terms)
           {:in terms})))))
 
+(def quoted-literal-re #"“([^”]*)”")
+
+;; NB: The literals are taken from the cue to the very end, rather than to the
+;;     end of a sentence, since a member may well carry a period of its own —
+;;     "“static” for a .WEBP or .PNG image ...". Over-reaching is the safe way
+;;     round here: an extra member only ever admits a value, never rejects it,
+;;     whereas a truncated list would reject the members left out.
+(defn parse-string-literals [desc-text]
+  (when-some [[_ clause] (re-find (get desc-text-re :enum-literals) desc-text)]
+    (let [literals (map second (re-seq quoted-literal-re clause))]
+      ;; NB: An emoji member, tho, reaches us blank — the docs state it as an
+      ;;     `<img>`, whose text content is nothing — so a blank one means we
+      ;;     have failed to read the values and had better state none at all.
+      (when (and (seq literals)
+                 (not-any? str/blank? literals))
+        (vec (distinct literals))))))
+
 (defn parse-string-constraints [desc-text]
   (let [length (or (some-> (re-search desc-text :length [:from :to])
                            (parse-range-constraint))
@@ -454,10 +471,12 @@
         pattern (->string-pattern {:char-classes char-classes
                                    :begins-with  begins-with
                                    :guards       guards})
+        literals (parse-string-literals desc-text)
         aep-mod? (re-find (get desc-text-re :aep-modifier) desc-text)]
     (cond-> nil
       length (assoc :length length)
       pattern (assoc :pattern pattern)
+      literals (assoc :enum literals)
       aep-mod? (assoc :after_entities_parsing true))))
 
 (defn array-type? [type]

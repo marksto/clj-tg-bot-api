@@ -2881,7 +2881,12 @@
       "name" : "state",
       "type" : "String",
       "description" : "The new state of the subscription. Currently, it can be one of “canceled” if the user canceled the subscription, “active” if the user re-enabled a previously canceled subscription, or “failed” if payment for the subscription failed.",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "canceled", "active", "failed" ]
+        }
+      }
     } ]
   }, {
     "id" : "type/message-generation-stopped",
@@ -3548,7 +3553,12 @@
       "name" : "currency",
       "type" : "String",
       "description" : "Currency in which the payment was made. Currently, one of “XTR” for Telegram Stars or “TON” for TON grams.",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "XTR", "TON" ]
+        }
+      }
     }, {
       "name" : "amount",
       "type" : "Integer",
@@ -3574,7 +3584,12 @@
       "name" : "reason",
       "type" : "String",
       "description" : "Reason for the refund. Currently, one of “post_deleted” if the post was deleted within 24 hours of being posted or removed from scheduled messages without being posted, or “payment_refunded” if the payer refunded their payment.",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "post_deleted", "payment_refunded" ]
+        }
+      }
     } ]
   }, {
     "id" : "type/giveaway-created",
@@ -3777,7 +3792,12 @@
       "name" : "currency",
       "type" : "String",
       "description" : "Currency in which the post will be paid. Currently, must be one of “XTR” for Telegram Stars or “TON” for TON grams.",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "XTR", "TON" ]
+        }
+      }
     }, {
       "name" : "amount",
       "type" : "Integer",
@@ -3793,7 +3813,12 @@
       "name" : "state",
       "type" : "String",
       "description" : "State of the suggested post. Currently, it can be one of “pending”, “approved”, “declined”.",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "pending", "approved", "declined" ]
+        }
+      }
     }, {
       "name" : "price",
       "type" : "type/suggested-post-price",
@@ -3974,7 +3999,12 @@
       "name" : "style",
       "type" : "String",
       "description" : "<em>Optional</em>. Style of the button. Must be one of “danger” (red), “success” (green) or “primary” (blue). If omitted, then an app-specific style is used.",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "danger", "success", "primary" ]
+        }
+      }
     }, {
       "name" : "request_users",
       "type" : "type/keyboard-button-request-users",
@@ -4206,7 +4236,12 @@
       "name" : "style",
       "type" : "String",
       "description" : "<em>Optional</em>. Style of the button. Must be one of “danger” (red), “success” (green) or “primary” (blue). If omitted, then an app-specific style is used.",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "danger", "success", "primary" ]
+        }
+      }
     }, {
       "name" : "url",
       "type" : "String",
@@ -6083,7 +6118,12 @@
       "name" : "last_resale_currency",
       "type" : "String",
       "description" : "<em>Optional</em>. For gifts bought from other users, the currency in which the payment for the gift was done. Currently, one of “XTR” for Telegram Stars or “TON” for TON grams.",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "XTR", "TON" ]
+        }
+      }
     }, {
       "name" : "last_resale_amount",
       "type" : "Integer",
@@ -7725,7 +7765,12 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of the sticker, currently one of “regular”, “mask”, “custom_emoji”. The type of the sticker is independent from its format, which is determined by the fields <em>is_animated</em> and <em>is_video</em>.",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "regular", "mask", "custom_emoji" ]
+        }
+      }
     }, {
       "name" : "width",
       "type" : "Integer",
@@ -7806,7 +7851,12 @@
       "name" : "sticker_type",
       "type" : "String",
       "description" : "Type of stickers in the set, currently one of “regular”, “mask”, “custom_emoji”",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "regular", "mask", "custom_emoji" ]
+        }
+      }
     }, {
       "name" : "stickers",
       "type" : [ "array", "type/sticker" ],
@@ -7827,7 +7877,12 @@
       "name" : "point",
       "type" : "String",
       "description" : "The part of the face relative to which the mask should be placed. One of “forehead”, “eyes”, “mouth”, or “chin”.",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "forehead", "eyes", "mouth", "chin" ]
+        }
+      }
     }, {
       "name" : "x_shift",
       "type" : "Float",
@@ -7858,7 +7913,12 @@
       "name" : "format",
       "type" : "String",
       "description" : "Format of the added sticker, must be one of “static” for a <strong>.WEBP</strong> or <strong>.PNG</strong> image, “animated” for a <strong>.TGS</strong> animation, “video” for a <strong>.WEBM</strong> video",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "static", "animated", "video" ]
+        }
+      }
     }, {
       "name" : "emoji_list",
       "type" : [ "array", "String" ],
@@ -7985,7 +8045,12 @@
       "name" : "style",
       "type" : "String",
       "description" : "<em>Optional</em>. Style of the button. Must be one of “danger”, “success”, “primary”, or “link” (the button is shown as a regular link without borders). Apps may use theme-specific colors for the button background and text based on the style. The style “link” is allowed only for callback buttons.",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "danger", "success", "primary", "link" ]
+        }
+      }
     }, {
       "name" : "url",
       "type" : "String",
@@ -8609,12 +8674,22 @@
       "name" : "align",
       "type" : "String",
       "description" : "Horizontal cell content alignment. Currently, must be one of “left”, “center”, or “right”.",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "left", "center", "right" ]
+        }
+      }
     }, {
       "name" : "valign",
       "type" : "String",
       "description" : "Vertical cell content alignment. Currently, must be one of “top”, “middle”, or “bottom”.",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "top", "middle", "bottom" ]
+        }
+      }
     } ]
   }, {
     "id" : "type/rich-block-list-item",
@@ -8650,7 +8725,12 @@
       "name" : "type",
       "type" : "String",
       "description" : "<em>Optional</em>. For ordered lists, the type of the item label; must be one of “a” for lowercase letters, “A” for uppercase letters, “i” for lowercase Roman numerals, “I” for uppercase Roman numerals, or “1” for decimal numbers",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "a", "A", "i", "I", "1" ]
+        }
+      }
     } ]
   }, {
     "id" : "type/rich-block",
@@ -9038,7 +9118,12 @@
       "name" : "align",
       "type" : "String",
       "description" : "<em>Optional</em>. Horizontal alignment of the buttons. Currently, must be one of “left”, “center”, or “right”.",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "left", "center", "right" ]
+        }
+      }
     } ]
   }, {
     "id" : "type/rich-block-animation",
@@ -9233,7 +9318,12 @@
       "name" : "type",
       "type" : "String",
       "description" : "<em>Optional</em>. For ordered lists, the type of the item label; must be one of “a” for lowercase letters, “A” for uppercase letters, “i” for lowercase Roman numerals, “I” for uppercase Roman numerals, or “1” for decimal numbers",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "a", "A", "i", "I", "1" ]
+        }
+      }
     } ]
   }, {
     "id" : "type/input-rich-block",
@@ -9653,7 +9743,12 @@
       "name" : "align",
       "type" : "String",
       "description" : "<em>Optional</em>. Horizontal alignment of the buttons. Currently, must be one of “left”, “center”, or “right”.",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "left", "center", "right" ]
+        }
+      }
     } ]
   }, {
     "id" : "type/input-rich-block-animation",
@@ -10099,7 +10194,12 @@
       "name" : "thumbnail_mime_type",
       "type" : "String",
       "description" : "<em>Optional</em>. MIME type of the thumbnail, must be one of “image/jpeg”, “image/gif”, or “video/mp4”. Defaults to “image/jpeg”.",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "image/jpeg", "image/gif", "video/mp4" ]
+        }
+      }
     }, {
       "name" : "title",
       "type" : "String",
@@ -10199,7 +10299,12 @@
       "name" : "thumbnail_mime_type",
       "type" : "String",
       "description" : "<em>Optional</em>. MIME type of the thumbnail, must be one of “image/jpeg”, “image/gif”, or “video/mp4”. Defaults to “image/jpeg”.",
-      "required" : false
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "image/jpeg", "image/gif", "video/mp4" ]
+        }
+      }
     }, {
       "name" : "title",
       "type" : "String",
@@ -12271,7 +12376,12 @@
       "name" : "transaction_type",
       "type" : "String",
       "description" : "Type of the transaction, currently one of “invoice_payment” for payments via invoices, “paid_media_payment” for payments for paid media, “gift_purchase” for gifts sent by the bot, “premium_purchase” for Telegram Premium subscriptions gifted by the bot, “business_account_transfer” for direct transfers from managed business accounts",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "invoice_payment", "paid_media_payment", "gift_purchase", "premium_purchase", "business_account_transfer" ]
+        }
+      }
     }, {
       "name" : "user",
       "type" : "type/user",
@@ -12521,7 +12631,12 @@
       "name" : "type",
       "type" : "String",
       "description" : "Element type. One of “personal_details”, “passport”, “driver_license”, “identity_card”, “internal_passport”, “address”, “utility_bill”, “bank_statement”, “rental_agreement”, “passport_registration”, “temporary_registration”, “phone_number”, “email”.",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "personal_details", "passport", "driver_license", "identity_card", "internal_passport", "address", "utility_bill", "bank_statement", "rental_agreement", "passport_registration", "temporary_registration", "phone_number", "email" ]
+        }
+      }
     }, {
       "name" : "data",
       "type" : "String",
@@ -12611,7 +12726,12 @@
       "name" : "type",
       "type" : "String",
       "description" : "The section of the user's Telegram Passport which has the error, one of “personal_details”, “passport”, “driver_license”, “identity_card”, “internal_passport”, “address”",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "personal_details", "passport", "driver_license", "identity_card", "internal_passport", "address" ]
+        }
+      }
     }, {
       "name" : "field_name",
       "type" : "String",
@@ -12643,7 +12763,12 @@
       "name" : "type",
       "type" : "String",
       "description" : "The section of the user's Telegram Passport which has the issue, one of “passport”, “driver_license”, “identity_card”, “internal_passport”",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "passport", "driver_license", "identity_card", "internal_passport" ]
+        }
+      }
     }, {
       "name" : "file_hash",
       "type" : "String",
@@ -12670,7 +12795,12 @@
       "name" : "type",
       "type" : "String",
       "description" : "The section of the user's Telegram Passport which has the issue, one of “driver_license”, “identity_card”",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "driver_license", "identity_card" ]
+        }
+      }
     }, {
       "name" : "file_hash",
       "type" : "String",
@@ -12697,7 +12827,12 @@
       "name" : "type",
       "type" : "String",
       "description" : "The section of the user's Telegram Passport which has the issue, one of “passport”, “driver_license”, “identity_card”, “internal_passport”",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "passport", "driver_license", "identity_card", "internal_passport" ]
+        }
+      }
     }, {
       "name" : "file_hash",
       "type" : "String",
@@ -12724,7 +12859,12 @@
       "name" : "type",
       "type" : "String",
       "description" : "The section of the user's Telegram Passport which has the issue, one of “utility_bill”, “bank_statement”, “rental_agreement”, “passport_registration”, “temporary_registration”",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "utility_bill", "bank_statement", "rental_agreement", "passport_registration", "temporary_registration" ]
+        }
+      }
     }, {
       "name" : "file_hash",
       "type" : "String",
@@ -12751,7 +12891,12 @@
       "name" : "type",
       "type" : "String",
       "description" : "The section of the user's Telegram Passport which has the issue, one of “utility_bill”, “bank_statement”, “rental_agreement”, “passport_registration”, “temporary_registration”",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "utility_bill", "bank_statement", "rental_agreement", "passport_registration", "temporary_registration" ]
+        }
+      }
     }, {
       "name" : "file_hashes",
       "type" : [ "array", "String" ],
@@ -12778,7 +12923,12 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of element of the user's Telegram Passport which has the issue, one of “passport”, “driver_license”, “identity_card”, “internal_passport”, “utility_bill”, “bank_statement”, “rental_agreement”, “passport_registration”, “temporary_registration”",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "passport", "driver_license", "identity_card", "internal_passport", "utility_bill", "bank_statement", "rental_agreement", "passport_registration", "temporary_registration" ]
+        }
+      }
     }, {
       "name" : "file_hash",
       "type" : "String",
@@ -12805,7 +12955,12 @@
       "name" : "type",
       "type" : "String",
       "description" : "Type of element of the user's Telegram Passport which has the issue, one of “passport”, “driver_license”, “identity_card”, “internal_passport”, “utility_bill”, “bank_statement”, “rental_agreement”, “passport_registration”, “temporary_registration”",
-      "required" : true
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "enum" : [ "passport", "driver_license", "identity_card", "internal_passport", "utility_bill", "bank_statement", "rental_agreement", "passport_registration", "temporary_registration" ]
+        }
+      }
     }, {
       "name" : "file_hashes",
       "type" : [ "array", "String" ],
@@ -18616,7 +18771,12 @@
       "name" : "sticker_format",
       "type" : "String",
       "required" : true,
-      "description" : "Format of the sticker, must be one of “static”, “animated”, “video”"
+      "description" : "Format of the sticker, must be one of “static”, “animated”, “video”",
+      "constraints" : {
+        "string" : {
+          "enum" : [ "static", "animated", "video" ]
+        }
+      }
     } ]
   }, {
     "id" : "method/create-new-sticker-set",
@@ -18874,7 +19034,12 @@
       "name" : "format",
       "type" : "String",
       "required" : true,
-      "description" : "Format of the thumbnail, must be one of “static” for a <strong>.WEBP</strong> or <strong>.PNG</strong> image, “animated” for a <strong>.TGS</strong> animation, or “video” for a <strong>.WEBM</strong> video"
+      "description" : "Format of the thumbnail, must be one of “static” for a <strong>.WEBP</strong> or <strong>.PNG</strong> image, “animated” for a <strong>.TGS</strong> animation, or “video” for a <strong>.WEBM</strong> video",
+      "constraints" : {
+        "string" : {
+          "enum" : [ "static", "animated", "video" ]
+        }
+      }
     } ]
   }, {
     "id" : "method/set-custom-emoji-sticker-set-thumbnail",

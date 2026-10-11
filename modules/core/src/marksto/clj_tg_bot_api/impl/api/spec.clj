@@ -165,7 +165,7 @@
   {:arglists '([constraint params modifiers schema])}
   (fn [constraint _params _modifiers _schema] constraint))
 
-(defn ->term-pred
+(defn ->term-in-pred
   "Builds a pred for a single term an `in` constraint admits, which is either
    an inclusive span or an exact value."
   [term]
@@ -177,13 +177,18 @@
     (throw (ex-info "The 'in' constraint requires a number" {:schema schema})))
   ;; NB: The terms of an `in` are a union — any one of them admits the value —
   ;;     in contrast to the constraints of a category, which all have to hold.
-  (apply some-fn (map ->term-pred terms)))
+  (apply some-fn (map ->term-in-pred terms)))
+
+(defmethod ->constraint-pred :enum
+  [_ literals _modifiers schema]
+  (when-not (= s/Str schema)
+    (throw (ex-info "The 'enum' constraint requires a string" {:schema schema})))
+  (set literals))
 
 (defmethod ->constraint-pred :size
   [_ params _modifiers schema]
   (when-not (vector? schema)
-    (throw (ex-info "The 'size' constraint requires an array"
-                    {:schema schema})))
+    (throw (ex-info "The 'size' constraint requires an array" {:schema schema})))
   (->range-pred params count))
 
 (defmethod ->constraint-pred :total_length
