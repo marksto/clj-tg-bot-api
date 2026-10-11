@@ -25,7 +25,7 @@ It exposes a uniform interface with just [3 primary functions](#basics) and uses
   - with regular, automated updates — never miss a new Bot API version again!
 * **Uniform and idiomatic Clojure interface**
   - no fancy n-ary functions for methods — [just a keyword and a map of params](#available-methods)
-  - basic validation/coercion of method parameters to their schemas
+  - sound validation/coercion of method parameters with their schemas
   - auto-conversion of dashes to underscores in param keys
 * **Does things at the right level of abstraction**
   - it's a simple API client library, not an opinionated framework
@@ -302,6 +302,34 @@ Examples of passing HTTP client-specific options for making requests as `make-re
                           {:chat-id 1
                            :text    "Hello, world!"})
 ```
+
+### Parameter Constraints
+
+Besides the types, the API spec captures constraints — the limits that the docs state in prose, such as "0-200 characters" or "must be one of “static”, “animated”, “video”", etc. These are parsed on every spec update and compiled into the very same schemas, so a violating call fails locally, with no round trip:
+
+```clojure
+(tg-bot-api/make-request! client :send-location {:chat-id 1 :latitude 51.5 :longitude -0.1 :heading 400})
+;=> throws: Could not coerce value to schema: {:body {:heading (not (number-constraints 400))}}
+```
+
+| Category | Constraint     | What it checks                                             |
+|----------|----------------|------------------------------------------------------------|
+| `number` | `in`           | the value lies in a span or equals one of the exact values |
+| `string` | `length`       | the number of characters / bytes in the string             |
+| `string` | `enum`         | the value is one of the literals the docs enumerate        |
+| `string` | `pattern`      | the allowed chars, the first char, consecutive chars, etc. |
+| `array`  | `size`         | the number of items in the array                           |
+| `array`  | `total_length` | the summed length of all the string items in the array     |
+
+Lengths the docs measure "after entities parsing" are counted the way the server counts them — the markup is stripped first, according to the `parse_mode` in effect (HTML, Markdown, or MarkdownV2).
+
+A few constraints hold between several params of a method, or fields of a type, rather than on a single value — `at_most_one`, `at_least_one` and `required_with`. A violation of those is reported as `attrs-constraints`, naming the whole map instead of one of its entries.
+
+#### Constraints Design Principle
+
+Only what can be checked soundly is checked at all. A documented limit becomes a constraint when the docs state it unambiguously and it can be decided from the request alone — everything else is left to the Telegram server, which is the authority on it anyway.
+
+The guarantee runs one way: a local check may let a violation through, but it must never reject a call the server would have accepted. Letting one through costs nothing, as the server replies with the very same error it always did, whereas a false rejection is a hard failure the caller cannot work around.
 
 ### Getting Updates
 
