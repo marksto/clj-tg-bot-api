@@ -12,7 +12,7 @@
   (:require
    [clojure.set :as set]
    [loom.alg :as la]
-   [loom.graph :refer [add-edges add-nodes digraph nodes]])
+   [loom.graph :refer [add-edges add-nodes digraph has-edge? nodes]])
   (:import
    (clojure.lang IDeref)
    (java.util.concurrent Future)))
@@ -153,7 +153,8 @@
 (defn cycled-nodes
   [g]
   (->> (la/scc g)
-       (filter #(< 1 (count %)))
+       (filter #(or (< 1 (count %))
+                    (has-edge? g (first %) (first %))))
        (map set)
        (apply set/union)))
 
