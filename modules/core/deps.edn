@@ -3,9 +3,9 @@
                                               :exclusions  [org.clojure/clojure
                                                             org.clojure/clojurescript]}
          camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
-         com.github.oliyh/martian            {:mvn/version "0.2.3"
+         com.github.oliyh/martian            {:mvn/version "0.2.4"
                                               :exclusions  [com.cognitect/transit-cljs]}
-         com.github.oliyh/martian-test       {:mvn/version "0.2.3"}
+         com.github.oliyh/martian-test       {:mvn/version "0.2.4"}
          diehard/diehard                     {:mvn/version "0.12.1"
                                               :exclusions  [org.clojure/clojure]}
          instaparse/instaparse               {:mvn/version "1.5.0"}

@@ -21,16 +21,16 @@
                  io.aviso/pretty             {:mvn/version "1.4.4"}}}
 
   :http/http-kit
-  {:extra-deps {com.github.oliyh/martian-httpkit {:mvn/version "0.2.3"}}}
+  {:extra-deps {com.github.oliyh/martian-httpkit {:mvn/version "0.2.4"}}}
 
   :http/clj-http
-  {:extra-deps {com.github.oliyh/martian-clj-http {:mvn/version "0.2.3"}}}
+  {:extra-deps {com.github.oliyh/martian-clj-http {:mvn/version "0.2.4"}}}
 
   :http/clj-http-lite
-  {:extra-deps {com.github.oliyh/martian-clj-http-lite {:mvn/version "0.2.3"}}}
+  {:extra-deps {com.github.oliyh/martian-clj-http-lite {:mvn/version "0.2.4"}}}
 
   :http/hato
-  {:extra-deps {com.github.oliyh/martian-hato {:mvn/version "0.2.3"}}}
+  {:extra-deps {com.github.oliyh/martian-hato {:mvn/version "0.2.4"}}}
 
   :test/unit
   {:extra-paths ["modules/core/test/unit"
@@ -43,7 +43,7 @@
   {:extra-paths ["modules/core/test/integration"
                  "modules/core/test-resources/integration"
                  "modules/updates/test/integration"]
-   :extra-deps  {com.github.oliyh/martian-vcr {:mvn/version "0.2.3"}
+   :extra-deps  {com.github.oliyh/martian-vcr {:mvn/version "0.2.4"}
                  nubank/matcher-combinators   {:mvn/version "3.11.0"}}}
 
   ;; Run with "BOT_AUTH_TOKEN=... bb test"
