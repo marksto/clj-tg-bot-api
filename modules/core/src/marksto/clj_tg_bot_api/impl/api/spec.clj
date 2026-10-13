@@ -275,12 +275,16 @@
   (or (get obj attr-name)
       (get obj (csk/->kebab-case attr-name))))
 
+(defn ->type-value
+  "Gives the value the type-dependant field of a `subtype` is fixed to, if any."
+  [subtype]
+  (some :value (:fields subtype)))
+
 (defn ->type-pred
-  [type-dependant-field subtype]
+  [type-dependant-field type-value]
   (let [attr-name (->attr-name type-dependant-field)]
     (fn [obj]
-      (= (some :value (:fields subtype))
-         (get-attr-value obj attr-name)))))
+      (= type-value (get-attr-value obj attr-name)))))
 
 ;;; Types > Schemas > Cross-attribute constraints
 
@@ -461,18 +465,61 @@
       (s/recursive (type-schema-var type-name))
       (type->schema *state api-subtype-id))))
 
+;; NB: Several subtypes may share a type value (e.g. a cached and a URL "photo"
+;;     result), and then it is the attrs that one of them requires and none of
+;;     the others has that tell them apart. A valid object of the others never
+;;     holds any of those, so an object that does is checked against that very
+;;     subtype, and gets its errors (say, a missing attr) reported against it.
+
+(defn get-distinctive-attr-names
+  "Gives the names of the attrs a `subtype` requires that none of the `others`
+   (the subtypes sharing its type value) has among its attrs."
+  [subtype others]
+  (let [others-attr-names (into #{} (comp (mapcat :fields) (map :name)) others)]
+    (into []
+          (comp (filter :required)
+                (map :name)
+                (remove others-attr-names))
+          (:fields subtype))))
+
+(defn ->distinctive-attrs-error-symbol
+  [attr-name-groups]
+  (->> attr-name-groups
+       (map #(str/join "+" %))
+       (str/join "-or-")
+       (format "%s?")
+       (symbol)))
+
+(defn api-type:same-type-subtypes->schema
+  [*state api-subtype-ids]
+  (if (next api-subtype-ids)
+    (let [subtypes (map #(get-in @*state [:id->api-type %]) api-subtype-ids)
+          attr-name-groups (map #(get-distinctive-attr-names % (remove #{%} subtypes))
+                                subtypes)]
+      (apply s/conditional
+             (-> (vec (interleave
+                        (map #(->relation-pred :at_least_one [%]) attr-name-groups)
+                        (map #(api-type:subtype->schema *state %) api-subtype-ids)))
+                 (conj (->distinctive-attrs-error-symbol attr-name-groups)))))
+    (api-type:subtype->schema *state (first api-subtype-ids))))
+
 (defn api-type:supertype->schema
   [*state name api-subtype-ids]
-  (let [subtype-schemas (map #(api-type:subtype->schema *state %) api-subtype-ids)
-        subtypes (map #(get-in @*state [:id->api-type %]) api-subtype-ids)
+  (let [subtypes (map #(get-in @*state [:id->api-type %]) api-subtype-ids)
         type-dependant-field (some #(when (contains? % :value) %)
                                    (:fields (first subtypes)))]
     (s/named
       (if (some? type-dependant-field)
-        (apply s/conditional
-               (interleave (map #(->type-pred type-dependant-field %) subtypes)
-                           subtype-schemas))
-        (or-schema subtype-schemas 'subtype?))
+        (->> subtypes
+             (reduce (fn [acc {:keys [id] :as subtype}]
+                       (update acc (->type-value subtype) (fnil conj []) id))
+                     (ordered-map))
+             (mapcat (fn [[type-value api-subtype-ids]]
+                       [(->type-pred type-dependant-field type-value)
+                        (api-type:same-type-subtypes->schema *state api-subtype-ids)]))
+             (apply s/conditional))
+        (or-schema (map #(api-type:subtype->schema *state %) api-subtype-ids)
+                   'subtype?))
       name)))
 
 (defn api-type->schema

@@ -58,6 +58,86 @@
         (is (nil? (checker-error params-schema))
             (format "The '%s' method params schema must build a checker" name))))))
 
+(deftest same-type-subtypes-are-distinguishable
+  (let [{:keys [types]} (sut/get-tg-bot-api-spec)
+        id->type (into {} (map (juxt :id identity)) types)]
+    ;; NB: The subtypes that share a type value are told apart by the attrs
+    ;;     each of them requires and none of the others has, so the subtype
+    ;;     with no such attrs is unreachable, and its valid objects rejected.
+    (doseq [{:keys [name subtypes]} types
+            same-type-subtypes (-> (group-by sut/->type-value (map id->type subtypes))
+                                   (dissoc nil)
+                                   (vals))
+            :when (next same-type-subtypes)
+            subtype same-type-subtypes]
+      (is (seq (sut/get-distinctive-attr-names
+                 subtype (remove #{subtype} same-type-subtypes)))
+          (format "The '%s' subtype of '%s' must require a distinctive attr"
+                  (:name subtype) name)))))
+
+;;; Supertypes
+
+(deftest same-type-subtypes-are-told-apart
+  (testing "the two subtypes differing in their required attrs alone"
+    ;; NB: Both `InlineQueryResultCachedPhoto` and `InlineQueryResultPhoto`
+    ;;     state "Type of the result, must be photo", so it is the former's
+    ;;     `photo_file_id` and the latter's `photo_url` and `thumbnail_url`
+    ;;     that tell the two apart.
+    (let [inline-result (type-schema-of "InlineQueryResult")]
+      (is (nil? (s/check inline-result
+                         {:type          "photo"
+                          :id            "1"
+                          :photo_file_id "file-id"}))
+          "A cached photo must pass")
+      (is (nil? (s/check inline-result
+                         {:type          "photo"
+                          :id            "1"
+                          :photo_url     "https://example.com/photo.jpg"
+                          :thumbnail_url "https://example.com/thumb.jpg"}))
+          "A URL photo must pass, though listed after the cached one")
+      (is (rejected-by? inline-result
+                        {:type      "photo"
+                         :id        "1"
+                         :photo_url "https://example.com/photo.jpg"}
+                        'InlineQueryResultPhoto)
+          "A URL photo without a thumbnail must fail as a URL photo")
+      (is (rejected-by? inline-result
+                        {:type          "photo"
+                         :id            "1"
+                         :photo_url     "https://example.com/photo.jpg"
+                         :thumbnail_url "https://example.com/thumb.jpg"
+                         :caption       (str/join (repeat 1025 \a))}
+                        'attrs-constraints)
+          "A URL photo must have its own constraints checked")
+      (is (rejected-by? inline-result
+                        {:type "photo"
+                         :id   "1"}
+                        'photo_file_id-or-photo_url+thumbnail_url?)
+          "A photo of neither kind must fail, naming the attrs that tell them apart")))
+  (testing "the two subtypes sharing a required attr"
+    ;; NB: `InlineQueryResultCachedVoice` requires a "Voice message title" and
+    ;;     `InlineQueryResultVoice` requires a "Recording title", both being a
+    ;;     `title`, so it is the `voice_url` alone that tells the latter apart.
+    (let [inline-result (type-schema-of "InlineQueryResult")]
+      (is (nil? (s/check inline-result
+                         {:type          "voice"
+                          :id            "1"
+                          :voice_file_id "file-id"
+                          :title         "t"}))
+          "A cached voice must pass")
+      (is (nil? (s/check inline-result
+                         {:type      "voice"
+                          :id        "1"
+                          :voice_url "https://example.com/voice.ogg"
+                          :title     "t"}))
+          "A URL voice must pass, though listed after the cached one")
+      (is (rejected-by? inline-result
+                        {:type      "voice"
+                         :id        "1"
+                         :voice_url "https://example.com/voice.ogg"}
+                        'InlineQueryResultVoice)
+          "A URL voice without a title must fail as a URL voice"))))
+
 ;;; Constraints
 
 (deftest array-size-constraint-is-enforced
