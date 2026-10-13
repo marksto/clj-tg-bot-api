@@ -138,6 +138,30 @@
                         'InlineQueryResultVoice)
           "A URL voice without a title must fail as a URL voice"))))
 
+;;; Cyclic Types
+
+(deftest cyclic-type-refs-are-resolved
+  (testing "a ref from within a container type"
+    ;; NB: `RichBlockCollage` holds the "Elements of the collage", an array of
+    ;;     `RichBlock`, which unites the collage itself. So the two are parsed
+    ;;     in no particular order, and the array may be built before the type
+    ;;     it holds.
+    (let [rich-block-collage (type-schema-of "RichBlockCollage")]
+      (is (nil? (s/check rich-block-collage
+                         {:type   "collage"
+                          :blocks [{:type "divider"}]}))
+          "A collage of a block must pass")
+      (is (nil? (s/check rich-block-collage
+                         {:type   "collage"
+                          :blocks [{:type   "collage"
+                                    :blocks [{:type "divider"}]}]}))
+          "A collage of a collage must pass")
+      (is (rejected-by? rich-block-collage
+                        {:type   "collage"
+                         :blocks [{:type "bogus"}]}
+                        'some-matching-condition?)
+          "A collage of an unknown block must fail as a block"))))
+
 ;;; Constraints
 
 (deftest array-size-constraint-is-enforced

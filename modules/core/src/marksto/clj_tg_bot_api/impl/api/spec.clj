@@ -398,9 +398,16 @@
   [*state type]
   (cond
     (string? type)
-    ;; NB: We can rest assured that the required schema is already available
-    ;;     and avoid a recursion thanks to the topological order of parsing.
-    (get-in @*state [:id->schema type])
+    (let [{type-name :name} (get-in @*state [:id->api-type type])]
+      ;; NB: We can rest assured that the required schema is already available
+      ;;     thanks to the topological order of parsing, except within a cycle.
+      ;;     Its order is arbitrary, so a type may be parsed before the one it
+      ;;     refers to, be it directly or from within a container type — there
+      ;;     may be no schema to look up yet and then only a `s/recursive` ref
+      ;;     can stand in for the latter.
+      (if (and (some? type-name) (has-type-schema-var? type-name))
+        (s/recursive (type-schema-var type-name))
+        (get-in @*state [:id->schema type])))
 
     (vector? type)
     (let [[container-type inner-type] type]
@@ -430,20 +437,10 @@
            :deferred []}
           attrs))
 
-(defn api-type:field-type->schema
-  [*state type constraints]
-  (let [{type-name :name} (get-in @*state [:id->api-type type])]
-    ;; NB: The order within a cycle is arbitrary, so a subtype may be parsed
-    ;;     after a supertype that unites it, in which case there's no schema
-    ;;     to look up yet, and only a `s/recursive` ref can stand in for it.
-    (if (has-type-schema-var? type-name)
-      {:schema (s/recursive (type-schema-var type-name))}
-      (constrained-type->schema *state type constraints))))
-
 (defn api-type:field->attr-schema
   [*state {:keys [required type constraints] :as field}]
   (-> *state
-      (api-type:field-type->schema type constraints)
+      (constrained-type->schema type constraints)
       (assoc :key (cond-> (->attr-name field)
                           (not required) (s/optional-key)))))
 
@@ -454,16 +451,6 @@
     (-> schema
         (attrs-constrained-schema deferred fields constraints)
         (s/named name))))
-
-(defn api-type:subtype->schema
-  [*state api-subtype-id]
-  (let [{type-name :name} (get-in @*state [:id->api-type api-subtype-id])]
-    ;; NB: The order within a cycle is arbitrary, so a subtype may be parsed
-    ;;     after a supertype that unites it, in which case there's no schema
-    ;;     to look up yet, and only a `s/recursive` ref can stand in for it.
-    (if (has-type-schema-var? type-name)
-      (s/recursive (type-schema-var type-name))
-      (type->schema *state api-subtype-id))))
 
 ;; NB: Several subtypes may share a type value (e.g. a cached and a URL "photo"
 ;;     result), and then it is the attrs that one of them requires and none of
@@ -499,9 +486,9 @@
       (apply s/conditional
              (-> (vec (interleave
                         (map #(->relation-pred :at_least_one [%]) attr-name-groups)
-                        (map #(api-type:subtype->schema *state %) api-subtype-ids)))
+                        (map #(type->schema *state %) api-subtype-ids)))
                  (conj (->distinctive-attrs-error-symbol attr-name-groups)))))
-    (api-type:subtype->schema *state (first api-subtype-ids))))
+    (type->schema *state (first api-subtype-ids))))
 
 (defn api-type:supertype->schema
   [*state name api-subtype-ids]
@@ -518,7 +505,7 @@
                        [(->type-pred type-dependant-field type-value)
                         (api-type:same-type-subtypes->schema *state api-subtype-ids)]))
              (apply s/conditional))
-        (or-schema (map #(api-type:subtype->schema *state %) api-subtype-ids)
+        (or-schema (map #(type->schema *state %) api-subtype-ids)
                    'subtype?))
       name)))
 
