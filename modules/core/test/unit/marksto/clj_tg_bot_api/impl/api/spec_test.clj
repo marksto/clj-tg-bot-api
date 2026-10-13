@@ -138,6 +138,41 @@
                         'InlineQueryResultVoice)
           "A URL voice without a title must fail as a URL voice"))))
 
+(deftest union-alternatives-are-accepted
+  (testing "the members a union states in prose alone"
+    ;; NB: `RichText` "can be either a String for plain text, an Array of
+    ;;     RichText, or any of the following types", the latter being its
+    ;;     subtypes, so the former two are no API types of their own.
+    (let [rich-text (type-schema-of "RichText")]
+      (is (nil? (s/check rich-text "Hello, world!"))
+          "A plain text must pass")
+      (is (nil? (s/check rich-text ["Hello, " {:type "bold" :text "world"}]))
+          "An array of a plain text and a subtype must pass")
+      (is (nil? (s/check rich-text [["Hello, "] ["world"]]))
+          "An array of arrays must pass")
+      (is (nil? (s/check rich-text {:type "bold"
+                                    :text ["Hello, " {:type "italic" :text "world"}]}))
+          "A subtype holding an array must pass")
+      (is (rejected-by? rich-text 42 'matches-some-precondition?)
+          "A number must fail, being none of the members")
+      (is (rejected-by? rich-text ["Hello, " 42] 'matches-some-precondition?)
+          "An array holding a number must fail")
+      (is (rejected-by? rich-text {:type "bogus" :text "Hello"} 'matches-some-precondition?)
+          "An object of an unknown type must fail")
+      (is (rejected-by? rich-text ["Hello, " {:type "bold"}] 'RichTextBold)
+          "A subtype within an array must fail as that very subtype")))
+  (testing "a param of a method holding such a union"
+    ;; NB: These are the very params the `sendRichMessage` used to reject.
+    (let [send-rich-message (params-schema-of "sendRichMessage")]
+      (is (nil? (s/check send-rich-message
+                         {:chat_id      1
+                          :rich_message {:blocks [{:type "heading"
+                                                   :size 1
+                                                   :text "Hello"}
+                                                  {:type "paragraph"
+                                                   :text ["plain " {:type "bold" :text "bold"}]}]}}))
+          "A rich message of plain and formatted texts must pass"))))
+
 ;;; Cyclic Types
 
 (deftest cyclic-type-refs-are-resolved

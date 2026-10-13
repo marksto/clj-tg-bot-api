@@ -490,33 +490,45 @@
                  (conj (->distinctive-attrs-error-symbol attr-name-groups)))))
     (type->schema *state (first api-subtype-ids))))
 
-(defn api-type:supertype->schema
-  [*state name api-subtype-ids]
+(defn api-type:subtypes->schema
+  [*state api-subtype-ids]
   (let [subtypes (map #(get-in @*state [:id->api-type %]) api-subtype-ids)
         type-dependant-field (some #(when (contains? % :value) %)
                                    (:fields (first subtypes)))]
+    (if (some? type-dependant-field)
+      (->> subtypes
+           (reduce (fn [acc {:keys [id] :as subtype}]
+                     (update acc (->type-value subtype) (fnil conj []) id))
+                   (ordered-map))
+           (mapcat (fn [[type-value api-subtype-ids]]
+                     [(->type-pred type-dependant-field type-value)
+                      (api-type:same-type-subtypes->schema *state api-subtype-ids)]))
+           (apply s/conditional))
+      (or-schema (map #(type->schema *state %) api-subtype-ids)
+                 'subtype?))))
+
+(defn api-type:supertype->schema
+  [*state name api-subtype-ids alternatives]
+  (let [subtypes-schema (api-type:subtypes->schema *state api-subtype-ids)]
     (s/named
-      (if (some? type-dependant-field)
-        (->> subtypes
-             (reduce (fn [acc {:keys [id] :as subtype}]
-                       (update acc (->type-value subtype) (fnil conj []) id))
-                     (ordered-map))
-             (mapcat (fn [[type-value api-subtype-ids]]
-                       [(->type-pred type-dependant-field type-value)
-                        (api-type:same-type-subtypes->schema *state api-subtype-ids)]))
-             (apply s/conditional))
-        (or-schema (map #(type->schema *state %) api-subtype-ids)
-                   'subtype?))
+      (if (seq alternatives)
+        ;; NB: The alternatives are the members that are no API types, e.g.
+        ;;     a String or an Array. None of them is a map, so it's their own
+        ;;     preconditions that tell them apart from the subtypes, all of
+        ;;     which are maps, and that is precisely what `s/cond-pre` needs.
+        (apply s/cond-pre (conj (mapv #(type->schema *state %) alternatives)
+                                subtypes-schema))
+        subtypes-schema)
       name)))
 
 (defn api-type->schema
-  [*state {:keys [id name fields subtypes constraints] :as _api-type}]
+  [*state {:keys [id name fields subtypes alternatives constraints] :as _api-type}]
   (let [schema (cond
                  (some? fields)
                  (api-type:concrete->schema *state name fields constraints)
 
                  (some? subtypes)
-                 (api-type:supertype->schema *state name subtypes)
+                 (api-type:supertype->schema *state name subtypes alternatives)
 
                  :else ; <=> "Currently holds no information"
                  (if (= input-file-api-type-id id) InputFile s/Any))]
@@ -582,7 +594,7 @@
     type))
 
 (defn api-type->type-with-deps
-  [{:keys [id fields subtypes]}]
+  [{:keys [id fields subtypes alternatives]}]
   (cond-> {:id id}
 
           (some? fields)
@@ -591,7 +603,10 @@
                             (remove does-not-affect-order?)))
 
           (some? subtypes)
-          (assoc :deps subtypes)))
+          (assoc :deps (->> alternatives
+                            (map decontainerize)
+                            (remove does-not-affect-order?)
+                            (concat subtypes)))))
 
 (defn build-types-deps-graph
   [types]

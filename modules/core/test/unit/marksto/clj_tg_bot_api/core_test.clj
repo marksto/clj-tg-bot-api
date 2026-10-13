@@ -146,7 +146,30 @@
                 :headers {"Content-Type" "application/json"}
                 :body    "{\"chat_id\":1,\"text\":\"Hello, world!\"}"}
                (sut/make-request! client :send-message {:chat-id 1
-                                                        :text    "Hello, world!"}))))
+                                                        :text    "Hello, world!"})))
+        (testing "deeply-nested in recursive ones"
+          (is (= {:method  :post
+                  :url     (str "https://api.telegram.org/bot" test-bot-token "/sendRichMessage")
+                  :headers {"Content-Type" "application/json"}
+                  :body    (str "{\"chat_id\":1"
+                                ",\"rich_message\":{\"blocks\":[{\"type\":\"paragraph\""
+                                ",\"text\":[\"It's \",{\"type\":\"bold\""
+                                ",\"text\":[\"very \",{\"type\":\"italic\""
+                                ",\"text\":{\"type\":\"underline\""
+                                ",\"text\":[{\"type\":\"date_time\",\"text\":\"now\""
+                                ",\"unix_time\":1700000000,\"date_time_format\":\"r\"}]}}]}]}]}}")}
+                 (sut/make-request! client :send-rich-message
+                                    {:chat-id      1
+                                     :rich-message {:blocks [{:type "paragraph"
+                                                              :text ["It's "
+                                                                     {:type "bold"
+                                                                      :text ["very "
+                                                                             {:type "italic"
+                                                                              :text {:type "underline"
+                                                                                     :text [{:type             "date_time"
+                                                                                             :text             "now"
+                                                                                             :unix-time        1700000000
+                                                                                             :date-time-format "r"}]}}]}]}]}})))))
       (testing "JSON-serialized params"
         (is (= {:method  :post
                 :url     (str "https://api.telegram.org/bot" test-bot-token "/createInvoiceLink")
