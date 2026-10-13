@@ -8111,7 +8111,8 @@
     "name" : "RichText",
     "kind" : "type",
     "description" : "<p>This object represents a rich formatted text. Currently, it can be either a String for plain text, an Array of <a href=\"#richtext\">RichText</a>, or any of the following types:</p>",
-    "subtypes" : [ "type/rich-text-bold", "type/rich-text-italic", "type/rich-text-underline", "type/rich-text-strikethrough", "type/rich-text-spoiler", "type/rich-text-date-time", "type/rich-text-text-mention", "type/rich-text-subscript", "type/rich-text-superscript", "type/rich-text-marked", "type/rich-text-code", "type/rich-text-custom-emoji", "type/rich-text-mathematical-expression", "type/rich-text-url", "type/rich-text-email-address", "type/rich-text-phone-number", "type/rich-text-bank-card-number", "type/rich-text-mention", "type/rich-text-hashtag", "type/rich-text-cashtag", "type/rich-text-bot-command", "type/rich-text-button", "type/rich-text-anchor", "type/rich-text-anchor-link", "type/rich-text-reference", "type/rich-text-reference-link" ]
+    "subtypes" : [ "type/rich-text-bold", "type/rich-text-italic", "type/rich-text-underline", "type/rich-text-strikethrough", "type/rich-text-spoiler", "type/rich-text-date-time", "type/rich-text-text-mention", "type/rich-text-subscript", "type/rich-text-superscript", "type/rich-text-marked", "type/rich-text-code", "type/rich-text-custom-emoji", "type/rich-text-mathematical-expression", "type/rich-text-url", "type/rich-text-email-address", "type/rich-text-phone-number", "type/rich-text-bank-card-number", "type/rich-text-mention", "type/rich-text-hashtag", "type/rich-text-cashtag", "type/rich-text-bot-command", "type/rich-text-button", "type/rich-text-anchor", "type/rich-text-anchor-link", "type/rich-text-reference", "type/rich-text-reference-link" ],
+    "alternatives" : [ "String", [ "array", "type/rich-text" ] ]
   }, {
     "id" : "type/rich-text-bold",
     "name" : "RichTextBold",

@@ -153,30 +153,32 @@
 
 ;;;; Parsing > Data Types
 
+(def number-type? #{"Integer" "Float"})
+
+(def basic-type? #{"Boolean" "True" "String" "Integer" "Float"})
+
 (def array-type-prefix? #{"Array"})
-(def array-type-postfix "of")
-(def union-type-separator ",")
-(def type-noise? (some-fn empty? #{array-type-postfix union-type-separator}))
+
+;; NB: An API type is always a link, so it is only the basic types and arrays
+;;     that get named in plain words, while the rest either join them (as "of",
+;;     "or" or "and") or merely describe them (e.g. "a String for plain text").
+(def type-noise? (complement (some-fn basic-type? array-type-prefix?)))
 
 (defn prepare-type-node
   [type-node]
   (cond (map? type-node) {:temp-id (->temp-id (get-anchor-id type-node))
                           :content (text type-node)}
-        (string? type-node) (remove type-noise?
-                                    (-> type-node
-                                        (str/trim)
-                                        (str/split #"\s")))
+        (string? type-node) (remove type-noise? (re-seq #"\w+" type-node))
         :else type-node))
-
-(def union-type-separators #{"or" "and"})
 
 (defn parse-data-type
   [{:keys [content] :as _node}]
   (let [type-seq (flatten (map prepare-type-node content))
         [arrays type-seq] (split-with array-type-prefix? type-seq)
-        type (if (= 1 (count type-seq))
-               (first type-seq)
-               [:or (removev union-type-separators type-seq)])]
+        type (case (count type-seq)
+               0 (throw (ex-info "Found no data type named" {:content content}))
+               1 (first type-seq)
+               [:or (vec type-seq)])]
     (reduce (fn [type _] (vector :array type)) type arrays)))
 
 ;;;; Parsing > Content Sections
@@ -373,9 +375,6 @@
 
 (defn re-search [desc-text re-key group-ks]
   (re-find* (get desc-text-re re-key) desc-text group-ks))
-
-(defn number-type? [type]
-  (contains? #{"Integer" "Float"} type))
 
 (def lead-number-re
   #"(?i)^\s*(?:(?:and|or)\s+)?(0x[0-9A-Fa-f]+|-?\d+(?:\s*\*\s*\d+)*)\b")
@@ -635,13 +634,26 @@
 
 ;;;; Parsing > API Element > List
 
+;; NB: A union may have members that are no API types, which its description
+;;     states in prose alone, e.g. "it can be either a String for plain text,
+;;     an Array of RichText, or any of the following types".
+(def union-alternatives-re
+  #"(?i)can be either (.+?),? or any of the following types")
+
+(defn parse-union-alternatives [description]
+  (when-some [[_ clause] (re-find union-alternatives-re description)]
+    (mapv #(parse-data-type {:content (map h/as-hickory (h/parse-fragment %))})
+          (str/split clause #",\s*"))))
+
 (defn parse-api-element-list
-  [list-node]
+  [list-node description]
   (let [subtypes (->> list-node
                       (s/select (s/child (s/tag :li) id-anchor-selector))
-                      (mapv (comp ->temp-id get-anchor-id)))]
-    {:kind     :type
-     :subtypes subtypes}))
+                      (mapv (comp ->temp-id get-anchor-id)))
+        alternatives (parse-union-alternatives description)]
+    (cond-> {:kind     :type
+             :subtypes subtypes}
+      alternatives (assoc :alternatives alternatives))))
 
 ;;;; Parsing > API Element
 
@@ -652,7 +664,8 @@
       (conj api-element-basics
             (some-> (:tag kind-specific-node)
                     (case :table (parse-api-element-table kind-specific-node)
-                          :ul (parse-api-element-list kind-specific-node)))
+                          :ul (parse-api-element-list kind-specific-node
+                                                      (:description api-element-basics))))
             (when (seq rest)
               {:notes (render-html:nodes rest)})))
     (catch Exception ex
