@@ -144,7 +144,31 @@
                         (when (set/subset? req-keys obj-keys) shape-schema)))
                 (identical? schema))))))
 
+(defn map-schemas->schema
+  "Returns a single schema that stands for all the given `map-schemas`."
+  [map-schemas error-symbol]
+  (if (next map-schemas)
+    ;; NB: For map schemas we have no other good options than to take the map
+    ;;     shape (a set of required keys) and check for conformance with it.
+    ;;     We also have to sort these map schemas properly in order to avoid
+    ;;     (coercion) issues in case the shape of one of them fully contains
+    ;;     the shape of the other. And since a recursive ref may be not bound
+    ;;     yet at this point, the shapes are only taken on the first check.
+    (let [*shape+schemas (delay (->> map-schemas
+                                     (map #(vector (get-required-keys %) %))
+                                     (sort-by (comp count first) >)))
+          pred+schemas (for [schema map-schemas]
+                         [(->map-shape-pred *shape+schemas schema) schema])]
+      (apply s/conditional (cond-> (into [] cat pred+schemas)
+                                   error-symbol (conj error-symbol))))
+    (first map-schemas)))
+
 (defn or-schema
+  "Builds a schema for a union of the given `schemas`, which a value fits
+   if it fits any of them. The map schemas are told apart by their shapes,
+   the rest by their own preconditions. If all the `schemas` are map ones,
+   the `error-symbol` names the error of a value that takes none of their
+   shapes."
   ([schemas]
    (or-schema schemas nil))
   ([schemas error-symbol]
@@ -152,21 +176,14 @@
    ;;     with mutually exclusive preconditions (e.g. `s/Int` and `s/Str`) and
    ;;     it won't work on map schemas, which is what all API types are. Thus,
    ;;     we need to make sure there's a max of 1 map schema for `s/cond-pre`.
-   (if (< 1 (count (filter api-type-schema? schemas)))
-     ;; NB: For map schemas we have no other good options than to take the map
-     ;;     shape (a set of required keys) and check for conformance with it.
-     ;;     We also have to sort these map schemas properly in order to avoid
-     ;;     (coercion) issues in case the shape of one of them fully contains
-     ;;     the shape of the other. And since a recursive ref may be not bound
-     ;;     yet at this point, the shapes are only taken on the first check.
-     (let [*shape+schemas (delay (->> schemas
-                                      (map #(vector (get-required-keys %) %))
-                                      (sort-by (comp count first) >)))
-           pred+schemas (for [schema schemas]
-                          [(->map-shape-pred *shape+schemas schema) schema])]
-       (apply s/conditional (cond-> (into [] cat pred+schemas)
-                                    error-symbol (conj error-symbol))))
-     (apply s/cond-pre schemas))))
+   (let [{map-schemas   true
+          other-schemas false} (group-by api-type-schema? schemas)
+         exclusive-schemas (cond-> other-schemas
+                                   (seq map-schemas)
+                                   (conj (map-schemas->schema map-schemas error-symbol)))]
+     (if (next exclusive-schemas)
+       (apply s/cond-pre exclusive-schemas)
+       (first exclusive-schemas)))))
 
 (defn ->range-pred
   ([range]

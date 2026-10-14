@@ -175,6 +175,26 @@
                                                    :text ["plain " {:type "bold" :text "bold"}]}]}}))
           "A rich message of plain and formatted texts must pass"))))
 
+(deftest union-of-api-types-and-others-accepts-both
+  (testing "the members of a union that are no API types"
+    ;; NB: No union in the spec has both several API types and a member of any
+    ;;     other kind yet, so it's the `reply_markup` one, "an inline keyboard,
+    ;;     custom reply keyboard, instructions to remove a reply keyboard or to
+    ;;     force a reply from the user", plus a String that make one up here.
+    (let [reply-markup-or-text (sut/or-schema [(type-schema-of "InlineKeyboardMarkup")
+                                               (type-schema-of "ReplyKeyboardMarkup")
+                                               (type-schema-of "ReplyKeyboardRemove")
+                                               (type-schema-of "ForceReply")
+                                               s/Str])]
+      (is (nil? (s/check reply-markup-or-text "Hello"))
+          "A text must pass")
+      (is (nil? (s/check reply-markup-or-text {:force_reply true}))
+          "An API type must pass")
+      (is (rejected-by? reply-markup-or-text 42 'matches-some-precondition?)
+          "A number must fail, being none of the members")
+      (is (rejected-by? reply-markup-or-text {:force_reply "yes"} 'ForceReply)
+          "An API type must fail as that very type"))))
+
 ;;; Cyclic Types
 
 (deftest cyclic-type-refs-are-resolved
