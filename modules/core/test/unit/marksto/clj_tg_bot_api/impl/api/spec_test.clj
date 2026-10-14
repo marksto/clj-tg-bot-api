@@ -14,10 +14,12 @@
   [schema params constraint]
   (str/includes? (pr-str (s/check schema params)) (name constraint)))
 
-(defn- type-schema-of [type]
+(defn- type-of [type]
   (->> (:types (sut/get-tg-bot-api-spec))
-       (some #(when (= type (:name %)) %))
-       :schema))
+       (some #(when (= type (:name %)) %))))
+
+(defn- type-schema-of [type]
+  (:schema (type-of type)))
 
 (defn- params-schema-of [method]
   (->> (:methods (sut/get-tg-bot-api-spec))
@@ -235,6 +237,24 @@
                         {:message_id 1}
                         'subtype?)
           "An object of neither shape must fail"))))
+
+;;; Types Parsing Order
+
+(deftest union-members-are-parsed-first
+  (testing "the members of a union field"
+    ;; NB: `InputRichMessageMedia` holds "The media to be sent", which is any of
+    ;;     the six `InputMedia*` types, so the union of their schemas can only be
+    ;;     built once all of them are.
+    (let [{:keys [deps]} (sut/api-type->type-with-deps
+                           (type-of "InputRichMessageMedia"))]
+      (is (= #{"type/input-media-animation"
+               "type/input-media-audio"
+               "type/input-media-document"
+               "type/input-media-photo"
+               "type/input-media-video"
+               "type/input-media-voice-note"}
+             (set deps))
+          "Every member of the union must be a dependency"))))
 
 ;;; Constraints
 

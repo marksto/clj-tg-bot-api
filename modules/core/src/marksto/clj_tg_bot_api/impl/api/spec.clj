@@ -606,10 +606,17 @@
 (defn does-not-affect-order? [type]
   (or (basic-type? type) (= input-file-api-type-id type)))
 
-(defn decontainerize [type]
+(defn decontainerize
+  "Gives the types a `type` holds inside its container types, if any, or else
+   the very `type`. Unlike an array, which holds a single type, a union holds
+   several ones, so it always returns a coll of types."
+  [type]
   (if (vector? type)
-    (recur (second type))
-    type))
+    (let [[container-type inner-type] type]
+      (case container-type
+        "array" (decontainerize inner-type)
+        "or" (mapcat decontainerize inner-type)))
+    [type]))
 
 (defn api-type->type-with-deps
   [{:keys [id fields subtypes alternatives]}]
@@ -617,12 +624,12 @@
 
           (some? fields)
           (assoc :deps (->> fields
-                            (map (comp decontainerize :type))
+                            (mapcat (comp decontainerize :type))
                             (remove does-not-affect-order?)))
 
           (some? subtypes)
           (assoc :deps (->> alternatives
-                            (map decontainerize)
+                            (mapcat decontainerize)
                             (remove does-not-affect-order?)
                             (concat subtypes)))))
 
