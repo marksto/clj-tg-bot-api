@@ -195,7 +195,46 @@
                         {:type   "collage"
                          :blocks [{:type "bogus"}]}
                         'some-matching-condition?)
-          "A collage of an unknown block must fail as a block"))))
+          "A collage of an unknown block must fail as a block")))
+  (testing "a ref among the subtypes told apart by their shapes"
+    ;; NB: `MaybeInaccessibleMessage` "describes a message that can be
+    ;;     inaccessible to the bot", either a `Message` or an `InaccessibleMessage`,
+    ;;     both requiring a `message_id`, a `date` and a `chat`. And the former
+    ;;     holds a `pinned_message` of the very union, so the union may be built
+    ;;     before the shape of a message is known.
+    (let [maybe-inaccessible-message (type-schema-of "MaybeInaccessibleMessage")
+          chat {:id 1 :type "private"}]
+      (is (nil? (s/check maybe-inaccessible-message
+                         {:message_id 1
+                          :date       1700000000
+                          :chat       chat
+                          :text       "Hello"}))
+          "A message must pass")
+      (is (nil? (s/check maybe-inaccessible-message
+                         {:message_id     2
+                          :date           1700000000
+                          :chat           chat
+                          :pinned_message {:message_id 1
+                                           :date       1700000000
+                                           :chat       chat
+                                           :text       "Hello"}}))
+          "A message holding a pinned message must pass")
+      (is (nil? (s/check maybe-inaccessible-message
+                         {:message_id 1
+                          :date       0
+                          :chat       chat}))
+          "An inaccessible message must pass")
+      (is (rejected-by? maybe-inaccessible-message
+                        {:message_id 1
+                         :date       1700000000
+                         :chat       chat
+                         :text       42}
+                        'java.lang.String)
+          "A message must fail as a message")
+      (is (rejected-by? maybe-inaccessible-message
+                        {:message_id 1}
+                        'subtype?)
+          "An object of neither shape must fail"))))
 
 ;;; Constraints
 

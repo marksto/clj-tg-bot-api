@@ -25,7 +25,7 @@
    (java.net URI URL)
    (java.nio.charset StandardCharsets)
    (java.nio.file Path)
-   (schema.core Constrained NamedSchema)))
+   (schema.core Constrained NamedSchema Recursive)))
 
 (defn get-json-serialized-paths
   [api-element]
@@ -114,18 +114,35 @@
     (recur (:schema schema))
     schema))
 
-(def api-type-schema? (comp map? unwrap-schema))
+;; NB: Every schema record is a map as well, be it a predicate or a conditional,
+;;     so it is a plain map alone that makes an API type schema. And so does a
+;;     recursive ref, for it is API types alone that are ever referred so, and
+;;     it has no precondition of its own that would tell it apart.
+(defn api-type-schema? [schema]
+  (let [schema (unwrap-schema schema)]
+    (or (instance? Recursive schema)
+        (and (map? schema) (not (record? schema))))))
 
-(defn get-required-keys [map-schema]
-  (-> (unwrap-schema map-schema)
-      (utils/filter-keys keyword?)
-      (utils/keyset)))
+(defn get-required-keys [schema]
+  (let [schema (unwrap-schema schema)]
+    (cond
+      (instance? Recursive schema) (recur @(:derefable schema))
+      (api-type-schema? schema) (-> schema
+                                    (utils/filter-keys keyword?)
+                                    (utils/keyset))
+      :else #{})))
 
 (defn ->map-shape-pred
-  [required-keys]
+  "Gives a pred telling whether an object takes the shape of the `schema`,
+   it being the first of the `*shape+schemas` that the object conforms to."
+  [*shape+schemas schema]
   (fn [obj]
     (and (map? obj)
-         (set/subset? required-keys (utils/keyset obj)))))
+         (let [obj-keys (utils/keyset obj)]
+           (->> @*shape+schemas
+                (some (fn [[req-keys shape-schema]]
+                        (when (set/subset? req-keys obj-keys) shape-schema)))
+                (identical? schema))))))
 
 (defn or-schema
   ([schemas]
@@ -140,13 +157,14 @@
      ;;     shape (a set of required keys) and check for conformance with it.
      ;;     We also have to sort these map schemas properly in order to avoid
      ;;     (coercion) issues in case the shape of one of them fully contains
-     ;;     the shape of the other.
-     (let [pred+schemas (->> schemas
-                             (map #(vector (get-required-keys %) %))
-                             (sort-by (comp count first) >)
-                             (map (fn [[req-keys schema]]
-                                    [(->map-shape-pred req-keys) schema])))]
-       (apply s/conditional (cond-> (vec (flatten pred+schemas))
+     ;;     the shape of the other. And since a recursive ref may be not bound
+     ;;     yet at this point, the shapes are only taken on the first check.
+     (let [*shape+schemas (delay (->> schemas
+                                      (map #(vector (get-required-keys %) %))
+                                      (sort-by (comp count first) >)))
+           pred+schemas (for [schema schemas]
+                          [(->map-shape-pred *shape+schemas schema) schema])]
+       (apply s/conditional (cond-> (into [] cat pred+schemas)
                                     error-symbol (conj error-symbol))))
      (apply s/cond-pre schemas))))
 
