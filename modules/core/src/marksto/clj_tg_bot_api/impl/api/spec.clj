@@ -123,42 +123,55 @@
     (or (instance? Recursive schema)
         (and (map? schema) (not (record? schema))))))
 
-(defn get-required-keys [schema]
+(defn get-keys [schema]
   (let [schema (unwrap-schema schema)]
     (cond
       (instance? Recursive schema) (recur @(:derefable schema))
-      (api-type-schema? schema) (-> schema
-                                    (utils/filter-keys keyword?)
-                                    (utils/keyset))
-      :else #{})))
+      (api-type-schema? schema) (keys schema))))
+
+(defn get-required-keys [schema]
+  (set (filter keyword? (get-keys schema))))
+
+(defn get-allowed-keys [schema]
+  (set (map s/explicit-schema-key (get-keys schema))))
 
 (defn ->map-shape-pred
   "Gives a pred telling whether an object takes the shape of the `schema`,
-   it being the first of the `*shape+schemas` that the object conforms to."
-  [*shape+schemas schema]
+   it being the first of the given `*shapes` that the object conforms to,
+   i.e. has all the required keys and only the allowed keys of. If there's
+   no such shape, it's the first one the object has the required keys of."
+  [*shapes schema]
   (fn [obj]
     (and (map? obj)
-         (let [obj-keys (utils/keyset obj)]
-           (->> @*shape+schemas
-                (some (fn [[req-keys shape-schema]]
-                        (when (set/subset? req-keys obj-keys) shape-schema)))
-                (identical? schema))))))
+         (let [obj-keys (utils/keyset obj)
+               has-all-required-keys? (fn [{:keys [required]}]
+                                        (set/subset? required obj-keys))
+               has-only-allowed-keys? (fn [{:keys [allowed]}]
+                                        (set/subset? obj-keys allowed))
+               candidates (filter has-all-required-keys? @*shapes)
+               {shape-schema :schema} (or (some #(when (has-only-allowed-keys? %) %)
+                                                candidates)
+                                          (first candidates))]
+           (identical? schema shape-schema)))))
 
 (defn map-schemas->schema
   "Returns a single schema that stands for all the given `map-schemas`."
   [map-schemas error-symbol]
   (if (next map-schemas)
     ;; NB: For map schemas we have no other good options than to take the map
-    ;;     shape (a set of required keys) and check for conformance with it.
-    ;;     We also have to sort these map schemas properly in order to avoid
-    ;;     (coercion) issues in case the shape of one of them fully contains
-    ;;     the shape of the other. And since a recursive ref may be not bound
-    ;;     yet at this point, the shapes are only taken on the first check.
-    (let [*shape+schemas (delay (->> map-schemas
-                                     (map #(vector (get-required-keys %) %))
-                                     (sort-by (comp count first) >)))
+    ;;     shape (the sets of required and allowed keys) and check for their
+    ;;     conformance with it. We also have to sort these map schemas properly
+    ;;     in order to avoid (coercion) issues in case the shape of one of them
+    ;;     fully contains the shape of the other. And since a recursive ref may
+    ;;     be not bound yet at this point, the shapes are only taken on the
+    ;;     first check.
+    (let [*shapes (delay (->> (for [schema map-schemas]
+                                {:required (get-required-keys schema)
+                                 :allowed (get-allowed-keys schema)
+                                 :schema schema})
+                              (sort-by (comp count :required) >)))
           pred+schemas (for [schema map-schemas]
-                         [(->map-shape-pred *shape+schemas schema) schema])]
+                         [(->map-shape-pred *shapes schema) schema])]
       (apply s/conditional (cond-> (into [] cat pred+schemas)
                                    error-symbol (conj error-symbol))))
     (first map-schemas)))

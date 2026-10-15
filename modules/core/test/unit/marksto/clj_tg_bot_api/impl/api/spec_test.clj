@@ -175,6 +175,48 @@
                                                    :text ["plain " {:type "bold" :text "bold"}]}]}}))
           "A rich message of plain and formatted texts must pass"))))
 
+(deftest union-of-same-shape-api-types-accepts-both
+  (testing "the members of a union listed in either order"
+    ;; NB: A `Message` "represents a message" and an `InaccessibleMessage` one
+    ;;     "that was deleted or is otherwise inaccessible to the bot", both of
+    ;;     them requiring a `message_id`, a `date` and a `chat`. So it's the other
+    ;;     keys of a message, and not the order of the two, that tell them apart.
+    (let [chat {:id 1 :type "private"}]
+      (doseq [members [["Message" "InaccessibleMessage"]
+                       ["InaccessibleMessage" "Message"]]
+              :let [union (sut/or-schema (map type-schema-of members) 'subtype?)]]
+        (is (nil? (s/check union
+                           {:message_id 1
+                            :date       1700000000
+                            :chat       chat
+                            :text       "Hello"}))
+            (format "A message must pass, with '%s' listed first" (first members)))
+        (is (nil? (s/check union
+                           {:message_id 1
+                            :date       0
+                            :chat       chat}))
+            (format "An inaccessible message must pass, with '%s' listed first"
+                    (first members))))))
+  (testing "the members of a union in a param of a method"
+    ;; NB: The `sendMediaGroup` takes "an Array describing messages to be sent",
+    ;;     each one being an audio, a document, a photo, a live photo or a video,
+    ;;     and all but the live photo require just a `type` and a `media`.
+    (let [send-media-group (params-schema-of "sendMediaGroup")]
+      (doseq [media [{:type "audio" :media "file-id" :performer "Performer"}
+                     {:type "document" :media "file-id" :disable_content_type_detection true}
+                     {:type "photo" :media "file-id" :has_spoiler true}
+                     {:type "video" :media "file-id" :supports_streaming true}]]
+        (is (nil? (s/check send-media-group
+                           {:chat_id 1
+                            :media   [media media]}))
+            (format "Media of the '%s' type with a field of its own must pass" (:type media))))
+      (is (rejected-by? send-media-group
+                        {:chat_id 1
+                         :media   [{:type "photo" :media "file-id" :has_spoiler "yes"}
+                                   {:type "photo" :media "file-id"}]}
+                        'InputMediaPhoto)
+          "A photo with an invalid field of its own must fail as a photo"))))
+
 (deftest union-of-api-types-and-others-accepts-both
   (testing "the members of a union that are no API types"
     ;; NB: No union in the spec has both several API types and a member of any
