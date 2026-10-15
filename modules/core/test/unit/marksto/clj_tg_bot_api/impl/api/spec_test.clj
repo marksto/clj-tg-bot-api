@@ -60,6 +60,8 @@
         (is (nil? (checker-error params-schema))
             (format "The '%s' method params schema must build a checker" name))))))
 
+;;; Supertypes
+
 (deftest same-type-subtypes-are-distinguishable
   (let [{:keys [types]} (sut/get-tg-bot-api-spec)
         id->type (into {} (map (juxt :id identity)) types)]
@@ -76,8 +78,6 @@
                  subtype (remove #{subtype} same-type-subtypes)))
           (format "The '%s' subtype of '%s' must require a distinctive attr"
                   (:name subtype) name)))))
-
-;;; Supertypes
 
 (deftest same-type-subtypes-are-told-apart
   (testing "the two subtypes differing in their required attrs alone"
@@ -196,11 +196,15 @@
                             :date       0
                             :chat       chat}))
             (format "An inaccessible message must pass, with '%s' listed first"
-                    (first members))))))
+                    (first members)))))))
+
+(deftest union-of-typed-api-types-is-told-apart-by-type
   (testing "the members of a union in a param of a method"
     ;; NB: The `sendMediaGroup` takes "an Array describing messages to be sent",
     ;;     each one being an audio, a document, a photo, a live photo or a video,
-    ;;     and all but the live photo require just a `type` and a `media`.
+    ;;     and all but the live photo require just a `type` and a `media`. So each
+    ;;     one is checked as the type it states, e.g. "Type of the media, must be
+    ;;     audio", be its fields those of some other type or not.
     (let [send-media-group (params-schema-of "sendMediaGroup")]
       (doseq [media [{:type "audio" :media "file-id" :performer "Performer"}
                      {:type "document" :media "file-id" :disable_content_type_detection true}
@@ -215,7 +219,38 @@
                          :media   [{:type "photo" :media "file-id" :has_spoiler "yes"}
                                    {:type "photo" :media "file-id"}]}
                         'InputMediaPhoto)
-          "A photo with an invalid field of its own must fail as a photo"))))
+          "A photo with an invalid field of its own must fail as a photo")
+      (is (rejected-by? send-media-group
+                        {:chat_id 1
+                         :media   [{:type "video" :media "file-id" :has_spoiler "yes"}
+                                   {:type "video" :media "file-id"}]}
+                        'InputMediaVideo)
+          "A video with an invalid field of its own must fail as a video")
+      (is (rejected-by? send-media-group
+                        {:chat_id 1
+                         :media   [{:type "audio" :media "file-id" :has_spoiler true}
+                                   {:type "audio" :media "file-id"}]}
+                        'InputMediaAudio)
+          "An audio with a field of a photo must fail as an audio")
+      (is (rejected-by? send-media-group
+                        {:chat_id 1
+                         :media   [{:type "sticker" :media "file-id"}
+                                   {:type "audio" :media "file-id"}]}
+                        'some-matching-condition?)
+          "Media of a type the union has not must fail")))
+  (testing "the members of a union in a field of a type"
+    ;; NB: An `InputRichMessageMedia` holds "the media to be sent", which is an
+    ;;     animation, an audio, a document, a photo, a video or a voice note.
+    (let [rich-message-media (type-schema-of "InputRichMessageMedia")]
+      (is (nil? (s/check rich-message-media
+                         {:id    "1"
+                          :media {:type "voice_note" :media "file-id" :duration 1}}))
+          "A voice note with a field of its own must pass")
+      (is (rejected-by? rich-message-media
+                        {:id    "1"
+                         :media {:type "voice_note" :media "file-id" :width 1}}
+                        'InputMediaVoiceNote)
+          "A voice note with a field of a video must fail as a voice note"))))
 
 (deftest union-of-api-types-and-others-accepts-both
   (testing "the members of a union that are no API types"
@@ -318,7 +353,7 @@
              (set deps))
           "Every member of the union must be a dependency"))))
 
-;;; Constraints
+;;; Parameter Constraints
 
 (deftest array-size-constraint-is-enforced
   (testing "a bounded range of items"

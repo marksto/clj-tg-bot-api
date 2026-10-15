@@ -446,6 +446,8 @@
     (s/constrained map-schema pred 'attrs-constraints)
     map-schema))
 
+(declare api-type:subtypes->schema)
+
 (defn type->schema
   [*state type]
   (cond
@@ -465,7 +467,12 @@
     (let [[container-type inner-type] type]
       (case container-type
         "array" [(type->schema *state inner-type)]
-        "or" (or-schema (map #(type->schema *state %) inner-type))))
+        "or" (if (every? #(->type-value (get-in @*state [:id->api-type %])) inner-type)
+               ;; NB: The members that are each fixed to a type value of their own
+               ;;     are told apart by it, just as subtypes are, and not by their
+               ;;     shapes, which are often the same (e.g. a photo and a video).
+               (api-type:subtypes->schema *state inner-type)
+               (or-schema (map #(type->schema *state %) inner-type)))))
 
     :else
     (throw (ex-info "Unsupported type" {:type type}))))
@@ -542,6 +549,10 @@
                  (conj (->distinctive-attrs-error-symbol attr-name-groups)))))
     (type->schema *state (first api-subtype-ids))))
 
+;; NB: Two union corner cases, of which the spec has none, are intentionally
+;;     not catered for: a union tagged by two different fields, as it is the
+;;     tag field of the first member that all the members are checked by, and
+;;     a union nested in another, as it has neither a type value nor a shape.
 (defn api-type:subtypes->schema
   [*state api-subtype-ids]
   (let [subtypes (map #(get-in @*state [:id->api-type %]) api-subtype-ids)
