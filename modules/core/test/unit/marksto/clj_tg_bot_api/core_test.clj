@@ -147,6 +147,13 @@
                 :body    "{\"chat_id\":1,\"text\":\"Hello, world!\"}"}
                (sut/make-request! client :send-message {:chat-id 1
                                                         :text    "Hello, world!"})))
+        (testing "holding a keyword type value"
+          ;; NB: That's the very `bot-command-scope-default` of the utils ns.
+          (is (= {:method  :post
+                  :url     (str "https://api.telegram.org/bot" test-bot-token "/getMyCommands")
+                  :headers {"Content-Type" "application/json"}
+                  :body    "{\"scope\":\"{\\\"type\\\":\\\"default\\\"}\"}"}
+                 (sut/make-request! client :get-my-commands {:scope {:type :default}}))))
         (testing "deeply-nested in recursive ones"
           (is (= {:method  :post
                   :url     (str "https://api.telegram.org/bot" test-bot-token "/sendRichMessage")

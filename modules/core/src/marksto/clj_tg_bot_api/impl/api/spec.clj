@@ -19,6 +19,7 @@
    [marksto.clj-tg-bot-api.impl.api.formatting :as fmt]
    [marksto.clj-tg-bot-api.impl.utils :as utils]
    [martian.schema-tools :as mct]
+   [schema-tools.coerce :as stc]
    [schema.core :as s])
   (:import
    (java.io File InputStream)
@@ -332,7 +333,10 @@
   [type-dependant-field type-value]
   (let [attr-name (->attr-name type-dependant-field)]
     (fn [obj]
-      (= type-value (get-attr-value obj attr-name)))))
+      ;; NB: An object meets this pred before its fields are coerced, so a type
+      ;;     given as a keyword (e.g. `:default`) is yet to become a string, and
+      ;;     it is this very fn that makes it one.
+      (= type-value (stc/keyword->string (get-attr-value obj attr-name))))))
 
 ;;; Types > Schemas > Cross-attribute constraints
 
