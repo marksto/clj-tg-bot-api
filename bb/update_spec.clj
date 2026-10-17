@@ -171,15 +171,71 @@
         (string? type-node) (remove type-noise? (re-seq #"\w+" type-node))
         :else type-node))
 
+(defn ->data-type
+  [types content]
+  (case (count types)
+    0 (throw (ex-info "Found no data type named" {:content content}))
+    1 (first types)
+    [:or (vec types)]))
+
 (defn parse-data-type
   [{:keys [content] :as _node}]
   (let [type-seq (flatten (map prepare-type-node content))
-        [arrays type-seq] (split-with array-type-prefix? type-seq)
-        type (case (count type-seq)
-               0 (throw (ex-info "Found no data type named" {:content content}))
-               1 (first type-seq)
-               [:or (vec type-seq)])]
-    (reduce (fn [type _] (vector :array type)) type arrays)))
+        [types array-type-seq] (split-with (complement array-type-prefix?) type-seq)
+        array-types (mapv (fn [[arrays item-types]]
+                            (reduce (fn [type _] (vector :array type))
+                                    (->data-type item-types content)
+                                    arrays))
+                          (->> array-type-seq
+                               (partition-by array-type-prefix?)
+                               (partition-all 2)))]
+    (->data-type (into (vec types) array-types) content)))
+
+(comment
+  ;; No arrays
+
+  (parse-data-type {:content ["String"]})
+  ; => "String"
+  (parse-data-type {:content ["Float number"]})
+  ; => "Float"
+  (parse-data-type {:content ["Integer or String"]})
+  ; => [:or ["Integer" "String"]]
+  (parse-data-type {:content ["Integer, String or Float"]})
+  ; => [:or ["Integer" "String" "Float"]]
+  (parse-data-type {:content ["Boolean, Integer, String, or Float"]})
+  ; => [:or ["Boolean" "Integer" "String" "Float"]]
+  (parse-data-type {:content ["Strings"]})
+  ; => throws "Found no data type named"
+
+  ;; Arrays
+
+  (parse-data-type {:content ["Array of String, Integer and Float"]})
+  ; => [:array [:or ["String" "Integer" "Float"]]]
+  (parse-data-type {:content ["Array of String or Integer"]})
+  ; => [:array [:or ["String" "Integer"]]]
+  (parse-data-type {:content ["String or Array of Integer"]})
+  ; => [:or ["String" [:array "Integer"]]]
+  (parse-data-type {:content ["Array of String or Array of Integer"]})
+  ; => [:or [[:array "String"] [:array "Integer"]]]
+  (parse-data-type {:content ["Array of Array of String"]})
+  ; => [:array [:array "String"]]
+  (parse-data-type {:content ["Array of button rows, each represented by an Array of String objects"]})
+  ; => [:array [:array "String"]]
+  (parse-data-type {:content ["Array of Strings"]})
+  ; => throws "Found no data type named"
+
+  ;; Arrays among other types
+
+  (parse-data-type {:content ["Integer, String or Array of Float"]})
+  ; => [:or ["Integer" "String" [:array "Float"]]]
+  (parse-data-type {:content ["String, Array of Integer or Float"]})
+  ; => [:or ["String" [:array [:or ["Integer" "Float"]]]]]
+  (parse-data-type {:content ["Array of String, Integer or Array of Float"]})
+  ; => [:or [[:array [:or ["String" "Integer"]]] [:array "Float"]]]
+  (parse-data-type {:content ["Integer, Array of String, or Array of Array of Float"]})
+  ; => [:or ["Integer" [:array "String"] [:array [:array "Float"]]]]
+
+  :end/comment)
 
 ;;;; Parsing > Content Sections
 
