@@ -325,9 +325,9 @@
       (get obj (csk/->kebab-case attr-name))))
 
 (defn ->type-value
-  "Gives the value the type-dependant field of a `subtype` is fixed to, if any."
-  [subtype]
-  (some :value (:fields subtype)))
+  "Gives the value an `api-type`'s type-dependant field is fixed to, if any."
+  [api-type]
+  (some :value (:fields api-type)))
 
 (defn ->type-pred
   [type-dependant-field type-value]
@@ -446,7 +446,7 @@
     (s/constrained map-schema pred 'attrs-constraints)
     map-schema))
 
-(declare api-type:subtypes->schema)
+(declare api-type:union-members->schema)
 
 (defn type->schema
   [*state type]
@@ -471,12 +471,12 @@
                     other-types  false} (group-by #(api-type-schema? (type->schema *state %))
                                                   inner-type)]
                ;; NB: The members that are API types are told apart from one another
-               ;;     just as subtypes are, and then from the rest (e.g. a String or
-               ;;     an Array) by the preconditions of the latter, none of which is
-               ;;     met by a map.
+               ;;     first, by their type values or shapes, and then from the rest,
+               ;;     e.g. a String or an Array, by the preconditions of the latter,
+               ;;     none of which is met by a map.
                (or-schema (cond-> (mapv #(type->schema *state %) other-types)
                                   (seq api-type-ids)
-                                  (conj (api-type:subtypes->schema *state api-type-ids)))))))
+                                  (conj (api-type:union-members->schema *state api-type-ids)))))))
 
     :else
     (throw (ex-info "Unsupported type" {:type type}))))
@@ -515,22 +515,16 @@
         (attrs-constrained-schema deferred fields constraints)
         (s/named name))))
 
-;; NB: Several subtypes may share a type value (e.g. a cached and a URL "photo"
-;;     result), and then it is the attrs that one of them requires and none of
-;;     the others has that tell them apart. A valid object of the others never
-;;     holds any of those, so an object that does is checked against that very
-;;     subtype, and gets its errors (say, a missing attr) reported against it.
-
 (defn get-distinctive-attr-names
-  "Gives the names of the attrs a `subtype` requires that none of the `others`
-   (the subtypes sharing its type value) has among its attrs."
-  [subtype others]
+  "Gives the names of the attrs a `member` requires that none of the `others`
+   (the members sharing its type value) has among its attrs."
+  [member others]
   (let [others-attr-names (into #{} (comp (mapcat :fields) (map :name)) others)]
     (into []
           (comp (filter :required)
                 (map :name)
                 (remove others-attr-names))
-          (:fields subtype))))
+          (:fields member))))
 
 (defn ->distinctive-attrs-error-symbol
   [attr-name-groups]
@@ -540,47 +534,49 @@
        (format "%s?")
        (symbol)))
 
-(defn api-type:same-type-subtypes->schema
-  [*state api-subtype-ids]
-  (if (next api-subtype-ids)
-    (let [subtypes (map #(get-in @*state [:id->api-type %]) api-subtype-ids)
-          attr-name-groups (map #(get-distinctive-attr-names % (remove #{%} subtypes))
-                                subtypes)]
+(defn api-type:same-type-members->schema
+  [*state api-type-ids]
+  (if (next api-type-ids)
+    (let [members (map #(get-in @*state [:id->api-type %]) api-type-ids)
+          attr-name-groups (map #(get-distinctive-attr-names % (remove #{%} members))
+                                members)]
+      ;; NB: The members sharing a type value (e.g. a cached and a URL photo)
+      ;;     are told apart by the attrs that each of them alone requires.
       (apply s/conditional
              (-> (vec (interleave
                         (map #(->relation-pred :at_least_one [%]) attr-name-groups)
-                        (map #(type->schema *state %) api-subtype-ids)))
+                        (map #(type->schema *state %) api-type-ids)))
                  (conj (->distinctive-attrs-error-symbol attr-name-groups)))))
-    (type->schema *state (first api-subtype-ids))))
+    (type->schema *state (first api-type-ids))))
 
 ;; NB: Two union corner cases, of which the spec has none, are intentionally
 ;;     not catered for: a union tagged by two different fields, as it is the
 ;;     tag field of the first member that all the members are checked by, and
 ;;     a union nested in another, as it has neither a type value nor a shape.
-(defn api-type:subtypes->schema
-  [*state api-subtype-ids]
-  (let [subtypes (map #(get-in @*state [:id->api-type %]) api-subtype-ids)
+(defn api-type:union-members->schema
+  [*state api-type-ids]
+  (let [members (map #(get-in @*state [:id->api-type %]) api-type-ids)
         type-dependant-field (some #(when (contains? % :value) %)
-                                   (:fields (first subtypes)))]
-    ;; NB: The subtypes that are each fixed to a type value of their own
-    ;;     are told apart by it, and not by their shapes, which are often
-    ;;     the same (e.g. a photo and a video).
-    (if (every? ->type-value subtypes)
-      (->> subtypes
-           (reduce (fn [acc {:keys [id] :as subtype}]
-                     (update acc (->type-value subtype) (fnil conj []) id))
+                                   (:fields (first members)))]
+    ;; NB: The union members that are each fixed to a type value of their own
+    ;;     are told apart by it, and not by their shapes, which are often the
+    ;;     same (e.g. a photo and a video).
+    (if (every? ->type-value members)
+      (->> members
+           (reduce (fn [acc {:keys [id] :as member}]
+                     (update acc (->type-value member) (fnil conj []) id))
                    (ordered-map))
-           (mapcat (fn [[type-value api-subtype-ids]]
+           (mapcat (fn [[type-value api-type-ids]]
                      [(->type-pred type-dependant-field type-value)
-                      (api-type:same-type-subtypes->schema *state api-subtype-ids)]))
+                      (api-type:same-type-members->schema *state api-type-ids)]))
            (apply s/conditional))
-      (or-schema (map #(type->schema *state %) api-subtype-ids)
+      (or-schema (map #(type->schema *state %) api-type-ids)
                  'subtype?))))
 
-(defn api-type:supertype->schema
+(defn api-type:union->schema
   [*state name union]
-  ;; NB: A supertype is a named union, whose members are its subtypes
-  ;;     along with those that are no API types (e.g. a String, etc.).
+  ;; NB: It's a named union, whose members are API types along with those
+  ;;     that are not (e.g. a String, an Array, etc.).
   (s/named (type->schema *state ["or" union]) name))
 
 (defn api-type->schema
@@ -590,7 +586,7 @@
                  (api-type:concrete->schema *state name fields constraints)
 
                  (some? union)
-                 (api-type:supertype->schema *state name union)
+                 (api-type:union->schema *state name union)
 
                  :else ; <=> "Currently holds no information"
                  (if (= input-file-api-type-id id) InputFile s/Any))]

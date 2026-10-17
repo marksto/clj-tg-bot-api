@@ -69,33 +69,32 @@
         (is (nil? (checker-error params-schema))
             (format "The '%s' method params schema must build a checker" name))))))
 
-;;; Supertypes
+;;; Unions
 
-(deftest same-type-subtypes-are-distinguishable
+(deftest same-type-members-are-distinguishable
   (let [{:keys [types methods]} (sut/get-tg-bot-api-spec)
         id->type (into {} (map (juxt :id identity)) types)]
-    ;; NB: The subtypes that share a type value are told apart by the attrs
-    ;;     each of them requires and none of the others has, so the subtype
-    ;;     with no such attrs is unreachable, and its valid objects rejected.
-    ;;     It holds for any union, be it an API type or that of a field or a
-    ;;     param.
+    ;; NB: The union members that share a type value are told apart by the attrs
+    ;;     each of them requires and none of the others has, so the member with
+    ;;     no such attrs is unreachable, and its valid objects rejected. It holds
+    ;;     for any union, be it an API type or that of a field or a param.
     (doseq [{:keys [name union fields params]} (concat types methods)
             [union-name union-type] (cons [name (when union ["or" union])]
                                           (for [attr (concat fields params)]
                                             [(str name "." (:name attr)) (:type attr)]))
-            subtypes (unions-in union-type)
-            same-type-subtypes (-> (group-by sut/->type-value (map id->type subtypes))
-                                   (dissoc nil)
-                                   (vals))
-            :when (next same-type-subtypes)
-            subtype same-type-subtypes]
+            members (unions-in union-type)
+            same-type-members (-> (group-by sut/->type-value (map id->type members))
+                                  (dissoc nil)
+                                  (vals))
+            :when (next same-type-members)
+            member same-type-members]
       (is (seq (sut/get-distinctive-attr-names
-                 subtype (remove #{subtype} same-type-subtypes)))
-          (format "The '%s' subtype of '%s' must require a distinctive attr"
-                  (:name subtype) union-name)))))
+                 member (remove #{member} same-type-members)))
+          (format "The '%s' member of '%s' must require a distinctive attr"
+                  (:name member) union-name)))))
 
-(deftest same-type-subtypes-are-told-apart
-  (testing "the two subtypes differing in their required attrs alone"
+(deftest same-type-members-are-told-apart
+  (testing "the two members differing in their required attrs alone"
     ;; NB: Both `InlineQueryResultCachedPhoto` and `InlineQueryResultPhoto`
     ;;     state "Type of the result, must be photo", so it is the former's
     ;;     `photo_file_id` and the latter's `photo_url` and `thumbnail_url`
@@ -131,7 +130,7 @@
                          :id   "1"}
                         'photo_file_id-or-photo_url+thumbnail_url?)
           "A photo of neither kind must fail, naming the attrs that tell them apart")))
-  (testing "the two subtypes sharing a required attr"
+  (testing "the two members sharing a required attr"
     ;; NB: `InlineQueryResultCachedVoice` requires a "Voice message title" and
     ;;     `InlineQueryResultVoice` requires a "Recording title", both being a
     ;;     `title`, so it is the `voice_url` alone that tells the latter apart.
@@ -159,17 +158,17 @@
   (testing "the members a union states in prose alone"
     ;; NB: `RichText` "can be either a String for plain text, an Array of
     ;;     RichText, or any of the following types", the latter being its
-    ;;     listed subtypes, while the former two are no API types at all.
+    ;;     listed API types, while the former two are no API types at all.
     (let [rich-text (type-schema-of "RichText")]
       (is (nil? (s/check rich-text "Hello, world!"))
           "A plain text must pass")
       (is (nil? (s/check rich-text ["Hello, " {:type "bold" :text "world"}]))
-          "An array of a plain text and a subtype must pass")
+          "An array of a plain text and an API type must pass")
       (is (nil? (s/check rich-text [["Hello, "] ["world"]]))
           "An array of arrays must pass")
       (is (nil? (s/check rich-text {:type "bold"
                                     :text ["Hello, " {:type "italic" :text "world"}]}))
-          "A subtype holding an array must pass")
+          "An API type holding an array must pass")
       (is (rejected-by? rich-text 42 'matches-some-precondition?)
           "A number must fail, being none of the members")
       (is (rejected-by? rich-text ["Hello, " 42] 'matches-some-precondition?)
@@ -177,9 +176,9 @@
       (is (rejected-by? rich-text {:type "bogus" :text "Hello"} 'matches-some-precondition?)
           "An object of an unknown type must fail")
       (is (rejected-by? rich-text ["Hello, " {:type "bold"}] 'RichTextBold)
-          "A subtype within an array must fail as that very subtype")
+          "An API type within an array must fail as that very type")
       (is (rejected-by? rich-text {:type "date_time" :text "x"} 'RichTextDateTime)
-          "A subtype with just the attrs of another one must fail as that very subtype")))
+          "An API type with just the attrs of another one must fail as that very type")))
   (testing "a param of a method holding such a union"
     ;; NB: These are the very params the `sendRichMessage` used to reject.
     (let [send-rich-message (params-schema-of "sendRichMessage")]
@@ -311,7 +310,7 @@
                          :blocks [{:type "bogus"}]}
                         'some-matching-condition?)
           "A collage of an unknown block must fail as a block")))
-  (testing "a ref among the subtypes told apart by their shapes"
+  (testing "a ref among the union members told apart by their shapes"
     ;; NB: `MaybeInaccessibleMessage` "describes a message that can be
     ;;     inaccessible to the bot", either a `Message` or an `InaccessibleMessage`,
     ;;     both requiring a `message_id`, a `date` and a `chat`. And the former
