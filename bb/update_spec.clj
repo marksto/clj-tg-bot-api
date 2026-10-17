@@ -136,6 +136,9 @@
 (defn ->temp-id [anchor-id]
   (keyword "tmp" anchor-id))
 
+(defn temp-id? [x]
+  (and (keyword? x) (= "tmp" (namespace x))))
+
 (defn build-temp-id->id [api-elements]
   (reduce (fn [acc {:keys [id name kind] :as _api-element}]
             (assoc acc id (subs (str kind "/" (csk/->kebab-case name)) 1)))
@@ -145,8 +148,7 @@
 #_{:splint/disable [naming/conversion-functions]}
 (defn fallback-to-content-temp-id [form]
   (if (and (map? form) (:temp-id form))
-    (if (and (keyword? (:temp-id form))
-             (= "tmp" (namespace (:temp-id form))))
+    (if (temp-id? (:temp-id form))
       (->temp-id (str/lower-case (:content form)))
       (:temp-id form))
     form))
@@ -750,12 +752,27 @@
       (remove-blank-strings)
       :content))
 
+(defn get-unresolved-temp-ids [api-elements]
+  (into {}
+        (keep (fn [{:keys [name] :as api-element}]
+                (when-some [temp-ids (->> (tree-seq coll? seq api-element)
+                                          (filter temp-id?)
+                                          (distinct)
+                                          (seq))]
+                  [name (vec temp-ids)])))
+        api-elements))
+
 (defn normalize-ids [api-elements]
-  (let [temp-id->id (build-temp-id->id api-elements)]
-    (->> api-elements
-         (walk/postwalk-replace temp-id->id)
-         (walk/postwalk fallback-to-content-temp-id)
-         (walk/postwalk-replace temp-id->id))))
+  ;; NB: A link that leads to no API element leaves its temp ID behind, be it
+  ;;     a broken one or one that is no type (e.g. a "plain text" in prose).
+  (let [temp-id->id (build-temp-id->id api-elements)
+        api-elements (->> api-elements
+                          (walk/postwalk-replace temp-id->id)
+                          (walk/postwalk fallback-to-content-temp-id)
+                          (walk/postwalk-replace temp-id->id))]
+    (when-some [unresolved (not-empty (get-unresolved-temp-ids api-elements))]
+      (throw (ex-info "Found links to no API elements" {:unresolved unresolved})))
+    api-elements))
 
 (defn shape-into-map [curr-version api-elements]
   (merge

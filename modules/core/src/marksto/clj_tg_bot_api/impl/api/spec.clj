@@ -461,7 +461,8 @@
       ;;     can stand in for the latter.
       (if (and (some? type-name) (has-type-schema-var? type-name))
         (s/recursive (type-schema-var type-name))
-        (get-in @*state [:id->schema type])))
+        (or (get-in @*state [:id->schema type])
+            (throw (ex-info "Unknown type" {:type type})))))
 
     (vector? type)
     (let [[container-type inner-type] type]
