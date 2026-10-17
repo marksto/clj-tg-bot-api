@@ -637,23 +637,30 @@
 ;; NB: A union may have members that are no API types, which its description
 ;;     states in prose alone, e.g. "it can be either a String for plain text,
 ;;     an Array of RichText, or any of the following types".
-(def union-alternatives-re
+(def union-prose-members-re
   #"(?i)can be either (.+?),? or any of the following types")
 
-(defn parse-union-alternatives [description]
-  (when-some [[_ clause] (re-find union-alternatives-re description)]
+(defn parse-union-prose-members [description]
+  (if-some [[_ clause] (re-find union-prose-members-re description)]
     (mapv #(parse-data-type {:content (map h/as-hickory (h/parse-fragment %))})
-          (str/split clause #",\s*"))))
+          (str/split clause #",\s*"))
+    ;; NB: A type named in plain words can only be a member stated in prose, so
+    ;;     if the regex above did not match, it is worded in some new way.
+    (when-some [type-words (seq (remove type-noise? (re-seq #"\w+" description)))]
+      (throw (ex-info "Found union members stated in unknown words"
+                      {:type-words  (vec type-words)
+                       :description description})))))
 
 (defn parse-api-element-list
   [list-node description]
-  (let [subtypes (->> list-node
-                      (s/select (s/child (s/tag :li) id-anchor-selector))
-                      (mapv (comp ->temp-id get-anchor-id)))
-        alternatives (parse-union-alternatives description)]
-    (cond-> {:kind     :type
-             :subtypes subtypes}
-      alternatives (assoc :alternatives alternatives))))
+  ;; NB: A list makes a union of its API types and those stated in prose alone.
+  (let [list-members (->> list-node
+                          (s/select (s/child (s/tag :li) id-anchor-selector))
+                          (mapv (comp ->temp-id get-anchor-id)))
+        prose-members (parse-union-prose-members description)]
+    {:kind  :type
+     :union (or (not-empty (into (vec prose-members) list-members))
+                (throw (ex-info "Found no union members" {:description description})))}))
 
 ;;;; Parsing > API Element
 

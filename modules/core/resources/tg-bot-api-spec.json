@@ -1253,7 +1253,7 @@
     "name" : "MaybeInaccessibleMessage",
     "kind" : "type",
     "description" : "<p>This object describes a message that can be inaccessible to the bot. It can be one of</p>",
-    "subtypes" : [ "type/message", "type/inaccessible-message" ]
+    "union" : [ "type/message", "type/inaccessible-message" ]
   }, {
     "id" : "type/message-entity",
     "name" : "MessageEntity",
@@ -1562,7 +1562,7 @@
     "name" : "MessageOrigin",
     "kind" : "type",
     "description" : "<p>This object describes the origin of a message. It can be one of</p>",
-    "subtypes" : [ "type/message-origin-user", "type/message-origin-hidden-user", "type/message-origin-chat", "type/message-origin-channel" ]
+    "union" : [ "type/message-origin-user", "type/message-origin-hidden-user", "type/message-origin-chat", "type/message-origin-channel" ]
   }, {
     "id" : "type/message-origin-user",
     "name" : "MessageOriginUser",
@@ -2087,7 +2087,7 @@
     "name" : "PaidMedia",
     "kind" : "type",
     "description" : "<p>This object describes paid media. Currently, it can be one of</p>",
-    "subtypes" : [ "type/paid-media-live-photo", "type/paid-media-photo", "type/paid-media-preview", "type/paid-media-video" ]
+    "union" : [ "type/paid-media-live-photo", "type/paid-media-photo", "type/paid-media-preview", "type/paid-media-video" ]
   }, {
     "id" : "type/paid-media-live-photo",
     "name" : "PaidMediaLivePhoto",
@@ -2285,13 +2285,13 @@
     "name" : "InputPollMedia",
     "kind" : "type",
     "description" : "<p>This object represents the content of a poll description or a quiz explanation to be sent. It should be one of</p>",
-    "subtypes" : [ "type/input-media-animation", "type/input-media-audio", "type/input-media-document", "type/input-media-live-photo", "type/input-media-location", "type/input-media-photo", "type/input-media-venue", "type/input-media-video" ]
+    "union" : [ "type/input-media-animation", "type/input-media-audio", "type/input-media-document", "type/input-media-live-photo", "type/input-media-location", "type/input-media-photo", "type/input-media-venue", "type/input-media-video" ]
   }, {
     "id" : "type/input-poll-option-media",
     "name" : "InputPollOptionMedia",
     "kind" : "type",
     "description" : "<p>This object represents the content of a poll option to be sent. It should be one of</p>",
-    "subtypes" : [ "type/input-media-animation", "type/input-media-link", "type/input-media-live-photo", "type/input-media-location", "type/input-media-photo", "type/input-media-sticker", "type/input-media-venue", "type/input-media-video" ]
+    "union" : [ "type/input-media-animation", "type/input-media-link", "type/input-media-live-photo", "type/input-media-location", "type/input-media-photo", "type/input-media-sticker", "type/input-media-venue", "type/input-media-video" ]
   }, {
     "id" : "type/poll-option",
     "name" : "PollOption",
@@ -2977,7 +2977,7 @@
     "name" : "BackgroundFill",
     "kind" : "type",
     "description" : "<p>This object describes the way a background is filled based on the selected colors. Currently, it can be one of</p>",
-    "subtypes" : [ "type/background-fill-solid", "type/background-fill-gradient", "type/background-fill-freeform-gradient" ]
+    "union" : [ "type/background-fill-solid", "type/background-fill-gradient", "type/background-fill-freeform-gradient" ]
   }, {
     "id" : "type/background-fill-solid",
     "name" : "BackgroundFillSolid",
@@ -3052,7 +3052,7 @@
     "name" : "BackgroundType",
     "kind" : "type",
     "description" : "<p>This object describes the type of a background. Currently, it can be one of</p>",
-    "subtypes" : [ "type/background-type-fill", "type/background-type-wallpaper", "type/background-type-pattern", "type/background-type-chat-theme" ]
+    "union" : [ "type/background-type-fill", "type/background-type-wallpaper", "type/background-type-pattern", "type/background-type-chat-theme" ]
   }, {
     "id" : "type/background-type-fill",
     "name" : "BackgroundTypeFill",
@@ -4718,7 +4718,7 @@
     "name" : "ChatMember",
     "kind" : "type",
     "description" : "<p>This object contains information about one member of a chat. Currently, the following 6 types of chat members are supported:</p>",
-    "subtypes" : [ "type/chat-member-owner", "type/chat-member-administrator", "type/chat-member-member", "type/chat-member-restricted", "type/chat-member-left", "type/chat-member-banned" ]
+    "union" : [ "type/chat-member-owner", "type/chat-member-administrator", "type/chat-member-member", "type/chat-member-restricted", "type/chat-member-left", "type/chat-member-banned" ]
   }, {
     "id" : "type/chat-member-owner",
     "name" : "ChatMemberOwner",
@@ -5391,7 +5391,7 @@
     "name" : "StoryAreaType",
     "kind" : "type",
     "description" : "<p>Describes the type of a clickable area on a story. Currently, it can be one of</p>",
-    "subtypes" : [ "type/story-area-type-location", "type/story-area-type-suggested-reaction", "type/story-area-type-link", "type/story-area-type-weather", "type/story-area-type-unique-gift" ]
+    "union" : [ "type/story-area-type-location", "type/story-area-type-suggested-reaction", "type/story-area-type-link", "type/story-area-type-weather", "type/story-area-type-unique-gift" ]
   }, {
     "id" : "type/story-area-type-location",
     "name" : "StoryAreaTypeLocation",
@@ -5552,7 +5552,7 @@
     "name" : "ReactionType",
     "kind" : "type",
     "description" : "<p>This object describes the type of a reaction. Currently, it can be one of</p>",
-    "subtypes" : [ "type/reaction-type-emoji", "type/reaction-type-custom-emoji", "type/reaction-type-paid" ]
+    "union" : [ "type/reaction-type-emoji", "type/reaction-type-custom-emoji", "type/reaction-type-paid" ]
   }, {
     "id" : "type/reaction-type-emoji",
     "name" : "ReactionTypeEmoji",
@@ -6150,7 +6150,7 @@
     "name" : "OwnedGift",
     "kind" : "type",
     "description" : "<p>This object describes a gift received and owned by a user or a chat. Currently, it can be one of</p>",
-    "subtypes" : [ "type/owned-gift-regular", "type/owned-gift-unique" ]
+    "union" : [ "type/owned-gift-regular", "type/owned-gift-unique" ]
   }, {
     "id" : "type/owned-gift-regular",
     "name" : "OwnedGiftRegular",
@@ -6420,7 +6420,7 @@
     "name" : "BotCommandScope",
     "kind" : "type",
     "description" : "<p>This object represents the scope to which bot commands are applied. Currently, the following 7 scopes are supported:</p>",
-    "subtypes" : [ "type/bot-command-scope-default", "type/bot-command-scope-all-private-chats", "type/bot-command-scope-all-group-chats", "type/bot-command-scope-all-chat-administrators", "type/bot-command-scope-chat", "type/bot-command-scope-chat-administrators", "type/bot-command-scope-chat-member" ]
+    "union" : [ "type/bot-command-scope-default", "type/bot-command-scope-all-private-chats", "type/bot-command-scope-all-group-chats", "type/bot-command-scope-all-chat-administrators", "type/bot-command-scope-chat", "type/bot-command-scope-chat-administrators", "type/bot-command-scope-chat-member" ]
   }, {
     "id" : "type/bot-command-scope-default",
     "name" : "BotCommandScopeDefault",
@@ -6563,7 +6563,7 @@
     "name" : "MenuButton",
     "kind" : "type",
     "description" : "<p>This object describes the bot's menu button in a private chat. It should be one of</p>",
-    "subtypes" : [ "type/menu-button-commands", "type/menu-button-web-app", "type/menu-button-default" ],
+    "union" : [ "type/menu-button-commands", "type/menu-button-web-app", "type/menu-button-default" ],
     "notes" : "<p>If a menu button other than <a href=\"#menubuttondefault\">MenuButtonDefault</a> is set for a private chat, then it is applied in the chat. Otherwise the default menu button is applied. By default, the menu button opens the list of bot commands.</p>"
   }, {
     "id" : "type/menu-button-commands",
@@ -6616,7 +6616,7 @@
     "name" : "ChatBoostSource",
     "kind" : "type",
     "description" : "<p>This object describes the source of a chat boost. It can be one of</p>",
-    "subtypes" : [ "type/chat-boost-source-premium", "type/chat-boost-source-gift-code", "type/chat-boost-source-giveaway" ]
+    "union" : [ "type/chat-boost-source-premium", "type/chat-boost-source-gift-code", "type/chat-boost-source-giveaway" ]
   }, {
     "id" : "type/chat-boost-source-premium",
     "name" : "ChatBoostSourcePremium",
@@ -6987,7 +6987,7 @@
     "name" : "InputMedia",
     "kind" : "type",
     "description" : "<p>This object represents the content of a media message to be sent. It should be one of</p>",
-    "subtypes" : [ "type/input-media-animation", "type/input-media-audio", "type/input-media-document", "type/input-media-live-photo", "type/input-media-photo", "type/input-media-video" ]
+    "union" : [ "type/input-media-animation", "type/input-media-audio", "type/input-media-document", "type/input-media-live-photo", "type/input-media-photo", "type/input-media-video" ]
   }, {
     "id" : "type/input-media-animation",
     "name" : "InputMediaAnimation",
@@ -7546,7 +7546,7 @@
     "name" : "InputPaidMedia",
     "kind" : "type",
     "description" : "<p>This object describes the paid media to be sent. Currently, it can be one of</p>",
-    "subtypes" : [ "type/input-paid-media-live-photo", "type/input-paid-media-photo", "type/input-paid-media-video" ]
+    "union" : [ "type/input-paid-media-live-photo", "type/input-paid-media-photo", "type/input-paid-media-video" ]
   }, {
     "id" : "type/input-paid-media-live-photo",
     "name" : "InputPaidMediaLivePhoto",
@@ -7643,7 +7643,7 @@
     "name" : "InputProfilePhoto",
     "kind" : "type",
     "description" : "<p>This object describes a profile photo to set. Currently, it can be one of</p>",
-    "subtypes" : [ "type/input-profile-photo-static", "type/input-profile-photo-animated" ]
+    "union" : [ "type/input-profile-photo-static", "type/input-profile-photo-animated" ]
   }, {
     "id" : "type/input-profile-photo-static",
     "name" : "InputProfilePhotoStatic",
@@ -7688,7 +7688,7 @@
     "name" : "InputStoryContent",
     "kind" : "type",
     "description" : "<p>This object describes the content of a story to post. Currently, it can be one of</p>",
-    "subtypes" : [ "type/input-story-content-photo", "type/input-story-content-video" ]
+    "union" : [ "type/input-story-content-photo", "type/input-story-content-video" ]
   }, {
     "id" : "type/input-story-content-photo",
     "name" : "InputStoryContentPhoto",
@@ -8111,8 +8111,7 @@
     "name" : "RichText",
     "kind" : "type",
     "description" : "<p>This object represents a rich formatted text. Currently, it can be either a String for plain text, an Array of <a href=\"#richtext\">RichText</a>, or any of the following types:</p>",
-    "subtypes" : [ "type/rich-text-bold", "type/rich-text-italic", "type/rich-text-underline", "type/rich-text-strikethrough", "type/rich-text-spoiler", "type/rich-text-date-time", "type/rich-text-text-mention", "type/rich-text-subscript", "type/rich-text-superscript", "type/rich-text-marked", "type/rich-text-code", "type/rich-text-custom-emoji", "type/rich-text-mathematical-expression", "type/rich-text-url", "type/rich-text-email-address", "type/rich-text-phone-number", "type/rich-text-bank-card-number", "type/rich-text-mention", "type/rich-text-hashtag", "type/rich-text-cashtag", "type/rich-text-bot-command", "type/rich-text-button", "type/rich-text-anchor", "type/rich-text-anchor-link", "type/rich-text-reference", "type/rich-text-reference-link" ],
-    "alternatives" : [ "String", [ "array", "type/rich-text" ] ]
+    "union" : [ "String", [ "array", "type/rich-text" ], "type/rich-text-bold", "type/rich-text-italic", "type/rich-text-underline", "type/rich-text-strikethrough", "type/rich-text-spoiler", "type/rich-text-date-time", "type/rich-text-text-mention", "type/rich-text-subscript", "type/rich-text-superscript", "type/rich-text-marked", "type/rich-text-code", "type/rich-text-custom-emoji", "type/rich-text-mathematical-expression", "type/rich-text-url", "type/rich-text-email-address", "type/rich-text-phone-number", "type/rich-text-bank-card-number", "type/rich-text-mention", "type/rich-text-hashtag", "type/rich-text-cashtag", "type/rich-text-bot-command", "type/rich-text-button", "type/rich-text-anchor", "type/rich-text-anchor-link", "type/rich-text-reference", "type/rich-text-reference-link" ]
   }, {
     "id" : "type/rich-text-bold",
     "name" : "RichTextBold",
@@ -8738,7 +8737,7 @@
     "name" : "RichBlock",
     "kind" : "type",
     "description" : "<p>This object represents a block in a rich formatted message. Currently, it can be any of the following types:</p>",
-    "subtypes" : [ "type/rich-block-paragraph", "type/rich-block-section-heading", "type/rich-block-preformatted", "type/rich-block-footer", "type/rich-block-divider", "type/rich-block-mathematical-expression", "type/rich-block-anchor", "type/rich-block-list", "type/rich-block-block-quotation", "type/rich-block-expandable-block-quotation", "type/rich-block-pull-quotation", "type/rich-block-collage", "type/rich-block-slideshow", "type/rich-block-table", "type/rich-block-details", "type/rich-block-map", "type/rich-block-buttons", "type/rich-block-animation", "type/rich-block-audio", "type/rich-block-document", "type/rich-block-photo", "type/rich-block-video", "type/rich-block-voice-note", "type/rich-block-thinking" ]
+    "union" : [ "type/rich-block-paragraph", "type/rich-block-section-heading", "type/rich-block-preformatted", "type/rich-block-footer", "type/rich-block-divider", "type/rich-block-mathematical-expression", "type/rich-block-anchor", "type/rich-block-list", "type/rich-block-block-quotation", "type/rich-block-expandable-block-quotation", "type/rich-block-pull-quotation", "type/rich-block-collage", "type/rich-block-slideshow", "type/rich-block-table", "type/rich-block-details", "type/rich-block-map", "type/rich-block-buttons", "type/rich-block-animation", "type/rich-block-audio", "type/rich-block-document", "type/rich-block-photo", "type/rich-block-video", "type/rich-block-voice-note", "type/rich-block-thinking" ]
   }, {
     "id" : "type/rich-block-paragraph",
     "name" : "RichBlockParagraph",
@@ -9331,7 +9330,7 @@
     "name" : "InputRichBlock",
     "kind" : "type",
     "description" : "<p>This object represents a block in a rich formatted message to be sent. Currently, it can be any of the following types:</p>",
-    "subtypes" : [ "type/input-rich-block-paragraph", "type/input-rich-block-section-heading", "type/input-rich-block-preformatted", "type/input-rich-block-footer", "type/input-rich-block-divider", "type/input-rich-block-mathematical-expression", "type/input-rich-block-anchor", "type/input-rich-block-list", "type/input-rich-block-block-quotation", "type/input-rich-block-expandable-block-quotation", "type/input-rich-block-pull-quotation", "type/input-rich-block-collage", "type/input-rich-block-slideshow", "type/input-rich-block-table", "type/input-rich-block-details", "type/input-rich-block-map", "type/input-rich-block-buttons", "type/input-rich-block-animation", "type/input-rich-block-audio", "type/input-rich-block-document", "type/input-rich-block-photo", "type/input-rich-block-video", "type/input-rich-block-voice-note", "type/input-rich-block-thinking" ]
+    "union" : [ "type/input-rich-block-paragraph", "type/input-rich-block-section-heading", "type/input-rich-block-preformatted", "type/input-rich-block-footer", "type/input-rich-block-divider", "type/input-rich-block-mathematical-expression", "type/input-rich-block-anchor", "type/input-rich-block-list", "type/input-rich-block-block-quotation", "type/input-rich-block-expandable-block-quotation", "type/input-rich-block-pull-quotation", "type/input-rich-block-collage", "type/input-rich-block-slideshow", "type/input-rich-block-table", "type/input-rich-block-details", "type/input-rich-block-map", "type/input-rich-block-buttons", "type/input-rich-block-animation", "type/input-rich-block-audio", "type/input-rich-block-document", "type/input-rich-block-photo", "type/input-rich-block-video", "type/input-rich-block-voice-note", "type/input-rich-block-thinking" ]
   }, {
     "id" : "type/input-rich-block-paragraph",
     "name" : "InputRichBlockParagraph",
@@ -9978,7 +9977,7 @@
     "name" : "InlineQueryResult",
     "kind" : "type",
     "description" : "<p>This object represents one result of an inline query. Telegram clients currently support results of the following 20 types:</p>",
-    "subtypes" : [ "type/inline-query-result-cached-audio", "type/inline-query-result-cached-document", "type/inline-query-result-cached-gif", "type/inline-query-result-cached-mpeg-4-gif", "type/inline-query-result-cached-photo", "type/inline-query-result-cached-sticker", "type/inline-query-result-cached-video", "type/inline-query-result-cached-voice", "type/inline-query-result-article", "type/inline-query-result-audio", "type/inline-query-result-contact", "type/inline-query-result-game", "type/inline-query-result-document", "type/inline-query-result-gif", "type/inline-query-result-location", "type/inline-query-result-mpeg-4-gif", "type/inline-query-result-photo", "type/inline-query-result-venue", "type/inline-query-result-video", "type/inline-query-result-voice" ],
+    "union" : [ "type/inline-query-result-cached-audio", "type/inline-query-result-cached-document", "type/inline-query-result-cached-gif", "type/inline-query-result-cached-mpeg-4-gif", "type/inline-query-result-cached-photo", "type/inline-query-result-cached-sticker", "type/inline-query-result-cached-video", "type/inline-query-result-cached-voice", "type/inline-query-result-article", "type/inline-query-result-audio", "type/inline-query-result-contact", "type/inline-query-result-game", "type/inline-query-result-document", "type/inline-query-result-gif", "type/inline-query-result-location", "type/inline-query-result-mpeg-4-gif", "type/inline-query-result-photo", "type/inline-query-result-venue", "type/inline-query-result-video", "type/inline-query-result-voice" ],
     "notes" : "<p><strong>Note:</strong> All URLs passed in inline query results will be available to end users and therefore must be assumed to be <strong>public</strong>.</p>"
   }, {
     "id" : "type/inline-query-result-article",
@@ -11597,7 +11596,7 @@
     "name" : "InputMessageContent",
     "kind" : "type",
     "description" : "<p>This object represents the content of a message to be sent as a result of an inline query. Telegram clients currently support the following types:</p>",
-    "subtypes" : [ "type/input-text-message-content", "type/input-rich-message-content", "type/input-location-message-content", "type/input-venue-message-content", "type/input-contact-message-content", "type/input-invoice-message-content" ]
+    "union" : [ "type/input-text-message-content", "type/input-rich-message-content", "type/input-location-message-content", "type/input-venue-message-content", "type/input-contact-message-content", "type/input-invoice-message-content" ]
   }, {
     "id" : "type/input-text-message-content",
     "name" : "InputTextMessageContent",
@@ -12270,7 +12269,7 @@
     "name" : "RevenueWithdrawalState",
     "kind" : "type",
     "description" : "<p>This object describes the state of a revenue withdrawal operation. Currently, it can be one of</p>",
-    "subtypes" : [ "type/revenue-withdrawal-state-pending", "type/revenue-withdrawal-state-succeeded", "type/revenue-withdrawal-state-failed" ]
+    "union" : [ "type/revenue-withdrawal-state-pending", "type/revenue-withdrawal-state-succeeded", "type/revenue-withdrawal-state-failed" ]
   }, {
     "id" : "type/revenue-withdrawal-state-pending",
     "name" : "RevenueWithdrawalStatePending",
@@ -12361,7 +12360,7 @@
     "name" : "TransactionPartner",
     "kind" : "type",
     "description" : "<p>This object describes the source of a transaction, or its recipient for outgoing transactions. Currently, it can be one of</p>",
-    "subtypes" : [ "type/transaction-partner-user", "type/transaction-partner-chat", "type/transaction-partner-affiliate-program", "type/transaction-partner-fragment", "type/transaction-partner-telegram-ads", "type/transaction-partner-telegram-api", "type/transaction-partner-other" ]
+    "union" : [ "type/transaction-partner-user", "type/transaction-partner-chat", "type/transaction-partner-affiliate-program", "type/transaction-partner-fragment", "type/transaction-partner-telegram-ads", "type/transaction-partner-telegram-api", "type/transaction-partner-other" ]
   }, {
     "id" : "type/transaction-partner-user",
     "name" : "TransactionPartnerUser",
@@ -12711,7 +12710,7 @@
     "name" : "PassportElementError",
     "kind" : "type",
     "description" : "<p>This object represents an error in the Telegram Passport element which was submitted that should be resolved by the user. It should be one of:</p>",
-    "subtypes" : [ "type/passport-element-error-data-field", "type/passport-element-error-front-side", "type/passport-element-error-reverse-side", "type/passport-element-error-selfie", "type/passport-element-error-file", "type/passport-element-error-files", "type/passport-element-error-translation-file", "type/passport-element-error-translation-files", "type/passport-element-error-unspecified" ]
+    "union" : [ "type/passport-element-error-data-field", "type/passport-element-error-front-side", "type/passport-element-error-reverse-side", "type/passport-element-error-selfie", "type/passport-element-error-file", "type/passport-element-error-files", "type/passport-element-error-translation-file", "type/passport-element-error-translation-files", "type/passport-element-error-unspecified" ]
   }, {
     "id" : "type/passport-element-error-data-field",
     "name" : "PassportElementErrorDataField",

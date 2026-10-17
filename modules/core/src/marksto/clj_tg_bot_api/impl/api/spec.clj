@@ -467,12 +467,16 @@
     (let [[container-type inner-type] type]
       (case container-type
         "array" [(type->schema *state inner-type)]
-        "or" (if (every? #(->type-value (get-in @*state [:id->api-type %])) inner-type)
-               ;; NB: The members that are each fixed to a type value of their own
-               ;;     are told apart by it, just as subtypes are, and not by their
-               ;;     shapes, which are often the same (e.g. a photo and a video).
-               (api-type:subtypes->schema *state inner-type)
-               (or-schema (map #(type->schema *state %) inner-type)))))
+        "or" (let [{api-type-ids true
+                    other-types  false} (group-by #(api-type-schema? (type->schema *state %))
+                                                  inner-type)]
+               ;; NB: The members that are API types are told apart from one another
+               ;;     just as subtypes are, and then from the rest (e.g. a String or
+               ;;     an Array) by the preconditions of the latter, none of which is
+               ;;     met by a map.
+               (or-schema (cond-> (mapv #(type->schema *state %) other-types)
+                                  (seq api-type-ids)
+                                  (conj (api-type:subtypes->schema *state api-type-ids)))))))
 
     :else
     (throw (ex-info "Unsupported type" {:type type}))))
@@ -558,7 +562,10 @@
   (let [subtypes (map #(get-in @*state [:id->api-type %]) api-subtype-ids)
         type-dependant-field (some #(when (contains? % :value) %)
                                    (:fields (first subtypes)))]
-    (if (some? type-dependant-field)
+    ;; NB: The subtypes that are each fixed to a type value of their own
+    ;;     are told apart by it, and not by their shapes, which are often
+    ;;     the same (e.g. a photo and a video).
+    (if (every? ->type-value subtypes)
       (->> subtypes
            (reduce (fn [acc {:keys [id] :as subtype}]
                      (update acc (->type-value subtype) (fnil conj []) id))
@@ -571,27 +578,19 @@
                  'subtype?))))
 
 (defn api-type:supertype->schema
-  [*state name api-subtype-ids alternatives]
-  (let [subtypes-schema (api-type:subtypes->schema *state api-subtype-ids)]
-    (s/named
-      (if (seq alternatives)
-        ;; NB: The alternatives are the members that are no API types, e.g.
-        ;;     a String or an Array. None of them is a map, so it's their own
-        ;;     preconditions that tell them apart from the subtypes, all of
-        ;;     which are maps, and that is precisely what `s/cond-pre` needs.
-        (apply s/cond-pre (conj (mapv #(type->schema *state %) alternatives)
-                                subtypes-schema))
-        subtypes-schema)
-      name)))
+  [*state name union]
+  ;; NB: A supertype is a named union, whose members are its subtypes
+  ;;     along with those that are no API types (e.g. a String, etc.).
+  (s/named (type->schema *state ["or" union]) name))
 
 (defn api-type->schema
-  [*state {:keys [id name fields subtypes alternatives constraints] :as _api-type}]
+  [*state {:keys [id name fields union constraints] :as _api-type}]
   (let [schema (cond
                  (some? fields)
                  (api-type:concrete->schema *state name fields constraints)
 
-                 (some? subtypes)
-                 (api-type:supertype->schema *state name subtypes alternatives)
+                 (some? union)
+                 (api-type:supertype->schema *state name union)
 
                  :else ; <=> "Currently holds no information"
                  (if (= input-file-api-type-id id) InputFile s/Any))]
@@ -664,7 +663,7 @@
     [type]))
 
 (defn api-type->type-with-deps
-  [{:keys [id fields subtypes alternatives]}]
+  [{:keys [id fields union]}]
   (cond-> {:id id}
 
           (some? fields)
@@ -672,11 +671,10 @@
                             (mapcat (comp decontainerize :type))
                             (remove does-not-affect-order?)))
 
-          (some? subtypes)
-          (assoc :deps (->> alternatives
+          (some? union)
+          (assoc :deps (->> union
                             (mapcat decontainerize)
-                            (remove does-not-affect-order?)
-                            (concat subtypes)))))
+                            (remove does-not-affect-order?)))))
 
 (defn build-types-deps-graph
   [types]

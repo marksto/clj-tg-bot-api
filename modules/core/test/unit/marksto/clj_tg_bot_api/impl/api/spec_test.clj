@@ -26,6 +26,15 @@
        (some #(when (= method (:name %)) %))
        :params-schema))
 
+(defn- unions-in
+  "Gives the members of every union that a `type` holds, if any."
+  [type]
+  (when (vector? type)
+    (let [[container-type inner-type] type]
+      (case container-type
+        "array" (unions-in inner-type)
+        "or" (cons inner-type (mapcat unions-in inner-type))))))
+
 ;;; Spec-wide Invariants
 
 (deftest tg-bot-api-spec-parses-well
@@ -63,12 +72,18 @@
 ;;; Supertypes
 
 (deftest same-type-subtypes-are-distinguishable
-  (let [{:keys [types]} (sut/get-tg-bot-api-spec)
+  (let [{:keys [types methods]} (sut/get-tg-bot-api-spec)
         id->type (into {} (map (juxt :id identity)) types)]
     ;; NB: The subtypes that share a type value are told apart by the attrs
     ;;     each of them requires and none of the others has, so the subtype
     ;;     with no such attrs is unreachable, and its valid objects rejected.
-    (doseq [{:keys [name subtypes]} types
+    ;;     It holds for any union, be it an API type or that of a field or a
+    ;;     param.
+    (doseq [{:keys [name union fields params]} (concat types methods)
+            [union-name union-type] (cons [name (when union ["or" union])]
+                                          (for [attr (concat fields params)]
+                                            [(str name "." (:name attr)) (:type attr)]))
+            subtypes (unions-in union-type)
             same-type-subtypes (-> (group-by sut/->type-value (map id->type subtypes))
                                    (dissoc nil)
                                    (vals))
@@ -77,7 +92,7 @@
       (is (seq (sut/get-distinctive-attr-names
                  subtype (remove #{subtype} same-type-subtypes)))
           (format "The '%s' subtype of '%s' must require a distinctive attr"
-                  (:name subtype) name)))))
+                  (:name subtype) union-name)))))
 
 (deftest same-type-subtypes-are-told-apart
   (testing "the two subtypes differing in their required attrs alone"
@@ -140,11 +155,11 @@
                         'InlineQueryResultVoice)
           "A URL voice without a title must fail as a URL voice"))))
 
-(deftest union-alternatives-are-accepted
+(deftest union-members-stated-in-prose-are-accepted
   (testing "the members a union states in prose alone"
     ;; NB: `RichText` "can be either a String for plain text, an Array of
     ;;     RichText, or any of the following types", the latter being its
-    ;;     subtypes, so the former two are no API types of their own.
+    ;;     listed subtypes, while the former two are no API types at all.
     (let [rich-text (type-schema-of "RichText")]
       (is (nil? (s/check rich-text "Hello, world!"))
           "A plain text must pass")
@@ -162,7 +177,9 @@
       (is (rejected-by? rich-text {:type "bogus" :text "Hello"} 'matches-some-precondition?)
           "An object of an unknown type must fail")
       (is (rejected-by? rich-text ["Hello, " {:type "bold"}] 'RichTextBold)
-          "A subtype within an array must fail as that very subtype")))
+          "A subtype within an array must fail as that very subtype")
+      (is (rejected-by? rich-text {:type "date_time" :text "x"} 'RichTextDateTime)
+          "A subtype with just the attrs of another one must fail as that very subtype")))
   (testing "a param of a method holding such a union"
     ;; NB: These are the very params the `sendRichMessage` used to reject.
     (let [send-rich-message (params-schema-of "sendRichMessage")]
@@ -254,10 +271,9 @@
 
 (deftest union-of-api-types-and-others-accepts-both
   (testing "the members of a union that are no API types"
-    ;; NB: No union in the spec has both several API types and a member of any
-    ;;     other kind yet, so it's the `reply_markup` one, "an inline keyboard,
-    ;;     custom reply keyboard, instructions to remove a reply keyboard or to
-    ;;     force a reply from the user", plus a String that make one up here.
+    ;; NB: No union in the spec has both several API types with no type values
+    ;;     and a member of any other kind yet, so it's the `reply_markup` plus
+    ;;     a String that make one up here.
     (let [reply-markup-or-text (sut/or-schema [(type-schema-of "InlineKeyboardMarkup")
                                                (type-schema-of "ReplyKeyboardMarkup")
                                                (type-schema-of "ReplyKeyboardRemove")
