@@ -83,7 +83,8 @@
                                        :send-message
                                        :create-invoice-link
                                        :send-audio
-                                       :set-webhook])
+                                       :set-webhook
+                                       :send-photo])
             "All methods used in this test namespace must be available")))))
 
 (defn ctx->mock-responses
@@ -215,7 +216,18 @@
                  (sut/make-request! client :set-webhook {:url             "https://example.com"
                                                          :allowed_updates ["message"
                                                                            "edited_channel_post"
-                                                                           "callback_query"]}))))))
+                                                                           "callback_query"]}))))
+        (testing "with object params"
+          ;; NB: The `reply_parameters` is not marked as JSON-serialized by the docs.
+          (is (= {:method    :post
+                  :url       (str "https://api.telegram.org/bot" test-bot-token "/sendPhoto")
+                  :headers   nil
+                  :multipart [{:name "chat_id" :content "1"}
+                              {:name "photo" :content "<photo>"}
+                              {:name "reply_parameters" :content "{\"message_id\":2}"}]}
+                 (sut/make-request! client :send-photo {:chat-id          1
+                                                        :photo            "<photo>"
+                                                        :reply-parameters {:message-id 2}}))))))
 
     ;; NB: The one place where every API method is exercised, if only barely.
     (testing "params coercion for every method"
@@ -329,7 +341,18 @@
                (sut/build-response client :set-webhook {:url             "https://example.com"
                                                         :allowed_updates ["message"
                                                                           "edited_channel_post"
-                                                                          "callback_query"]}))))))
+                                                                          "callback_query"]}))))
+      (testing "with object params"
+        ;; NB: The `reply_parameters` is not marked as JSON-serialized by the docs.
+        (is (= {:status    200
+                :headers   {"Accept" "application/json"}
+                :multipart [{:name "chat_id" :content "1"}
+                            {:name "photo" :content "<photo>"}
+                            {:name "reply_parameters" :content "{\"message_id\":2}"}
+                            {:name "method" :content "sendPhoto"}]}
+               (sut/build-response client :send-photo {:chat-id          1
+                                                       :photo            "<photo>"
+                                                       :reply-parameters {:message-id 2}}))))))
   (testing "presence of mock responses does not affect interceptors chain"
     (let [client (sut/->client {:bot-token test-bot-token
                                 :responses {}})]
