@@ -1,5 +1,6 @@
 (ns marksto.clj-tg-bot-api.core-test
   (:require
+   [clojure.java.io :as io]
    [clojure.pprint :as pp]
    [clojure.test :refer [deftest is testing]]
    [marksto.clj-tg-bot-api.core :as sut]
@@ -11,6 +12,8 @@
 (def test-bot-token (format "%s:TEST_pxWA8lDi7uLc3oadqNivHCALHBQ7sM" test-bot-id))
 
 (def test-bot-str (format "#TelegramBotAPIClient{:bot-id %s}" test-bot-id))
+
+(def test-file (io/file "test-file"))
 
 (deftest ->client-test
   #_{:clj-kondo/ignore [:type-mismatch]}
@@ -202,18 +205,20 @@
                 :url       (str "https://api.telegram.org/bot" test-bot-token "/sendAudio")
                 :headers   nil
                 :multipart [{:name "chat_id" :content "1"}
-                            {:name "audio" :content "<audio>"}]}
+                            {:name "audio" :content test-file}]}
                (sut/make-request! client :send-audio {:chat-id 1
-                                                      :audio   "<audio>"})))
+                                                      :audio   test-file})))
         (testing "with JSON-serialized params"
           (is (= {:method    :post
                   :url       (str "https://api.telegram.org/bot" test-bot-token "/setWebhook")
                   :headers   nil
                   :multipart [{:name "url" :content "https://example.com"}
+                              {:name "certificate" :content test-file}
                               {:name "allowed_updates" :content (str "[\"message\""
                                                                      ",\"edited_channel_post\""
                                                                      ",\"callback_query\"]")}]}
                  (sut/make-request! client :set-webhook {:url             "https://example.com"
+                                                         :certificate     test-file
                                                          :allowed_updates ["message"
                                                                            "edited_channel_post"
                                                                            "callback_query"]}))))
@@ -223,11 +228,19 @@
                   :url       (str "https://api.telegram.org/bot" test-bot-token "/sendPhoto")
                   :headers   nil
                   :multipart [{:name "chat_id" :content "1"}
-                              {:name "photo" :content "<photo>"}
+                              {:name "photo" :content test-file}
                               {:name "reply_parameters" :content "{\"message_id\":2}"}]}
                  (sut/make-request! client :send-photo {:chat-id          1
-                                                        :photo            "<photo>"
-                                                        :reply-parameters {:message-id 2}}))))))
+                                                        :photo            test-file
+                                                        :reply-parameters {:message-id 2}}))))
+        (testing "with no file to upload"
+          ;; NB: A method that can upload a file goes as JSON when it has none.
+          (is (= {:method  :post
+                  :url     (str "https://api.telegram.org/bot" test-bot-token "/sendAudio")
+                  :headers {"Content-Type" "application/json"}
+                  :body    "{\"chat_id\":1,\"audio\":\"<file_id>\"}"}
+                 (sut/make-request! client :send-audio {:chat-id 1
+                                                        :audio   "<file_id>"}))))))
 
     ;; NB: The one place where every API method is exercised, if only barely.
     (testing "params coercion for every method"
@@ -326,19 +339,21 @@
       (is (= {:status    200
               :headers   {"Accept" "application/json"}
               :multipart [{:name "chat_id" :content "1"}
-                          {:name "audio" :content "<audio>"}
+                          {:name "audio" :content test-file}
                           {:name "method" :content "sendAudio"}]}
              (sut/build-response client :send-audio {:chat-id 1
-                                                     :audio   "<audio>"})))
+                                                     :audio   test-file})))
       (testing "with JSON-serialized params"
         (is (= {:status    200
                 :headers   {"Accept" "application/json"}
                 :multipart [{:name "url" :content "https://example.com"}
+                            {:name "certificate" :content test-file}
                             {:name "allowed_updates" :content (str "[\"message\""
                                                                    ",\"edited_channel_post\""
                                                                    ",\"callback_query\"]")}
                             {:name "method" :content "setWebhook"}]}
                (sut/build-response client :set-webhook {:url             "https://example.com"
+                                                        :certificate     test-file
                                                         :allowed_updates ["message"
                                                                           "edited_channel_post"
                                                                           "callback_query"]}))))
@@ -347,12 +362,20 @@
         (is (= {:status    200
                 :headers   {"Accept" "application/json"}
                 :multipart [{:name "chat_id" :content "1"}
-                            {:name "photo" :content "<photo>"}
+                            {:name "photo" :content test-file}
                             {:name "reply_parameters" :content "{\"message_id\":2}"}
                             {:name "method" :content "sendPhoto"}]}
                (sut/build-response client :send-photo {:chat-id          1
-                                                       :photo            "<photo>"
-                                                       :reply-parameters {:message-id 2}}))))))
+                                                       :photo            test-file
+                                                       :reply-parameters {:message-id 2}}))))
+      (testing "with no file to upload"
+        ;; NB: A method that can upload a file goes as JSON when it has none.
+        (is (= {:status  200
+                :headers {"Content-Type" "application/json"
+                          "Accept"       "application/json"}
+                :body    "{\"chat_id\":1,\"audio\":\"<file_id>\",\"method\":\"sendAudio\"}"}
+               (sut/build-response client :send-audio {:chat-id 1
+                                                       :audio   "<file_id>"}))))))
   (testing "presence of mock responses does not affect interceptors chain"
     (let [client (sut/->client {:bot-token test-bot-token
                                 :responses {}})]

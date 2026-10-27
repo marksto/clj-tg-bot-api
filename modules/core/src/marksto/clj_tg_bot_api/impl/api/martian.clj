@@ -61,6 +61,20 @@
 
 ;;
 
+(defn- multipart-with-no-file?
+  [{:keys [handler request] :as _ctx}]
+  (and (some #{"multipart/form-data"} (:consumes handler))
+       (not-any? api-spec/input-file? (vals (:body request)))))
+
+(def multipart->json
+  {:name  ::multipart->json
+   :enter (fn [ctx]
+            (if (multipart-with-no-file? ctx)
+              (assoc-in ctx [:handler :consumes] ["application/json"])
+              ctx))})
+
+;;
+
 (defn- get-url-path [handler]
   (subs (first (:path-parts handler)) 1))
 
@@ -144,7 +158,8 @@
         perform-req-int (:name (get-perform-request-interceptor))
         basic-interceptors (cond-> (-> @martian-default-interceptors
                                        (mi/inject inject-method-param :before enqueue-rsi-int)
-                                       (mi/inject json-serialization :before enqueue-rsi-int))
+                                       (mi/inject json-serialization :before enqueue-rsi-int)
+                                       (mi/inject multipart->json :before enqueue-rsi-int))
                                    (some? perform-req-int)
                                    (mi/inject error->response :before perform-req-int))
         final-interceptors (reduce (fn [ints [new-int rel-pos basic-int-name]]
