@@ -239,6 +239,15 @@
 
   :end/comment)
 
+(defn parse-attachable-type [type desc-text]
+  ;; NB: The docs type an attr that can take a file upload (e.g. `media` of all
+  ;;     `InputMedia***`) as a mere String, while only its description tells of
+  ;;     an InputFile, which is passed as "attach://<file_attach_name>" string.
+  (if (and (= "String" type)
+           (str/includes? desc-text "attach://<file_attach_name>"))
+    [:or [(->temp-id "inputfile") "String"]]
+    type))
+
 ;;;; Parsing > Content Sections
 
 (def first-section-of-interest?
@@ -581,8 +590,10 @@
                       (text)
                       (str/starts-with? "Optional"))
         field-name (-> field :name :content first keyword)
-        field-type (parse-data-type (:type field))
         desc-text (text description)
+        field-type (-> (:type field)
+                       (parse-data-type)
+                       (parse-attachable-type desc-text))
         tdf-value (last (re-find type-dependant-field-re desc-text))
         json-ser? (str/includes? desc-text "JSON-serialized")
         num-const (when (number-type? field-type)
@@ -629,8 +640,10 @@
 (defn prepare-api-method-param
   [{:keys [description] :as param}]
   (let [param-name (-> param :name :content first keyword)
-        param-type (parse-data-type (:type param))
         desc-text (text description)
+        param-type (-> (:type param)
+                       (parse-data-type)
+                       (parse-attachable-type desc-text))
         json-ser? (str/includes? desc-text "JSON-serialized")
         num-const (when (number-type? param-type)
                     (parse-number-constraints desc-text))

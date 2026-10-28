@@ -1,5 +1,6 @@
 (ns marksto.clj-tg-bot-api.impl.api.spec-test
   (:require
+   [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.test :refer [deftest is testing]]
    [marksto.clj-tg-bot-api.impl.api.spec :as sut]
@@ -389,6 +390,27 @@
                "type/input-media-voice-note"}
              (set deps))
           "Every member of the union must be a dependency"))))
+
+;;; File Uploads
+
+(deftest attachable-fields-accept-input-file
+  (testing "a nested field typed as a String"
+    ;; NB: The `media` of an `InputMediaDocument` is the "File to send", which
+    ;;     the docs type as a mere String, while its description tells of a new
+    ;;     file to upload, passed as "attach://<file_attach_name>".
+    (let [send-rich-message (params-schema-of "sendRichMessage")
+          document {:type "document" :media (io/file "report.pdf")}]
+      (is (nil? (s/check send-rich-message
+                         {:chat_id      1
+                          :rich_message {:blocks [{:type     "document"
+                                                   :document document}]}}))
+          "A file in a document block must pass")
+      (is (nil? (s/check send-rich-message
+                         {:chat_id      1
+                          :rich_message {:markdown "![](tg://document?id=report)"
+                                         :media    [{:id    "report"
+                                                     :media document}]}}))
+          "A file in the media of a text must pass"))))
 
 ;;; Parameter Constraints
 
