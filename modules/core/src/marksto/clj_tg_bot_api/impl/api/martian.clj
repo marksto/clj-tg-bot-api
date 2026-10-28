@@ -37,6 +37,23 @@
 
 ;;
 
+(defn- multipart? [handler]
+  (some #{"multipart/form-data"} (:consumes handler)))
+
+(defn- multipart-with-no-file?
+  [{:keys [handler request] :as _ctx}]
+  (and (multipart? handler)
+       (not-any? api-spec/input-file? (vals (:body request)))))
+
+(def multipart->json
+  {:name  ::multipart->json
+   :enter (fn [ctx]
+            (if (multipart-with-no-file? ctx)
+              (assoc-in ctx [:handler :consumes] ["application/json"])
+              ctx))})
+
+;;
+
 (def params-mapper
   (json/object-mapper {:encode-key-fn csk/->snake_case_string}))
 
@@ -52,26 +69,27 @@
     params
     paths))
 
+(defn- json-serialize-coll-params
+  [params]
+  (reduce-kv
+    (fn [params k v]
+      (cond-> params (coll? v) (assoc k (json-serialize-param v))))
+    params
+    params))
+
 (def json-serialization
   {:name  ::json-serialization
    :enter (fn [{:keys [handler] :as ctx}]
-            (if-some [paths (:json-serialized-paths handler)]
-              (update-in ctx [:request :body] #(json-serialize-params % paths))
-              ctx))})
+            (let [paths (:json-serialized-paths handler)]
+              (cond-> ctx
+                      (some? paths)
+                      (update-in [:request :body] json-serialize-params paths)
 
-;;
-
-(defn- multipart-with-no-file?
-  [{:keys [handler request] :as _ctx}]
-  (and (some #{"multipart/form-data"} (:consumes handler))
-       (not-any? api-spec/input-file? (vals (:body request)))))
-
-(def multipart->json
-  {:name  ::multipart->json
-   :enter (fn [ctx]
-            (if (multipart-with-no-file? ctx)
-              (assoc-in ctx [:handler :consumes] ["application/json"])
-              ctx))})
+                      ;; NB: A 'multipart/form-data' request can send an object
+                      ;;     or an array param as JSON — if the docs mark it as
+                      ;;     JSON-serialized, — or else it goes as EDN!
+                      (multipart? handler)
+                      (update-in [:request :body] json-serialize-coll-params))))})
 
 ;;
 
@@ -158,8 +176,8 @@
         perform-req-int (:name (get-perform-request-interceptor))
         basic-interceptors (cond-> (-> @martian-default-interceptors
                                        (mi/inject inject-method-param :before enqueue-rsi-int)
-                                       (mi/inject json-serialization :before enqueue-rsi-int)
-                                       (mi/inject multipart->json :before enqueue-rsi-int))
+                                       (mi/inject multipart->json :before enqueue-rsi-int)
+                                       (mi/inject json-serialization :before enqueue-rsi-int))
                                    (some? perform-req-int)
                                    (mi/inject error->response :before perform-req-int))
         final-interceptors (reduce (fn [ints [new-int rel-pos basic-int-name]]

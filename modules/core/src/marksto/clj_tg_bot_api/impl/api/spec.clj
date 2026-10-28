@@ -74,19 +74,6 @@
 
 (def input-file-api-type-id "type/input-file")
 
-(defn basic-type-or-input-file-api-type? [type]
-  (or (basic-type? type) (= input-file-api-type-id type)))
-
-(defn scalar-type?
-  "Tells whether a `type` is a scalar one, i.e. a basic type, an InputFile,
-   or a union of those, which a 'multipart/form-data' request sends as is."
-  [type]
-  (if (vector? type)
-    (let [[container-type inner-type] type]
-      (and (= "or" container-type)
-           (every? scalar-type? inner-type)))
-    (basic-type-or-input-file-api-type? type)))
-
 (defn decontainerize
   "Gives the types a `type` holds inside its container types, if any, or else
    the very `type`. Unlike an array, which holds a single type, a union holds
@@ -663,17 +650,6 @@
       (assoc :key (cond-> (keyword name)
                           (not required) (s/optional-key)))))
 
-(defn get-unmarked-object-param-paths
-  "Gives the paths of the params of a non-scalar type that the docs do not mark
-   as JSON-serialized (e.g. most of the `reply_parameters`), although it is as
-   JSON alone that a 'multipart/form-data' request can send them."
-  [params]
-  (into []
-        (comp (remove :json_serialized)
-              (remove (comp scalar-type? :type))
-              (map #(vector (keyword (:name %)))))
-        params))
-
 (defn api-method-params->params-schema
   [*state params constraints]
   (let [{:keys [schema deferred]}
@@ -684,9 +660,7 @@
   [*state {:keys [params constraints] :as api-method}]
   (let [id->api-type (:id->api-type @*state)
         uploads-file? (some #(can-be-of-input-file-api-type? (:type %) id->api-type) params)
-        json-serialized-paths (cond-> (get-json-serialized-paths params)
-                                      uploads-file?
-                                      (into (get-unmarked-object-param-paths params)))]
+        json-serialized-paths (get-json-serialized-paths params)]
     (cond-> api-method
 
             (some? params)
@@ -702,7 +676,7 @@
 ;;; Types Parsing Order
 
 (defn does-not-affect-order? [type]
-  (basic-type-or-input-file-api-type? type))
+  (or (basic-type? type) (= input-file-api-type-id type)))
 
 (defn api-type->type-with-deps
   [{:keys [id fields union]}]

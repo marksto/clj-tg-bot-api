@@ -38,15 +38,6 @@
         "array" (unions-in inner-type)
         "or" (cons inner-type (mapcat unions-in inner-type))))))
 
-(defn- object-type?
-  "Tells whether a `type` holds an object or an array, i.e. any API type but
-   an InputFile, or any array."
-  [type]
-  (some #(or (= "array" %)
-             (and (str/starts-with? % sut/api-type-prefix)
-                  (not= sut/input-file-api-type-id %)))
-        (flatten [type])))
-
 ;;; Spec-wide Invariants
 
 (deftest tg-bot-api-spec-parses-well
@@ -80,19 +71,6 @@
               :when (some? params-schema)]
         (is (nil? (checker-error params-schema))
             (format "The '%s' method params schema must build a checker" name))))))
-
-(deftest object-params-of-multipart-methods-are-json-serialized
-  (let [{:keys [methods]} (sut/get-tg-bot-api-spec)]
-    ;; NB: A 'multipart/form-data' request can send an object or an array param
-    ;;     as JSON alone, or else it goes as EDN, while the docs do not mark all
-    ;;     such params as JSON-serialized (e.g. most of the `reply_parameters`).
-    (doseq [{:keys [name params uploads-file? json-serialized-paths]} methods
-            :when uploads-file?
-            param params
-            :when (object-type? (:type param))]
-      (is (some #{[(keyword (:name param))]} json-serialized-paths)
-          (format "The '%s' param of the multipart '%s' method must be JSON-serialized"
-                  (:name param) name)))))
 
 ;;; Unions
 

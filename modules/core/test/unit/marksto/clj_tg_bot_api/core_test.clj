@@ -159,18 +159,16 @@
                   :body    "{\"scope\":\"{\\\"type\\\":\\\"default\\\"}\"}"}
                  (sut/make-request! client :get-my-commands {:scope {:type :default}}))))
         (testing "deeply-nested in recursive ones"
-          ;; NB: A method that can upload a file has its every object param
-          ;;     JSON-serialized, which a JSON body takes as well.
           (is (= {:method  :post
                   :url     (str "https://api.telegram.org/bot" test-bot-token "/sendRichMessage")
                   :headers {"Content-Type" "application/json"}
                   :body    (str "{\"chat_id\":1"
-                                ",\"rich_message\":\"{\\\"blocks\\\":[{\\\"type\\\":\\\"paragraph\\\""
-                                ",\\\"text\\\":[\\\"It's \\\",{\\\"type\\\":\\\"bold\\\""
-                                ",\\\"text\\\":[\\\"very \\\",{\\\"type\\\":\\\"italic\\\""
-                                ",\\\"text\\\":{\\\"type\\\":\\\"underline\\\""
-                                ",\\\"text\\\":[{\\\"type\\\":\\\"date_time\\\",\\\"text\\\":\\\"now\\\""
-                                ",\\\"unix_time\\\":1700000000,\\\"date_time_format\\\":\\\"r\\\"}]}}]}]}]}\"}")}
+                                ",\"rich_message\":{\"blocks\":[{\"type\":\"paragraph\""
+                                ",\"text\":[\"It's \",{\"type\":\"bold\""
+                                ",\"text\":[\"very \",{\"type\":\"italic\""
+                                ",\"text\":{\"type\":\"underline\""
+                                ",\"text\":[{\"type\":\"date_time\",\"text\":\"now\""
+                                ",\"unix_time\":1700000000,\"date_time_format\":\"r\"}]}}]}]}]}}")}
                  (sut/make-request! client :send-rich-message
                                     {:chat-id      1
                                      :rich-message {:blocks [{:type "paragraph"
