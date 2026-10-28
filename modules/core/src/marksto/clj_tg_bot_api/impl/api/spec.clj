@@ -90,17 +90,36 @@
 (defn decontainerize
   "Gives the types a `type` holds inside its container types, if any, or else
    the very `type`. Unlike an array, which holds a single type, a union holds
-   several ones, so it always returns a coll of types."
+   several ones, so it always returns a vector of types."
   [type]
   (if (vector? type)
     (let [[container-type inner-type] type]
       (case container-type
         "array" (decontainerize inner-type)
-        "or" (mapcat decontainerize inner-type)))
+        "or" (vec (mapcat decontainerize inner-type))))
     [type]))
 
-(defn can-be-of-input-file-api-type? [type]
-  (contains? (set (decontainerize type)) input-file-api-type-id))
+(defn can-be-of-input-file-api-type?
+  "Tells whether a `type` can hold an InputFile, either directly or in a field
+   of any API type it holds, at any depth (e.g. the `media` of each block of a
+   `rich_message`). Each API type is visited once, since some refer to itself."
+  [type id->api-type]
+  (loop [types (decontainerize type)
+         visited #{}]
+    (when-some [type (peek types)]
+      (cond
+        (= input-file-api-type-id type)
+        true
+
+        (or (basic-type? type) (contains? visited type))
+        (recur (pop types) visited)
+
+        :else
+        (let [{:keys [fields union]} (id->api-type type)]
+          (recur (into (pop types)
+                       (mapcat decontainerize)
+                       (concat (map :type fields) union))
+                 (conj visited type)))))))
 
 ;;; Types > Schemas
 
@@ -663,7 +682,8 @@
 
 (defn parse:api-method
   [*state {:keys [params constraints] :as api-method}]
-  (let [uploads-file? (some (comp can-be-of-input-file-api-type? :type) params)
+  (let [id->api-type (:id->api-type @*state)
+        uploads-file? (some #(can-be-of-input-file-api-type? (:type %) id->api-type) params)
         json-serialized-paths (cond-> (get-json-serialized-paths params)
                                       uploads-file?
                                       (into (get-unmarked-object-param-paths params)))]

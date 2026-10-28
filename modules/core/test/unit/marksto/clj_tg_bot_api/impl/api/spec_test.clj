@@ -16,16 +16,18 @@
   (str/includes? (pr-str (s/check schema params)) (name constraint)))
 
 (defn- type-of [type]
-  (->> (:types (sut/get-tg-bot-api-spec))
-       (some #(when (= type (:name %)) %))))
+  (some #(when (= type (:name %)) %)
+        (:types (sut/get-tg-bot-api-spec))))
 
 (defn- type-schema-of [type]
   (:schema (type-of type)))
 
+(defn- method-of [method]
+  (some #(when (= method (:name %)) %)
+        (:methods (sut/get-tg-bot-api-spec))))
+
 (defn- params-schema-of [method]
-  (->> (:methods (sut/get-tg-bot-api-spec))
-       (some #(when (= method (:name %)) %))
-       :params-schema))
+  (:params-schema (method-of method)))
 
 (defn- unions-in
   "Gives the members of every union that a `type` holds, if any."
@@ -411,6 +413,15 @@
                                          :media    [{:id    "report"
                                                      :media document}]}}))
           "A file in the media of a text must pass"))))
+
+(deftest nested-input-file-makes-method-upload-file
+  (doseq [method ["sendRichMessage"
+                  "editMessageText"
+                  "editEphemeralMessageMedia"]]
+    (is (:uploads-file? (method-of method))
+        (format "The '%s' method must be able to upload a file" method)))
+  (is (not (:uploads-file? (method-of "sendMessage")))
+      "The 'sendMessage' method must not be able to upload a file"))
 
 ;;; Parameter Constraints
 
