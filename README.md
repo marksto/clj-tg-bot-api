@@ -39,7 +39,7 @@ It exposes a uniform interface with just [3 primary functions](#basics) and uses
 * **Production-ready built-in essentials**
   - `updates` module — to uniformly set up and tear down [updates retrieval](#getting-updates)
   - [rate limiting](#rate-limiting) — with conservative defaults, yet re-configurable
-  - support for multipart requests and JSON-serialized params
+  - multipart requests, nested file uploads, and JSON-serialized params
   - HTTP response maps — for [replying to incoming updates](https://core.telegram.org/bots/api#making-requests-when-getting-updates)
   - support for multiple bots running simultaneously
   - set of simple, frequently used utility functions

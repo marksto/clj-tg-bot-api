@@ -323,7 +323,7 @@
   (build-response client :get-me {})
   ;; 2. multipart request
   (build-response client :send-audio {:chat-id 1
-                                      :audio   "<audio>"})
+                                      :audio   (java.io.File. "audio.mp3")})
   ;; 3. JSON-serialized
   (build-response
     client

@@ -11,6 +11,7 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [clojure.tools.logging :as log]
+   [clojure.walk :as walk]
    [jsonista.core :as json]
    [marksto.clj-tg-bot-api.impl.api.spec :as api-spec]
    [marksto.clj-tg-bot-api.impl.utils :as utils]
@@ -50,6 +51,34 @@
    :enter (fn [ctx]
             (if (multipart-with-no-file? ctx)
               (assoc-in ctx [:handler :consumes] ["application/json"])
+              ctx))})
+
+;;
+
+(defn- attach-nested-files
+  [params]
+  (let [*files (volatile! [])
+        attach (fn [form]
+                 (if (api-spec/input-file? form)
+                   (let [file-name (str "file" (count @*files))]
+                     (vswap! *files conj [(keyword file-name) form])
+                     (str "attach://" file-name))
+                   form))
+        params' (reduce-kv
+                  (fn [params k v]
+                    (cond-> params (coll? v) (assoc k (walk/postwalk attach v))))
+                  params
+                  params)]
+    (into params' @*files)))
+
+(def file-attachment
+  {:name  ::file-attachment
+   :enter (fn [{:keys [handler] :as ctx}]
+            ;; NB: A file nested in a param (e.g. the `media` of `InputMedia***`)
+            ;;     goes as a separate part and an "attach://<name>" in its place,
+            ;;     which is what the docs ask to pass for an upload.
+            (if (multipart? handler)
+              (update-in ctx [:request :body] attach-nested-files)
               ctx))})
 
 ;;
@@ -175,6 +204,7 @@
   (let [enqueue-rsi-int ::mi/enqueue-route-specific-interceptors
         perform-req-int (:name (get-perform-request-interceptor))
         basic-interceptors (cond-> (-> @martian-default-interceptors
+                                       (mi/inject file-attachment :before enqueue-rsi-int)
                                        (mi/inject inject-method-param :before enqueue-rsi-int)
                                        (mi/inject multipart->json :before enqueue-rsi-int)
                                        (mi/inject json-serialization :before enqueue-rsi-int))

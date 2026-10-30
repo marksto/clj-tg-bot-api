@@ -84,10 +84,14 @@
         (is (every? available-methods [:get-me
                                        :get-chat
                                        :send-message
+                                       :get-my-commands
                                        :create-invoice-link
                                        :send-audio
                                        :set-webhook
-                                       :send-photo])
+                                       :send-photo
+                                       :send-rich-message
+                                       :send-media-group
+                                       :edit-ephemeral-message-media])
             "All methods used in this test namespace must be available")))))
 
 (defn ctx->mock-responses
@@ -233,6 +237,66 @@
                  (sut/make-request! client :send-photo {:chat-id          1
                                                         :photo            test-file
                                                         :reply-parameters {:message-id 2}}))))
+        (testing "with nested files"
+          ;; NB: Each one goes as a separate part, with an "attach://" in its place.
+          (testing "in a block of a rich message"
+            (is (= {:method    :post
+                    :url       (str "https://api.telegram.org/bot" test-bot-token "/sendRichMessage")
+                    :headers   nil
+                    :multipart [{:name "chat_id" :content "1"}
+                                {:name "rich_message" :content (str "{\"blocks\":[{\"type\":\"document\""
+                                                                    ",\"document\":{\"type\":\"document\""
+                                                                    ",\"media\":\"attach://file0\"}}]}")}
+                                {:name "file0" :content test-file}]}
+                   (sut/make-request! client :send-rich-message
+                                      {:chat-id      1
+                                       :rich-message {:blocks [{:type     "document"
+                                                                :document {:type  "document"
+                                                                           :media test-file}}]}}))))
+          (testing "in the media of a rich message text"
+            ;; NB: That's the media that a `tg://document?id=` link refers to.
+            (is (= {:method    :post
+                    :url       (str "https://api.telegram.org/bot" test-bot-token "/sendRichMessage")
+                    :headers   nil
+                    :multipart [{:name "chat_id" :content "1"}
+                                {:name "rich_message" :content (str "{\"markdown\":\"![](tg://document?id=report)\""
+                                                                    ",\"media\":[{\"id\":\"report\""
+                                                                    ",\"media\":{\"type\":\"document\""
+                                                                    ",\"media\":\"attach://file0\"}}]}")}
+                                {:name "file0" :content test-file}]}
+                   (sut/make-request! client :send-rich-message
+                                      {:chat-id      1
+                                       :rich-message {:markdown "![](tg://document?id=report)"
+                                                      :media    [{:id    "report"
+                                                                  :media {:type  "document"
+                                                                          :media test-file}}]}}))))
+          (testing "in each item of an array"
+            (is (= {:method    :post
+                    :url       (str "https://api.telegram.org/bot" test-bot-token "/sendMediaGroup")
+                    :headers   nil
+                    :multipart [{:name "chat_id" :content "1"}
+                                {:name "media" :content (str "[{\"type\":\"photo\",\"media\":\"attach://file0\"}"
+                                                             ",{\"type\":\"photo\",\"media\":\"attach://file1\"}]")}
+                                {:name "file0" :content test-file}
+                                {:name "file1" :content test-file}]}
+                   (sut/make-request! client :send-media-group
+                                      {:chat-id 1
+                                       :media   [{:type "photo" :media test-file}
+                                                 {:type "photo" :media test-file}]}))))
+          (testing "in an object param"
+            (is (= {:method    :post
+                    :url       (str "https://api.telegram.org/bot" test-bot-token "/editEphemeralMessageMedia")
+                    :headers   nil
+                    :multipart [{:name "chat_id" :content "1"}
+                                {:name "receiver_user_id" :content "2"}
+                                {:name "ephemeral_message_id" :content "3"}
+                                {:name "media" :content "{\"type\":\"photo\",\"media\":\"attach://file0\"}"}
+                                {:name "file0" :content test-file}]}
+                   (sut/make-request! client :edit-ephemeral-message-media
+                                      {:chat-id              1
+                                       :receiver-user-id     2
+                                       :ephemeral-message-id 3
+                                       :media                {:type "photo" :media test-file}})))))
         (testing "with no file to upload"
           ;; NB: A method that can upload a file goes as JSON when it has none.
           (is (= {:method  :post
@@ -368,6 +432,66 @@
                (sut/build-response client :send-photo {:chat-id          1
                                                        :photo            test-file
                                                        :reply-parameters {:message-id 2}}))))
+      (testing "with nested files"
+        ;; NB: Each one goes as a separate part, with an "attach://" in its place.
+        (testing "in a block of a rich message"
+          (is (= {:status    200
+                  :headers   {"Accept" "application/json"}
+                  :multipart [{:name "chat_id" :content "1"}
+                              {:name "rich_message" :content (str "{\"blocks\":[{\"type\":\"document\""
+                                                                  ",\"document\":{\"type\":\"document\""
+                                                                  ",\"media\":\"attach://file0\"}}]}")}
+                              {:name "file0" :content test-file}
+                              {:name "method" :content "sendRichMessage"}]}
+                 (sut/build-response client :send-rich-message
+                                     {:chat-id      1
+                                      :rich-message {:blocks [{:type     "document"
+                                                               :document {:type  "document"
+                                                                          :media test-file}}]}}))))
+        (testing "in the media of a rich message text"
+          ;; NB: That's the media that a `tg://document?id=` link refers to.
+          (is (= {:status    200
+                  :headers   {"Accept" "application/json"}
+                  :multipart [{:name "chat_id" :content "1"}
+                              {:name "rich_message" :content (str "{\"markdown\":\"![](tg://document?id=report)\""
+                                                                  ",\"media\":[{\"id\":\"report\""
+                                                                  ",\"media\":{\"type\":\"document\""
+                                                                  ",\"media\":\"attach://file0\"}}]}")}
+                              {:name "file0" :content test-file}
+                              {:name "method" :content "sendRichMessage"}]}
+                 (sut/build-response client :send-rich-message
+                                     {:chat-id      1
+                                      :rich-message {:markdown "![](tg://document?id=report)"
+                                                     :media    [{:id    "report"
+                                                                 :media {:type  "document"
+                                                                         :media test-file}}]}}))))
+        (testing "in each item of an array"
+          (is (= {:status    200
+                  :headers   {"Accept" "application/json"}
+                  :multipart [{:name "chat_id" :content "1"}
+                              {:name "media" :content (str "[{\"type\":\"photo\",\"media\":\"attach://file0\"}"
+                                                           ",{\"type\":\"photo\",\"media\":\"attach://file1\"}]")}
+                              {:name "file0" :content test-file}
+                              {:name "file1" :content test-file}
+                              {:name "method" :content "sendMediaGroup"}]}
+                 (sut/build-response client :send-media-group
+                                     {:chat-id 1
+                                      :media   [{:type "photo" :media test-file}
+                                                {:type "photo" :media test-file}]}))))
+        (testing "in an object param"
+          (is (= {:status    200
+                  :headers   {"Accept" "application/json"}
+                  :multipart [{:name "chat_id" :content "1"}
+                              {:name "receiver_user_id" :content "2"}
+                              {:name "ephemeral_message_id" :content "3"}
+                              {:name "media" :content "{\"type\":\"photo\",\"media\":\"attach://file0\"}"}
+                              {:name "file0" :content test-file}
+                              {:name "method" :content "editEphemeralMessageMedia"}]}
+                 (sut/build-response client :edit-ephemeral-message-media
+                                     {:chat-id              1
+                                      :receiver-user-id     2
+                                      :ephemeral-message-id 3
+                                      :media                {:type "photo" :media test-file}})))))
       (testing "with no file to upload"
         ;; NB: A method that can upload a file goes as JSON when it has none.
         (is (= {:status  200
