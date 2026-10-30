@@ -1,9 +1,11 @@
 (ns marksto.clj-tg-bot-api.core-test
   (:require
-   [clojure.java.io :as io]
+   [babashka.fs :as fs]
    [clojure.pprint :as pp]
+   [clojure.string :as str]
    [clojure.test :refer [deftest is testing]]
    [marksto.clj-tg-bot-api.core :as sut]
+   [matcher-combinators.matchers :as m]
    [matcher-combinators.test])
   (:import
    (java.net URI)))
@@ -13,7 +15,10 @@
 
 (def test-bot-str (format "#TelegramBotAPIClient{:bot-id %s}" test-bot-id))
 
-(def test-file (io/file "test-file"))
+(def test-file
+  (doto (fs/file (fs/create-temp-file {:prefix "test-file" :suffix ".txt"}))
+    (fs/delete-on-exit)
+    (spit "Test file")))
 
 (deftest ->client-test
   #_{:clj-kondo/ignore [:type-mismatch]}
@@ -327,6 +332,18 @@
             (format "Methods failing in unexpected way:\n%s"
                     (with-out-str (pp/pprint failure-map))))))))
 
+(defn- read-parts
+  "Reads the parts of a 'multipart/form-data' `body`, which is an InputStream,
+   as maps of a `:name` and some `:content`, which is the text of a file one."
+  [body]
+  (let [body (slurp body)
+        [_ boundary] (re-find #"^--(\w+)\r\n" body)]
+    (->> (str/split body (re-pattern (str "\r\n--" boundary)))
+         (butlast)
+         (mapv (fn [part]
+                 (let [[_ name content] (re-find #"(?s)name=\"([^\"]+)\".*?\r\n\r\n(.*)" part)]
+                   {:name name :content content}))))))
+
 (deftest build-response-test
   (let [client (sut/->client {:bot-token test-bot-token})]
     #_{:clj-kondo/ignore [:type-mismatch]}
@@ -400,98 +417,99 @@
                 :prices                [{:label "price" :amount 1000}]
                 :suggested-tip-amounts []}))))
     (testing "multipart requests"
-      (is (= {:status    200
-              :headers   {"Accept" "application/json"}
-              :multipart [{:name "chat_id" :content "1"}
-                          {:name "audio" :content test-file}
-                          {:name "method" :content "sendAudio"}]}
-             (sut/build-response client :send-audio {:chat-id 1
-                                                     :audio   test-file})))
+      ;; NB: A Ring server sends nothing but the `:body`, so the parts go there.
+      (is (match? {:status  200
+                   :headers {"Content-Type" #"^multipart/form-data; boundary=\w+$"}
+                   :body    (m/via read-parts [{:name "chat_id" :content "1"}
+                                               {:name "audio" :content "Test file"}
+                                               {:name "method" :content "sendAudio"}])}
+                  (sut/build-response client :send-audio {:chat-id 1
+                                                          :audio   test-file})))
       (testing "with JSON-serialized params"
-        (is (= {:status    200
-                :headers   {"Accept" "application/json"}
-                :multipart [{:name "url" :content "https://example.com"}
-                            {:name "certificate" :content test-file}
-                            {:name "allowed_updates" :content (str "[\"message\""
-                                                                   ",\"edited_channel_post\""
-                                                                   ",\"callback_query\"]")}
-                            {:name "method" :content "setWebhook"}]}
-               (sut/build-response client :set-webhook {:url             "https://example.com"
-                                                        :certificate     test-file
-                                                        :allowed_updates ["message"
-                                                                          "edited_channel_post"
-                                                                          "callback_query"]}))))
+        (is (match? {:status  200
+                     :headers {"Content-Type" #"^multipart/form-data; boundary=\w+$"}
+                     :body    (m/via read-parts [{:name "url" :content "https://example.com"}
+                                                 {:name "certificate" :content "Test file"}
+                                                 {:name "allowed_updates" :content (str "[\"message\""
+                                                                                        ",\"edited_channel_post\""
+                                                                                        ",\"callback_query\"]")}
+                                                 {:name "method" :content "setWebhook"}])}
+                    (sut/build-response client :set-webhook {:url             "https://example.com"
+                                                             :certificate     test-file
+                                                             :allowed_updates ["message"
+                                                                               "edited_channel_post"
+                                                                               "callback_query"]}))))
       (testing "with object params"
         ;; NB: The `reply_parameters` is not marked as JSON-serialized by the docs.
-        (is (= {:status    200
-                :headers   {"Accept" "application/json"}
-                :multipart [{:name "chat_id" :content "1"}
-                            {:name "photo" :content test-file}
-                            {:name "reply_parameters" :content "{\"message_id\":2}"}
-                            {:name "method" :content "sendPhoto"}]}
-               (sut/build-response client :send-photo {:chat-id          1
-                                                       :photo            test-file
-                                                       :reply-parameters {:message-id 2}}))))
+        (is (match? {:status  200
+                     :headers {"Content-Type" #"^multipart/form-data; boundary=\w+$"}
+                     :body    (m/via read-parts [{:name "chat_id" :content "1"}
+                                                 {:name "photo" :content "Test file"}
+                                                 {:name "reply_parameters" :content "{\"message_id\":2}"}
+                                                 {:name "method" :content "sendPhoto"}])}
+                    (sut/build-response client :send-photo {:chat-id          1
+                                                            :photo            test-file
+                                                            :reply-parameters {:message-id 2}}))))
       (testing "with nested files"
         ;; NB: Each one goes as a separate part, with an "attach://" in its place.
         (testing "in a block of a rich message"
-          (is (= {:status    200
-                  :headers   {"Accept" "application/json"}
-                  :multipart [{:name "chat_id" :content "1"}
-                              {:name "rich_message" :content (str "{\"blocks\":[{\"type\":\"document\""
-                                                                  ",\"document\":{\"type\":\"document\""
-                                                                  ",\"media\":\"attach://file0\"}}]}")}
-                              {:name "file0" :content test-file}
-                              {:name "method" :content "sendRichMessage"}]}
-                 (sut/build-response client :send-rich-message
-                                     {:chat-id      1
-                                      :rich-message {:blocks [{:type     "document"
-                                                               :document {:type  "document"
-                                                                          :media test-file}}]}}))))
+          (is (match? {:status  200
+                       :headers {"Content-Type" #"^multipart/form-data; boundary=\w+$"}
+                       :body    (m/via read-parts [{:name "chat_id" :content "1"}
+                                                   {:name "rich_message" :content (str "{\"blocks\":[{\"type\":\"document\""
+                                                                                       ",\"document\":{\"type\":\"document\""
+                                                                                       ",\"media\":\"attach://file0\"}}]}")}
+                                                   {:name "file0" :content "Test file"}
+                                                   {:name "method" :content "sendRichMessage"}])}
+                      (sut/build-response client :send-rich-message
+                                          {:chat-id      1
+                                           :rich-message {:blocks [{:type     "document"
+                                                                    :document {:type  "document"
+                                                                               :media test-file}}]}}))))
         (testing "in the media of a rich message text"
           ;; NB: That's the media that a `tg://document?id=` link refers to.
-          (is (= {:status    200
-                  :headers   {"Accept" "application/json"}
-                  :multipart [{:name "chat_id" :content "1"}
-                              {:name "rich_message" :content (str "{\"markdown\":\"![](tg://document?id=report)\""
-                                                                  ",\"media\":[{\"id\":\"report\""
-                                                                  ",\"media\":{\"type\":\"document\""
-                                                                  ",\"media\":\"attach://file0\"}}]}")}
-                              {:name "file0" :content test-file}
-                              {:name "method" :content "sendRichMessage"}]}
-                 (sut/build-response client :send-rich-message
-                                     {:chat-id      1
-                                      :rich-message {:markdown "![](tg://document?id=report)"
-                                                     :media    [{:id    "report"
-                                                                 :media {:type  "document"
-                                                                         :media test-file}}]}}))))
+          (is (match? {:status  200
+                       :headers {"Content-Type" #"^multipart/form-data; boundary=\w+$"}
+                       :body    (m/via read-parts [{:name "chat_id" :content "1"}
+                                                   {:name "rich_message" :content (str "{\"markdown\":\"![](tg://document?id=report)\""
+                                                                                       ",\"media\":[{\"id\":\"report\""
+                                                                                       ",\"media\":{\"type\":\"document\""
+                                                                                       ",\"media\":\"attach://file0\"}}]}")}
+                                                   {:name "file0" :content "Test file"}
+                                                   {:name "method" :content "sendRichMessage"}])}
+                      (sut/build-response client :send-rich-message
+                                          {:chat-id      1
+                                           :rich-message {:markdown "![](tg://document?id=report)"
+                                                          :media    [{:id    "report"
+                                                                      :media {:type  "document"
+                                                                              :media test-file}}]}}))))
         (testing "in each item of an array"
-          (is (= {:status    200
-                  :headers   {"Accept" "application/json"}
-                  :multipart [{:name "chat_id" :content "1"}
-                              {:name "media" :content (str "[{\"type\":\"photo\",\"media\":\"attach://file0\"}"
-                                                           ",{\"type\":\"photo\",\"media\":\"attach://file1\"}]")}
-                              {:name "file0" :content test-file}
-                              {:name "file1" :content test-file}
-                              {:name "method" :content "sendMediaGroup"}]}
-                 (sut/build-response client :send-media-group
-                                     {:chat-id 1
-                                      :media   [{:type "photo" :media test-file}
-                                                {:type "photo" :media test-file}]}))))
+          (is (match? {:status  200
+                       :headers {"Content-Type" #"^multipart/form-data; boundary=\w+$"}
+                       :body    (m/via read-parts [{:name "chat_id" :content "1"}
+                                                   {:name "media" :content (str "[{\"type\":\"photo\",\"media\":\"attach://file0\"}"
+                                                                                ",{\"type\":\"photo\",\"media\":\"attach://file1\"}]")}
+                                                   {:name "file0" :content "Test file"}
+                                                   {:name "file1" :content "Test file"}
+                                                   {:name "method" :content "sendMediaGroup"}])}
+                      (sut/build-response client :send-media-group
+                                          {:chat-id 1
+                                           :media   [{:type "photo" :media test-file}
+                                                     {:type "photo" :media test-file}]}))))
         (testing "in an object param"
-          (is (= {:status    200
-                  :headers   {"Accept" "application/json"}
-                  :multipart [{:name "chat_id" :content "1"}
-                              {:name "receiver_user_id" :content "2"}
-                              {:name "ephemeral_message_id" :content "3"}
-                              {:name "media" :content "{\"type\":\"photo\",\"media\":\"attach://file0\"}"}
-                              {:name "file0" :content test-file}
-                              {:name "method" :content "editEphemeralMessageMedia"}]}
-                 (sut/build-response client :edit-ephemeral-message-media
-                                     {:chat-id              1
-                                      :receiver-user-id     2
-                                      :ephemeral-message-id 3
-                                      :media                {:type "photo" :media test-file}})))))
+          (is (match? {:status  200
+                       :headers {"Content-Type" #"^multipart/form-data; boundary=\w+$"}
+                       :body    (m/via read-parts [{:name "chat_id" :content "1"}
+                                                   {:name "receiver_user_id" :content "2"}
+                                                   {:name "ephemeral_message_id" :content "3"}
+                                                   {:name "media" :content "{\"type\":\"photo\",\"media\":\"attach://file0\"}"}
+                                                   {:name "file0" :content "Test file"}
+                                                   {:name "method" :content "editEphemeralMessageMedia"}])}
+                      (sut/build-response client :edit-ephemeral-message-media
+                                          {:chat-id              1
+                                           :receiver-user-id     2
+                                           :ephemeral-message-id 3
+                                           :media                {:type "photo" :media test-file}})))))
       (testing "with no file to upload"
         ;; NB: A method that can upload a file goes as JSON when it has none.
         (is (= {:status  200

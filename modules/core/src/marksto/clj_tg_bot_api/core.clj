@@ -118,6 +118,9 @@
    and, as a consequence, helps us to stay under the limits on server requests
    and sometimes improves the responsiveness of the bot's UI on the client.
 
+   A response that uploads (a) file(s) comes with a 'multipart/form-data' body,
+   an InputStream, which can only be sent once.
+
    See https://core.telegram.org/bots/api#making-requests-when-getting-updates"
   {:arglists '([client method params?])}
   ([client method]

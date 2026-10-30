@@ -14,11 +14,14 @@
    [clojure.tools.logging :as log]
    [jsonista.core :as json]
    [marksto.clj-tg-bot-api.impl.api.martian :as api-martian]
+   [marksto.clj-tg-bot-api.impl.api.spec :as api-spec]
+   [marksto.clj-tg-bot-api.impl.client.multipart :as multipart]
    [marksto.clj-tg-bot-api.impl.client.rate-limiter :as rl]
    [marksto.clj-tg-bot-api.impl.utils :as utils]
    [marksto.clj-tg-bot-api.impl.utils.bot :as bot]
    [marksto.clj-tg-bot-api.impl.utils.response :as response]
    [martian.core :as m]
+   [martian.encoders :as me]
    [martian.test :as mt])
   (:import
    (java.io Writer)))
@@ -273,6 +276,20 @@
 
 ;;
 
+(defn- encode-multipart-body
+  [{:keys [body multipart] :as request}]
+  ;; NB: It's an HTTP client that encodes the request — there is none
+  ;;     to do this for a reply, which a Ring server would send empty.
+  (if-some [parts (or multipart
+                      (when (map? body)
+                        (me/multipart-encode body api-spec/input-file?)))]
+    (let [boundary (multipart/boundary)
+          content-type (str "multipart/form-data; boundary=" boundary)]
+      (-> request
+          (assoc :body (multipart/body parts boundary))
+          (assoc-in [:headers "Content-Type"] content-type)))
+    request))
+
 (defn build-response
   ([client method]
    (build-response client method {}))
@@ -284,7 +301,8 @@
          params' (assoc params :method method')]
      (-> client
          (m/request-for method params')
-         (select-keys [:body :multipart :headers])
+         (encode-multipart-body)
+         (select-keys [:body :headers])
          (assoc :status 200)))))
 
 ;;
