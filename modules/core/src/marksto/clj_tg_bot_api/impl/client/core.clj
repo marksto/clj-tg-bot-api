@@ -303,6 +303,7 @@
          (m/request-for method params')
          (encode-multipart-body)
          (select-keys [:body :headers])
+         (update :headers dissoc "Accept")
          (assoc :status 200)))))
 
 ;;

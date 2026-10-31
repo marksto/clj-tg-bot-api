@@ -104,7 +104,7 @@ First, create a Telegram Bot API client instance for the bot. Use it to make API
 (tg-bot-api/build-response client :send-message {:chat-id 2946901
                                                  :text    "Hello, world!"})
 ;=> {:status  200
-;    :headers {"Content-Type" "application/json", "Accept" "application/json"}
+;    :headers {"Content-Type" "application/json"}
 ;    :body    "{\"chat_id\":2946901,\"text\":\"Hello, world!\",\"method\":\"sendMessage\"}"}
 ```
 

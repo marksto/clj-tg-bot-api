@@ -362,31 +362,26 @@
             (sut/build-response client :get-me "params"))))
     (testing "methods w/o params"
       (is (= {:status  200
-              :headers {"Content-Type" "application/json"
-                        "Accept"       "application/json"}
+              :headers {"Content-Type" "application/json"}
               :body    "{\"method\":\"getMe\"}"}
              (sut/build-response client :get-me)))
       (is (= {:status  200
-              :headers {"Content-Type" "application/json"
-                        "Accept"       "application/json"}
+              :headers {"Content-Type" "application/json"}
               :body    "{\"method\":\"getMe\"}"}
              (sut/build-response client :get-me {}))))
     (testing "methods with params"
       (is (= {:status  200
-              :headers {"Content-Type" "application/json"
-                        "Accept"       "application/json"}
+              :headers {"Content-Type" "application/json"}
               :body    "{\"chat_id\":1,\"method\":\"getChat\"}"}
              (sut/build-response client :get-chat {:chat-id 1})))
       (is (= {:status  200
-              :headers {"Content-Type" "application/json"
-                        "Accept"       "application/json"}
+              :headers {"Content-Type" "application/json"}
               :body    "{\"chat_id\":1,\"text\":\"Hello, world!\",\"method\":\"sendMessage\"}"}
              (sut/build-response client :send-message {:chat-id 1
                                                        :text    "Hello, world!"})))
       (testing "deeply-nested"
         (is (= {:status  200
-                :headers {"Content-Type" "application/json"
-                          "Accept"       "application/json"}
+                :headers {"Content-Type" "application/json"}
                 :body    (str "{\"chat_id\":1"
                               ",\"reply_markup\":\"{\\\"inline_keyboard\\\":[[{\\\"text\\\":\\\"Button\\\",\\\"callback_data\\\":\\\"42\\\"}]]}\""
                               ",\"text\":\"Hello, world!\""
@@ -398,8 +393,7 @@
                                                                        :callback-data "42"}]]}})))))
     (testing "JSON-serialized params"
       (is (= {:status  200
-              :headers {"Content-Type" "application/json"
-                        "Accept"       "application/json"}
+              :headers {"Content-Type" "application/json"}
               :body    (str "{\"description\":\"Extra firm tofu\""
                             ",\"suggested_tip_amounts\":\"[]\""
                             ",\"payload\":\"prod-T0003\""
@@ -513,8 +507,7 @@
       (testing "with no file to upload"
         ;; NB: A method that can upload a file goes as JSON when it has none.
         (is (= {:status  200
-                :headers {"Content-Type" "application/json"
-                          "Accept"       "application/json"}
+                :headers {"Content-Type" "application/json"}
                 :body    "{\"chat_id\":1,\"audio\":\"<file_id>\",\"method\":\"sendAudio\"}"}
                (sut/build-response client :send-audio {:chat-id 1
                                                        :audio   "<file_id>"}))))))
