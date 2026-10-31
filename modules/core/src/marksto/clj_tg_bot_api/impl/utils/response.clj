@@ -44,4 +44,4 @@
 
 (defn get-wait-ms-for-retry
   [response]
-  (:retry_after (get-response-parameters response)))
+  (some-> (:retry_after (get-response-parameters response)) (* 1000)))
