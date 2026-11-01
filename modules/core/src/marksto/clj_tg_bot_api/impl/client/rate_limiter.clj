@@ -121,11 +121,23 @@
             (get-opts-map limiter-id default-method-opts))
           (update :sleep-fn #(or % default-sleep-fn))))
 
+(defn fill-up!
+  "Fills a new `rate-limiter` up, so that it lets its first calls through at
+   once, as a rate limiter that has been idle for a while would do. Or else,
+   `diehard` creates an empty token bucket, so its first call has to wait for
+   a refill, a full interval between calls."
+  [rate-limiter]
+  ;; NB: The `diehard` has no "release!" operation, but its `acquire!` takes
+  ;;     any number of permits, a negative one included.
+  (doto rate-limiter
+    (dh.rl/acquire! (- (:max-tokens rate-limiter)))))
+
 (defn ->rate-limiter
   [limiter-id limiter-opts method]
   (some-> (->rate-limiter-opts
             limiter-id (get default-opts method) (get limiter-opts method))
-          (dh.rl/rate-limiter)))
+          (dh.rl/rate-limiter)
+          (fill-up!)))
 
 (defn get-rate-limiter!
   [limiter-id limiter-opts bot-id method]
