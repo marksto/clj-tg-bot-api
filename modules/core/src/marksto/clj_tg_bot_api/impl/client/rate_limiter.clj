@@ -201,7 +201,7 @@
     1234567890
     :send-message)
   ; =>>
-  ; {:rate     0.03
+  ; {:rate     0.029
   ;  :sleep-fn #(= dh.rl/uninterruptible-sleep %)
   ;  ...}
 
@@ -256,7 +256,7 @@
     1234567890
     :send-message)
   ; =>>
-  ; {:rate     0.0003333333333333333
+  ; {:rate     0.00025
   ;  :sleep-fn #(= dh.rl/interruptible-sleep %)
   ;  ...}
 
@@ -269,7 +269,7 @@
     1234567890
     :edit-message-text)
   ; =>>
-  ; {:rate     0.03
+  ; {:rate     0.029
   ;  :sleep-fn #(= dh.rl/uninterruptible-sleep %)
   ;  ...}
 
@@ -324,7 +324,7 @@
     1234567890
     :edit-message-text)
   ; =>>
-  ; {:rate     0.0003333333333333333
+  ; {:rate     0.00025
   ;  :sleep-fn #(= dh.rl/interruptible-sleep %)
   ;  ...}
 
@@ -399,7 +399,7 @@
     1234567890
     :send-message)
   ; =>>
-  ; {:rate     0.03
+  ; {:rate     0.029
   ;  :sleep-fn #(= dh.rl/uninterruptible-sleep %)
   ;  ...}
 
