@@ -35,9 +35,10 @@
                        is used for generating Telegram Bot API server responses,
                        effectively mocking real HTTP requests during tests;
    - `:limiter-opts` — a map of opts for configuring the built-in rate limiters;
-                       the default value only specifies limits for 'sendMessage'
-                       and 'editMessageText' methods, publicly available on the
-                       Bots FAQ page (https://core.telegram.org/bots/faq);
+                       the default value specifies limits for messages, message
+                       drafts and chat actions, publicly available on the Bots
+                       FAQ page (https://core.telegram.org/bots/faq) and on the
+                       AI features page (https://core.telegram.org/api/bots/ai);
                        see the `with-rate-limiter` macro docstring for details;
                        set to `nil` to bypass the rate limiting (used primarily
                        during tests);

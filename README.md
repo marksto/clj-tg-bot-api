@@ -147,10 +147,16 @@ If you are [using a Local Bot API Server](https://core.telegram.org/bots/api#usi
 
 #### Rate Limiting
 
-The built-in rate limiter is conservative. It aims to avoid exceeding the API limits as much as possible by following the [Telegram Bot API FAQ](https://core.telegram.org/bots/faq#my-bot-is-hitting-limits-how-do-i-avoid-this) and applying the following defaults for "sendMessage" and "editMessageText" (which share limits):
-- No more than    1 message   per second in a single chat,
-- No more than 20 messages per minute  in the same group chat,
-- No more than 30 messages per second in total (for broadcasting).
+The built-in rate limiter is conservative. It aims to avoid exceeding the API limits as much as possible by following the [Telegram Bot API FAQ](https://core.telegram.org/bots/faq#my-bot-is-hitting-limits-how-do-i-avoid-this) and the [AI features for bots](https://core.telegram.org/api/bots/ai) recommendations.
+
+The following defaults are applied:
+1. For "sendMessage", "sendRichMessage" and "editMessageText" (which share limits):
+   - No more than    1 message   per second in a single chat,
+   - No more than 20 messages per minute  in the same group chat,
+   - No more than 30 messages per second in total (for broadcasting).
+2. For "sendMessageDraft", "sendRichMessageDraft" and "sendChatAction" (which share limits):
+   - No more than 20 calls per  5 seconds in a single chat, and
+   - No more than 40 calls per 30 seconds in a single chat.
 
 While this helps to avoid HTTP 429 "Too many requests, retry after N" error in some cases, in others it can feel quite or not enough limiting (pun intended), especially if you are good to go with [paid broadcasts](https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once). Therefore, it can be fine-tuned or completely reconfigured as follows:
 

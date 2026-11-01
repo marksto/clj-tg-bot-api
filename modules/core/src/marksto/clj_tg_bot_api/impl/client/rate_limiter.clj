@@ -47,15 +47,31 @@
 ;;     See details in https://core.telegram.org/bots/faq#broadcasting-to-users,
 ;;     "My bot is hitting limits, how do I avoid this?".
 ;;
+;;     Recently, the "AI features for bots" page stated listing the following:
+;;
+;;     "- Max 20 calls in  5 seconds
+;;      - Max 40 calls in 30 seconds
+;;
+;;      These rate limits apply per peer <...> The same rate limits apply to the
+;;      Bot API counterparts of `messages.setTyping`, like `sendMessageDraft`,
+;;      `sendChatAction`, and so on."
+;;
+;;     Find at https://core.telegram.org/api/bots/ai, "Live response streaming".
+;;
 ;;     IMPLEMENTATION
 ;;
 ;;     To overcome the issue with HTTP 429 — "Too many requests, retry after X"
 ;;     error, the Telegram Bot API client implements the following rate limits:
 ;;
-;;     For "sendMessage" and "editMessageText" (share limits):
+;;     For "sendMessage"/"sendRichMessage"/"editMessageText" (share limits):
 ;;     - No more than  1 message  per second in a single chat,
 ;;     - No more than 20 messages per minute in the same group chat,
 ;;     - No more than 30 messages per second in total (for broadcasting).
+;;
+;;     For "sendMessageDraft"/"sendRichMessageDraft"/"sendChatAction" (also
+;;     share limits):
+;;     - No more than 20 calls per  5 seconds in a single chat, and
+;;     - No more than 40 calls per 30 seconds in a single chat.
 
 (def rate-limiter-tti-ms
   "How long a rate limiter is kept once it is no longer used.
@@ -80,6 +96,9 @@
   [n sec]
   (/ (double n) sec))
 
+;; TODO: Support the string chat IDs, which the Bot API allows as well, e.g.
+;;       "@username". Maybe treat it as a group chat, the safe guess, as it
+;;       usually may name a target bot, supergroup or channel.
 (defn group-chat? [chat-id] (neg? chat-id))
 
 (def default-opts
@@ -184,14 +203,14 @@
 (defmacro with-rate-limiter
   "Wraps a call to the given `form`, which is also known to be made by the bot
    with the given `bot-id`, to a particular Bot API `method`, w/ `:chat-id` in
-   the parameters (if any), and the given `limiter-opts`, with a corresponding
-   rate limiter.
+   the parameters (if any), and the given `limiter-opts`, with corresponding
+   rate limiters.
 
    The `limiter-opts` is either `nil` (then the rate limiting is bypassed), or
    a map of the following structure:
    ```
    {<api-method> {:in-total <in-total-rl-opts>
-                  <chat-id> <chat-rl-opts-or-fn>}
+                  :per-chat <chat-rl-opts-or-fn>}
     <api-method> <base-api-method>}
    ```
    where `<in-total-rl-opts>` is an opts map of a rate limiter for all requests
@@ -200,8 +219,8 @@
    for a specific chat, if supported (e.g. for `:send-message` by default).
 
    If the `<api-method> <base-api-method>` entry is present, the limits for the
-   `<api-method>` are shared with the `<base-api-method>` (by default, e.g. for
-   `:edit-message-text` that by default shares limits with the `:send-message`).
+   `<api-method>` are shared with the `<base-api-method>` (e.g. by default, the
+   `:edit-message-text` shares limits with the `:send-message`).
 
    The `limiter-opts`, only if provided, get deep merged with the default ones.
 
@@ -210,6 +229,39 @@
    See https://core.telegram.org/bots/faq"
   [limiter-opts bot-id method chat-id form]
   ;; NB: The in-total limiter goes first, because it is overall more forgiving.
+  ;;
+  ;;     - Each chat's limit stays exact. The chat's limiter goes last, so it
+  ;;       counts a message when it is sent. These are the limits Telegram is
+  ;;       stricter about, in groups especially. E.g. 7 messages to a private
+  ;;       chat, 1 s into a broadcast to 116 others, went no more than 3 within
+  ;;       any 1 s (measured).
+  ;;
+  ;;     - Only the total, a soft limit ("30 messages per second or so"), may
+  ;;       peak. That takes two things at once: the total traffic near its
+  ;;       rate, and the messages that their chats held back coming due. Each
+  ;;       such message adds 1 to that second. W/o them, no more than 30 are
+  ;;       sent within any 1 s. The peaks, in messages within any 1 s:
+  ;;       - 31 — 7 messages to a private chat, right before a 4 s broadcast,
+  ;;              in each second one of its held messages goes out (worked out
+  ;;              by hand);
+  ;;       - 34 — 6 messages to each of 10 groups, then 1 to each of 30 private
+  ;;              chats 4 s later (measured);
+  ;;       - 40 — the same, but with 1 message to each group in turn, and 46
+  ;;              with 20 groups (both worked out by hand).
+  ;;       The last ones need 10 to 20 groups whose held messages come due in
+  ;;       the same second as a 30-chat broadcast, which is unusual for small
+  ;;       to medium bots.
+  ;;
+  ;;     - It uses the `diehard` rate limiters plainly, one nested in another,
+  ;;       with no lock and no permit taken only to be given back. (Only the
+  ;;       `fill-up!` passes a negative number of permits to `acquire!`, or a
+  ;;       new chat's first messages would wait.)
+  ;;
+  ;;     The cost of it (worked out by hand): a message counts in total before
+  ;;     it waits on its chat's limiter. Say one group gets 50 replies at once:
+  ;;     they use up 50 in-total permits within ~1.7 s, then wait on the group
+  ;;     limiter for minutes, and the messages to other chats get held back by
+  ;;     those ~1.7 s for nothing. The delay is bounded and mild at small scale.
   `(if (some? ~limiter-opts)
      (-with-rate-limiter
        :in-total ~limiter-opts ~bot-id ~method
