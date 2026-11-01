@@ -9,6 +9,7 @@
 (ns marksto.clj-tg-bot-api.impl.client.rate-limiter
   {:author "Mark Sto (@marksto)"}
   (:require
+   [clojure.core.cache :as cache]
    [diehard.core :as dh]
    [diehard.rate-limiter :as dh.rl]
    [marksto.clj-tg-bot-api.impl.utils :as utils]))
@@ -56,14 +57,21 @@
 ;;     - No more than 20 messages per minute in the same group chat,
 ;;     - No more than 30 messages per second in total (for broadcasting).
 
+(def rate-limiter-tti-ms
+  "How long a rate limiter is kept once it is no longer used.
+
+   It must be longer than it takes any rate limiter to refill,
+   so that a new one, which starts full, lets no more calls
+   through than the evicted one would."
+  (* 10 60 1000))
+
 (defonce
-  ^{:doc "An atom that holds a map of the following structure:
-          {<bot-id> {<api-method> {:in-total <in-total-rl>
-                                   <chat-id> <chat-rl>}}}
-          where <in-total-rl> is a rate limiter for all requests of that type,
-          while <chat-rl> is a rate limiter for a specific chat, if supported."}
+  ^{:doc "An atom that holds a TTI cache of rate limiters, each by the key of
+          [<bot-id> <api-method> <limiter-id>], where <limiter-id> is either:
+          - `:in-total` — for all requests of that type;
+          - a Chat ID   — for the requests to that chat, if supported."}
   *rate-limiters
-  (atom {}))
+  (atom (utils/tti-cache-factory {} :tti rate-limiter-tti-ms)))
 
 ;;
 
@@ -143,16 +151,26 @@
   [limiter-id limiter-opts bot-id method]
   (when (some? limiter-id)
     (let [method' (get-base-limited-method method)
-          rate-limiter-path [bot-id method' limiter-id]]
+          rate-limiter-key [bot-id method' limiter-id]]
       (-> *rate-limiters
           (swap!
             (fn [rate-limiters]
-              (if (some? (get-in rate-limiters rate-limiter-path))
-                rate-limiters
-                (assoc-in rate-limiters
-                          rate-limiter-path
-                          (->rate-limiter limiter-id limiter-opts method')))))
-          (get-in rate-limiter-path)))))
+              (if (cache/has? rate-limiters rate-limiter-key)
+                (cache/hit rate-limiters rate-limiter-key)
+                (if-some [rate-limiter (->rate-limiter limiter-id limiter-opts method')]
+                  (cache/miss rate-limiters rate-limiter-key rate-limiter)
+                  rate-limiters))))
+          (cache/lookup rate-limiter-key)))))
+
+(defn mark-rate-limiters-used!
+  "Marks the limiters used anew, so they don't expire while calls wait on them."
+  [bot-id method chat-id]
+  (let [method' (get-base-limited-method method)]
+    (swap! *rate-limiters
+           (fn [rate-limiters]
+             (-> rate-limiters
+                 (cache/hit [bot-id method' chat-id])
+                 (cache/hit [bot-id method' :in-total]))))))
 
 ;;
 
@@ -197,7 +215,8 @@
        :in-total ~limiter-opts ~bot-id ~method
        (-with-rate-limiter
          ~chat-id ~limiter-opts ~bot-id ~method
-         ~form))
+         (do (mark-rate-limiters-used! ~bot-id ~method ~chat-id)
+             ~form)))
      ~form))
 
 ;;
@@ -206,7 +225,7 @@
 (comment
   ;; :send-message
 
-  (reset! *rate-limiters {})
+  (swap! *rate-limiters empty)
   (get-rate-limiter!
     :in-total
     {:send-message {:per-chat {:sleep-fn dh.rl/interruptible-sleep}}}
@@ -217,7 +236,7 @@
   ;  :sleep-fn #(= dh.rl/uninterruptible-sleep %)
   ;  ...}
 
-  (reset! *rate-limiters {})
+  (swap! *rate-limiters empty)
   (get-rate-limiter!
     :in-total
     {:send-message {:in-total {:rate 1}}}
@@ -228,7 +247,7 @@
   ;  :sleep-fn #(= dh.rl/uninterruptible-sleep %)
   ;  ...}
 
-  (reset! *rate-limiters {})
+  (swap! *rate-limiters empty)
   (get-rate-limiter!
     :in-total
     {:send-message {:in-total nil
@@ -238,7 +257,7 @@
   ; =>
   nil
 
-  (reset! *rate-limiters {})
+  (swap! *rate-limiters empty)
   (get-rate-limiter!
     -1
     {:send-message {:per-chat {:rate 1}}}
@@ -249,7 +268,7 @@
   ;  :sleep-fn #(= dh.rl/uninterruptible-sleep %)
   ;  ...}
 
-  (reset! *rate-limiters {})
+  (swap! *rate-limiters empty)
   (get-rate-limiter!
     -1
     {:send-message {:per-chat {:rate     1
@@ -261,7 +280,7 @@
   ;  :sleep-fn #(= dh.rl/interruptible-sleep %)
   ;  ...}
 
-  (reset! *rate-limiters {})
+  (swap! *rate-limiters empty)
   (get-rate-limiter!
     -1
     {:send-message {:per-chat {:sleep-fn dh.rl/interruptible-sleep}}}
@@ -274,7 +293,7 @@
 
   ;; :edit-message-text
 
-  (reset! *rate-limiters {})
+  (swap! *rate-limiters empty)
   (get-rate-limiter!
     :in-total
     {:send-message {:per-chat {:sleep-fn dh.rl/interruptible-sleep}}}
@@ -285,7 +304,7 @@
   ;  :sleep-fn #(= dh.rl/uninterruptible-sleep %)
   ;  ...}
 
-  (reset! *rate-limiters {})
+  (swap! *rate-limiters empty)
   (get-rate-limiter!
     :in-total
     {:send-message {:in-total {:rate 1}}}
@@ -296,7 +315,7 @@
   ;  :sleep-fn #(= dh.rl/uninterruptible-sleep %)
   ;  ...}
 
-  (reset! *rate-limiters {})
+  (swap! *rate-limiters empty)
   (get-rate-limiter!
     :in-total
     {:send-message {:in-total nil
@@ -306,7 +325,7 @@
   ; =>
   nil
 
-  (reset! *rate-limiters {})
+  (swap! *rate-limiters empty)
   (get-rate-limiter!
     -1
     {:send-message {:per-chat {:rate 1}}}
@@ -317,7 +336,7 @@
   ;  :sleep-fn #(= dh.rl/uninterruptible-sleep %)
   ;  ...}
 
-  (reset! *rate-limiters {})
+  (swap! *rate-limiters empty)
   (get-rate-limiter!
     -1
     {:send-message {:per-chat {:rate     1
@@ -329,7 +348,7 @@
   ;  :sleep-fn #(= dh.rl/interruptible-sleep %)
   ;  ...}
 
-  (reset! *rate-limiters {})
+  (swap! *rate-limiters empty)
   (get-rate-limiter!
     -1
     {:send-message {:per-chat {:sleep-fn dh.rl/interruptible-sleep}}}
@@ -342,7 +361,14 @@
 
   ;; other methods
 
-  (reset! *rate-limiters {})
+  (swap! *rate-limiters empty)
+  [(get-rate-limiter! :in-total {} 1234567890 :get-chat)
+   (get-rate-limiter! -1 {} 1234567890 :get-chat)
+   (count @*rate-limiters)]
+  ; =>
+  [nil nil 0]
+
+  (swap! *rate-limiters empty)
   (get-rate-limiter!
     :in-total
     {:send-message    {:in-total nil
@@ -355,7 +381,7 @@
   ;  :sleep-fn #(= dh.rl/uninterruptible-sleep %)
   ;  ...}
 
-  (reset! *rate-limiters {})
+  (swap! *rate-limiters empty)
   (get-rate-limiter!
     -1
     {:send-message    {:in-total nil
@@ -366,7 +392,7 @@
   ; =>
   nil
 
-  (reset! *rate-limiters {})
+  (swap! *rate-limiters empty)
   (get-rate-limiter!
     :in-total
     {:send-message    {:in-total nil
@@ -382,7 +408,7 @@
 
   ;; interference
 
-  (reset! *rate-limiters {})
+  (swap! *rate-limiters empty)
   (get-rate-limiter!
     :in-total
     {:send-message    {:in-total nil}
@@ -392,7 +418,7 @@
   ; =>
   nil
 
-  (reset! *rate-limiters {})
+  (swap! *rate-limiters empty)
   (get-rate-limiter!
     -1
     {:send-message    {:per-chat {:rate 1}}
@@ -404,7 +430,7 @@
   ;  :sleep-fn #(= dh.rl/uninterruptible-sleep %)
   ;  ...}
 
-  (reset! *rate-limiters {})
+  (swap! *rate-limiters empty)
   (get-rate-limiter!
     :in-total
     {:set-my-commands {:in-total {:rate 1}}}

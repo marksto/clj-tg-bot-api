@@ -31,7 +31,8 @@
 ;; !) Since SCA tool is the only way to keep comments up to date and workable,
 ;;    we abandon the practice of marking them with `^:clj-kondo/ignore`.
 ;;
-{:lint-as       {#_"NB: These are only 3rd-party libraries' macros."}
+{:lint-as       {#_"NB: These are only 3rd-party libraries' macros."
+                 clojure.core.cache/defcache clojure.core/deftype}
  :linters       {:cond-else            {:level :off}
                  :consistent-alias     {:aliases {babashka.fs            fs
                                                   babashka.http-client   http

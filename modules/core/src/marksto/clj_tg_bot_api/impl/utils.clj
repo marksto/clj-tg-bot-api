@@ -10,6 +10,7 @@
   "A set of necessary general-purpose utilities"
   {:author "Mark Sto (@marksto)"}
   (:require
+   [clojure.core.cache :as cache :refer [defcache]]
    [clojure.set :as set]
    [loom.alg :as la]
    [loom.graph :refer [add-edges add-nodes digraph has-edge? nodes]])
@@ -171,3 +172,49 @@
         g-no-edges (reduce add-nodes (digraph) (nodes g))
         acyclic-sg (apply add-edges g-no-edges cross-edges)]
     (la/topsort acyclic-sg)))
+
+;; caches
+
+;; NB: A time-to-idle (TTI) cache evicts the entries that have not been used,
+;;     i.e. put via `miss` or looked up via `hit`, for a given time. The TTL
+;;     cache of the `clojure.core.cache` evicts them that long after they've
+;;     been put, even if they are still in use.
+(defcache TTICache [cache used-at tti swept-at]
+  cache/CacheProtocol
+  (lookup [_ item]
+    (get cache item))
+  (lookup [_ item not-found]
+    (get cache item not-found))
+  (has? [_ item]
+    (contains? cache item))
+  (hit [this item]
+    (if (contains? cache item)
+      (TTICache. cache (assoc used-at item (System/currentTimeMillis)) tti swept-at)
+      this))
+  (miss [_ item result]
+    ;; NB: Sweeps the unused entries away, at most once in the `tti` time.
+    (let [now (System/currentTimeMillis)
+          unused (when (<= tti (- now swept-at))
+                   (for [[k used-ts] used-at
+                         :when (<= tti (- now used-ts))]
+                     k))]
+      (TTICache. (assoc (apply dissoc cache unused) item result)
+                 (assoc (apply dissoc used-at unused) item now)
+                 tti
+                 (if (some? unused) now swept-at))))
+  (evict [_ item]
+    (TTICache. (dissoc cache item) (dissoc used-at item) tti swept-at))
+  (seed [_ base]
+    (let [now (System/currentTimeMillis)]
+      (TTICache. base (zipmap (keys base) (repeat now)) tti now)))
+  Object
+  (toString [_]
+    (str cache \, \space used-at \, \space tti)))
+
+(defn tti-cache-factory
+  "Returns a TTI cache with the cache and the usage table initialized to `base`.
+   The `:tti` argument is the time in milliseconds that entries are allowed to
+   stay unused in the cache."
+  [base & {tti :tti}]
+  {:pre [(number? tti) (<= 0 tti) (map? base)]}
+  (cache/seed (TTICache. {} {} tti 0) base))
