@@ -76,12 +76,21 @@
 
 (def default-opts
   "Bot API method -> rate limiter opts | base Bot API method"
-  {:send-message      {:in-total {:rate 30}
-                       :per-chat (fn [chat-id]
-                                   (if (group-chat? chat-id)
-                                     {:rate (->rate 20 60)}
-                                     {:rate 1}))}
-   :edit-message-text :send-message})
+  {:send-message            {:in-total {;; 30/s, small peaks allowed
+                                        :rate 29 :max-cached-tokens 1}
+                             :per-chat (fn [chat-id]
+                                         (if (group-chat? chat-id)
+                                           {;; 20/min, let 5 through at once
+                                            :rate (->rate 15 60) :max-cached-tokens 5}
+                                           {;; 1/s + short bursts allowed
+                                            :rate 1 :max-cached-tokens 3}))}
+   :send-rich-message       :send-message
+   :edit-message-text       :send-message
+
+   :send-message-draft      {;; composition: max 20 calls in 5s and 40 calls in 30s
+                             :per-chat {:rate (->rate 24 30) :max-cached-tokens 16}}
+   :send-rich-message-draft :send-message-draft
+   :send-chat-action        :send-message-draft})
 
 (defn get-base-limited-method [method]
   (let [default-method-or-opts (get default-opts method)]
@@ -126,7 +135,7 @@
       (-> *rate-limiters
           (swap!
             (fn [rate-limiters]
-              (if (contains? rate-limiters rate-limiter-path)
+              (if (some? (get-in rate-limiters rate-limiter-path))
                 rate-limiters
                 (assoc-in rate-limiters
                           rate-limiter-path
@@ -143,7 +152,7 @@
        ~form)))
 
 (defmacro with-rate-limiter
-  "Wraps a call to the given `form`, which is also known to be made by еру bot
+  "Wraps a call to the given `form`, which is also known to be made by the bot
    with the given `bot-id`, to a particular Bot API `method`, w/ `:chat-id` in
    the parameters (if any), and the given `limiter-opts`, with a corresponding
    rate limiter.
@@ -158,11 +167,11 @@
    where `<in-total-rl-opts>` is an opts map of a rate limiter for all requests
    of that type/to that Bot API method, and `<chat-rl-opts-or-fn>` is either an
    opts map or a unary fn of 'chat-id' that returns an opts map of rate limiter
-   for a specific chat, if supported (by default, only for `:send-message`).
+   for a specific chat, if supported (e.g. for `:send-message` by default).
 
    If the `<api-method> <base-api-method>` entry is present, the limits for the
-   `<api-method>` are shared with the `<base-api-method>` (by default, only for
-   `:edit-message-text` that shares limits with the `:send-message`).
+   `<api-method>` are shared with the `<base-api-method>` (by default, e.g. for
+   `:edit-message-text` that by default shares limits with the `:send-message`).
 
    The `limiter-opts`, only if provided, get deep merged with the default ones.
 
@@ -170,6 +179,7 @@
 
    See https://core.telegram.org/bots/faq"
   [limiter-opts bot-id method chat-id form]
+  ;; NB: The in-total limiter goes first, because it is overall more forgiving.
   `(if (some? ~limiter-opts)
      (-with-rate-limiter
        :in-total ~limiter-opts ~bot-id ~method
