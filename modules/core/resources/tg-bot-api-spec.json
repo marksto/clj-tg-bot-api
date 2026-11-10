@@ -1,5 +1,5 @@
 {
-  "version" : "Bot API 10.3",
+  "version" : "Bot API 10.4",
   "types" : [ {
     "id" : "type/update",
     "name" : "Update",
@@ -79,6 +79,16 @@
       "name" : "callback_query",
       "type" : "type/callback-query",
       "description" : "<em>Optional</em>. New incoming callback query",
+      "required" : false
+    }, {
+      "name" : "widget_query",
+      "type" : "type/widget-query",
+      "description" : "<em>Optional</em>. New incoming query from a widget in a message sent by the bot or via the bot",
+      "required" : false
+    }, {
+      "name" : "shared_widget_query",
+      "type" : "type/shared-widget-query",
+      "description" : "<em>Optional</em>. New incoming query from a forwarded message with a shared widget",
       "required" : false
     }, {
       "name" : "shipping_query",
@@ -609,6 +619,16 @@
       "type" : "type/community",
       "description" : "<em>Optional</em>. The <a href=\"#community\">Community</a> to which the chat belongs",
       "required" : false
+    }, {
+      "name" : "ton_wallet_card",
+      "type" : "type/ton-wallet-card",
+      "description" : "<em>Optional</em>. For private chats, the TON wallet card of the user, which is shown on their profile page",
+      "required" : false
+    }, {
+      "name" : "share_theme",
+      "type" : "type/chat-share-theme",
+      "description" : "<em>Optional</em>. For private chats, supergroups and channels, the theme of the screen for sharing a link to the user or the chat; omitted if the default theme is used",
+      "required" : false
     } ]
   }, {
     "id" : "type/message",
@@ -866,9 +886,14 @@
       "description" : "<em>Optional</em>. Message is a voice message, information about the file",
       "required" : false
     }, {
+      "name" : "widget",
+      "type" : "type/widget",
+      "description" : "<em>Optional</em>. Message is an HTML widget, information about the widget",
+      "required" : false
+    }, {
       "name" : "caption",
       "type" : "String",
-      "description" : "<em>Optional</em>. Caption for the animation, audio, document, paid media, photo, video or voice",
+      "description" : "<em>Optional</em>. Caption for the animation, audio, document, live photo, paid media, photo, video, voice, or widget",
       "required" : false
     }, {
       "name" : "caption_entities",
@@ -878,7 +903,7 @@
     }, {
       "name" : "show_caption_above_media",
       "type" : "True",
-      "description" : "<em>Optional</em>. <em>True</em>, if the caption must be shown above the message media",
+      "description" : "<em>Optional</em>. <em>True</em>, if the caption must be shown above the message media or the widget",
       "required" : false
     }, {
       "name" : "has_media_spoiler",
@@ -1151,6 +1176,11 @@
       "description" : "<em>Optional</em>. Service message: the price for paid messages has changed in the chat",
       "required" : false
     }, {
+      "name" : "paid_messages_waived",
+      "type" : "type/paid-messages-waived",
+      "description" : "<em>Optional</em>. Service message: the sender of the message used a link of the other user, which allows sending messages to the user without paying Telegram Stars",
+      "required" : false
+    }, {
       "name" : "poll_option_added",
       "type" : "type/poll-option-added",
       "description" : "<em>Optional</em>. Service message: answer option was added to a poll",
@@ -1184,6 +1214,11 @@
       "name" : "suggested_post_refunded",
       "type" : "type/suggested-post-refunded",
       "description" : "<em>Optional</em>. Service message: payment for a suggested post was refunded",
+      "required" : false
+    }, {
+      "name" : "ton_wallet_transfer",
+      "type" : "type/ton-wallet-transfer",
+      "description" : "<em>Optional</em>. Service message: a transfer with a TON wallet",
       "required" : false
     }, {
       "name" : "video_chat_scheduled",
@@ -1262,7 +1297,7 @@
     "fields" : [ {
       "name" : "type",
       "type" : "String",
-      "description" : "Type of the entity. Currently, can be “mention” (<code>@username</code>), “hashtag” (<code>#hashtag</code> or <code>#hashtag@chatusername</code>), “cashtag” (<code>$USD</code> or <code>$USD@chatusername</code>), “bot_command” (<code>/start@jobs_bot</code>), “url” (<code>https://telegram.org</code>), “email” (<code>do-not-reply@telegram.org</code>), “phone_number” (<code>+1-212-555-0123</code>), “bold” (<strong>bold text</strong>), “italic” (<em>italic text</em>), “underline” (underlined text), “strikethrough” (strikethrough text), “spoiler” (spoiler message), “blockquote” (block quotation), “expandable_blockquote” (collapsed-by-default block quotation), “code” (monowidth string), “pre” (monowidth block), “text_link” (for clickable text URLs), “text_mention” (for users <a href=\"https://telegram.org/blog/edit#new-mentions\">without usernames</a>), “custom_emoji” (for inline custom emoji stickers), or “date_time” (for formatted date and time).",
+      "description" : "Type of the entity. Currently, can be “mention” (<code>@username</code>), “hashtag” (<code>#hashtag</code> or <code>#hashtag@chatusername</code>), “cashtag” (<code>$USD</code> or <code>$USD@chatusername</code>), “bot_command” (<code>/start@jobs_bot</code>), “url” (<code>https://telegram.org</code>), “email” (<code>do-not-reply@telegram.org</code>), “phone_number” (<code>+1-212-555-0123</code>), “bank_card_number” (bank card number), “ton_address” (address in the TON blockchain), “bold” (<strong>bold text</strong>), “italic” (<em>italic text</em>), “underline” (underlined text), “strikethrough” (strikethrough text), “spoiler” (spoiler message), “blockquote” (block quotation), “expandable_blockquote” (collapsed-by-default block quotation), “code” (monowidth string), “pre” (monowidth block), “text_link” (for clickable text URLs), “text_mention” (for users <a href=\"https://telegram.org/blog/edit#new-mentions\">without usernames</a>), “custom_emoji” (for inline custom emoji stickers), or “date_time” (for formatted date and time).",
       "required" : true
     }, {
       "name" : "offset",
@@ -1313,7 +1348,7 @@
     "fields" : [ {
       "name" : "text",
       "type" : "String",
-      "description" : "Text of the quoted part of a message that is replied to by the given message",
+      "description" : "Text of the quoted part of a message that is replied to by the given message; may be empty if the quote was chosen from a rich message",
       "required" : true
     }, {
       "name" : "entities",
@@ -1321,9 +1356,14 @@
       "description" : "<em>Optional</em>. Special entities that appear in the quote. Currently, only <em>bold</em>, <em>italic</em>, <em>underline</em>, <em>strikethrough</em>, <em>spoiler</em>, <em>custom_emoji</em>, and <em>date_time</em> entities are kept in quotes.",
       "required" : false
     }, {
+      "name" : "rich_texts",
+      "type" : [ "array", "type/rich-text" ],
+      "description" : "<em>Optional</em>. Rich text of the quote if it was chosen from a <a href=\"#richmessage\">rich message</a>. May contain only plain text, <a href=\"#richtextbold\">RichTextBold</a>, <a href=\"#richtextitalic\">RichTextItalic</a>, <a href=\"#richtextunderline\">RichTextUnderline</a>, <a href=\"#richtextstrikethrough\">RichTextStrikethrough</a>, <a href=\"#richtextspoiler\">RichTextSpoiler</a>, <a href=\"#richtextsubscript\">RichTextSubscript</a>, <a href=\"#richtextsuperscript\">RichTextSuperscript</a>, <a href=\"#richtextdatetime\">RichTextDateTime</a>, <a href=\"#richtextcustomemoji\">RichTextCustomEmoji</a>, <a href=\"#richtextmathematicalexpression\">RichTextMathematicalExpression</a>, and arrays of them.",
+      "required" : false
+    }, {
       "name" : "position",
       "type" : "Integer",
-      "description" : "Approximate quote position in the original message in UTF-16 code units as specified by the sender",
+      "description" : "Approximate quote position in the original message in UTF-16 code units as specified by the sender. For quotes from rich messages, it is the position in the text formed by joining plain texts of all quotable texts of the message, separated by line feeds.",
       "required" : true
     }, {
       "name" : "is_manual",
@@ -1412,6 +1452,11 @@
       "description" : "<em>Optional</em>. Message is a voice message, information about the file",
       "required" : false
     }, {
+      "name" : "widget",
+      "type" : "type/widget",
+      "description" : "<em>Optional</em>. Message is an HTML widget, information about the widget",
+      "required" : false
+    }, {
       "name" : "has_media_spoiler",
       "type" : "True",
       "description" : "<em>Optional</em>. <em>True</em>, if the message media is covered by a spoiler animation",
@@ -1480,7 +1525,7 @@
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
-      "description" : "<em>Optional</em>. If the message to be replied to is from a different chat, unique identifier for the chat or username of the bot, supergroup or channel in the format <code>@username</code>. Not supported for messages sent on behalf of a business account, messages from channel direct messages chats and ephemeral messages.",
+      "description" : "<em>Optional</em>. If the message to be replied to is from a different chat, unique identifier for the chat or username of the bot, supergroup, or channel in the format <code>@username</code>. Not supported for messages sent on behalf of a business account, messages from channel direct messages chats and ephemeral messages.",
       "required" : false
     }, {
       "name" : "ephemeral_message_id",
@@ -1518,9 +1563,15 @@
       "required" : false,
       "json_serialized" : true
     }, {
+      "name" : "quote_rich_texts",
+      "type" : [ "array", "type/rich-text" ],
+      "description" : "<em>Optional</em>. A JSON-serialized list of quoted parts of the <a href=\"#richmessage\">rich message</a> to be replied to. Must contain one element for each quoted text of the message in the order of their appearance. Each of the following is a separate quoted text: the text of a paragraph, a heading, a preformatted block, a footer, or a mathematical expression; the text and the credit of a block quotation or a pull quotation; the summary of a details block; the caption and each cell of a table; the text and the credit of a caption of a media block, a collage, a slideshow, or a map. Texts of blocks nested in lists, block quotations, details, collages, and slideshows are separate quoted texts too. The first and the last elements can contain only a part of the corresponding text; all other elements must contain the whole text. Formatting of the quoted parts must be kept, and rich texts must be nested in the same way as in the message received from the server. Mathematical expressions must be quoted entirely. Buttons in <a href=\"#richblockbuttons\">RichBlockButtons</a>, anchors and dividers can't be quoted. Up to 32 quoted texts with total length up to 1024 characters can be specified. Only plain text, <a href=\"#richtextbold\">RichTextBold</a>, <a href=\"#richtextitalic\">RichTextItalic</a>, <a href=\"#richtextunderline\">RichTextUnderline</a>, <a href=\"#richtextstrikethrough\">RichTextStrikethrough</a>, <a href=\"#richtextspoiler\">RichTextSpoiler</a>, <a href=\"#richtextsubscript\">RichTextSubscript</a>, <a href=\"#richtextsuperscript\">RichTextSuperscript</a>, <a href=\"#richtextdatetime\">RichTextDateTime</a>, <a href=\"#richtextcustomemoji\">RichTextCustomEmoji</a>, <a href=\"#richtextmathematicalexpression\">RichTextMathematicalExpression</a>, and arrays of them are kept in the quote; other rich text types are replaced with their text. If non-empty, then <em>quote</em>, <em>quote_parse_mode</em> and <em>quote_entities</em> are ignored.",
+      "required" : false,
+      "json_serialized" : true
+    }, {
       "name" : "quote_position",
       "type" : "Integer",
-      "description" : "<em>Optional</em>. Position of the quote in the original message in UTF-16 code units",
+      "description" : "<em>Optional</em>. Position of the quote in the original message in UTF-16 code units. For quotes from rich messages, it is the position in the text formed by joining plain texts of all quotable texts of the message, separated by line feeds.",
       "required" : false
     }, {
       "name" : "checklist_task_id",
@@ -1544,12 +1595,12 @@
     "fields" : [ {
       "name" : "receiver_user_id",
       "type" : "Integer",
-      "description" : "Identifier of the user who will receive the message. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">here</a> for more details.",
-      "required" : true
+      "description" : "<em>Optional</em>. Identifier of the user who will receive the message; required unless the message is sent as an ephemeral reply to a callback query. If omitted, then the parameter <em>chat_id</em> of the method is ignored. If specified together with <em>callback_query_id</em>, then it must be the identifier of the user who pressed the button. Must be omitted for messages sent in chats where the bot isn't a member, unless the message is a reply to an ephemeral message. It is not guaranteed that the user will receive the message, especially if they are offline. See <a href=\"#ephemeral-messages-and-commands\">here</a> for more details.",
+      "required" : false
     }, {
       "name" : "callback_query_id",
       "type" : "String",
-      "description" : "<em>Optional</em>. Identifier of the callback query which triggered the message, if any",
+      "description" : "<em>Optional</em>. Identifier of the callback query which triggered the message, if any. If specified and <em>receiver_user_id</em> is omitted, then the message is sent as an ephemeral reply to the callback query and will be shown only to the user who pressed the button. Ephemeral replies can't be sent to callback queries from messages in channel direct messages chats. The bot must still answer the callback query using <a href=\"#answercallbackquery\">answerCallbackQuery</a>.",
       "required" : false
     }, {
       "name" : "replace_callback_query_message",
@@ -2064,6 +2115,42 @@
       "name" : "file_size",
       "type" : "Integer",
       "description" : "<em>Optional</em>. File size in bytes. It can be bigger than 2^31 and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this value.",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/widget",
+    "name" : "Widget",
+    "kind" : "type",
+    "description" : "<p>This object describes an <a href=\"/bots/widgets\">HTML widget</a>.</p>",
+    "fields" : [ {
+      "name" : "id",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Unique identifier of the shared widget, which can be used to send the widget again using the method <a href=\"#sendsharedwidget\">sendSharedWidget</a>; omitted if the widget isn't shared",
+      "required" : false
+    }, {
+      "name" : "width",
+      "type" : "Integer",
+      "description" : "<em>Optional</em>. Width of the widget in logical pixels; omitted if the widget must occupy the whole width of the message bubble",
+      "required" : false
+    }, {
+      "name" : "height",
+      "type" : "Integer",
+      "description" : "<em>Optional</em>. Height of the widget in logical pixels; omitted if the height of the widget isn't fixed",
+      "required" : false
+    }, {
+      "name" : "html",
+      "type" : "String",
+      "description" : "HTML code of the widget",
+      "required" : true
+    }, {
+      "name" : "public_data",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Public data of the widget, which is available wherever the widget is shown. All messages with a shared widget have the same public data.",
+      "required" : false
+    }, {
+      "name" : "chat_data",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Data of the widget, which is specific to the message",
       "required" : false
     } ]
   }, {
@@ -3592,6 +3679,37 @@
       }
     } ]
   }, {
+    "id" : "type/paid-messages-waived",
+    "name" : "PaidMessagesWaived",
+    "kind" : "type",
+    "description" : "<p>Describes a service message about the sender of the message using a link of the other user, which allows sending messages to the user without paying Telegram Stars. Currently holds no information.</p>"
+  }, {
+    "id" : "type/ton-wallet-transfer",
+    "name" : "TonWalletTransfer",
+    "kind" : "type",
+    "description" : "<p>Describes a service message about a transfer with a TON wallet.</p>",
+    "fields" : [ {
+      "name" : "transaction_id",
+      "type" : "String",
+      "description" : "Unique identifier of the transaction; may be empty if the transfer hasn't been sent yet",
+      "required" : true
+    }, {
+      "name" : "peer_address",
+      "type" : "String",
+      "description" : "Address of the transfer peer in the TON blockchain",
+      "required" : true
+    }, {
+      "name" : "amount",
+      "type" : "String",
+      "description" : "The amount of transferred cryptocurrency, in the <em>smallest units</em> of the cryptocurrency, as a decimal number; negative for outgoing transfers",
+      "required" : true
+    }, {
+      "name" : "comment",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Comment added to the transfer; omitted if the comment is encrypted",
+      "required" : false
+    } ]
+  }, {
     "id" : "type/giveaway-created",
     "name" : "GiveawayCreated",
     "kind" : "type",
@@ -4171,7 +4289,7 @@
     }, {
       "name" : "suggested_username",
       "type" : "String",
-      "description" : "<em>Optional</em>. Suggested username for the bot",
+      "description" : "<em>Optional</em>. Suggested username for the bot. The username must end with “bot”. If the user creating the bot has a Telegram Premium subscription, then the username can also end with “agent”, “ai”, “app”, “game”, or “gay”; in this case, the username will be assigned to the bot as a secondary username, and a regular username ending with “bot” will be assigned to the bot automatically.",
       "required" : false
     } ]
   }, {
@@ -4264,7 +4382,7 @@
     }, {
       "name" : "web_app",
       "type" : "type/web-app-info",
-      "description" : "<em>Optional</em>. Description of the <a href=\"/bots/webapps\">Web App</a> that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method <a href=\"#answerwebappquery\">answerWebAppQuery</a>. Available only in private chats between a user and the bot. Not supported for messages sent on behalf of a business account.",
+      "description" : "<em>Optional</em>. Description of the <a href=\"/bots/webapps\">Web App</a> that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method <a href=\"#answerwebappquery\">answerWebAppQuery</a>. Available only in private chats between a user and the bot. Not supported for messages sent on behalf of a business account and ephemeral messages.",
       "required" : false
     }, {
       "name" : "login_url",
@@ -4430,6 +4548,205 @@
       "required" : false
     } ],
     "notes" : "<blockquote><p><strong>NOTE:</strong> After the user presses a callback button, Telegram clients will display a progress bar until you call <a href=\"#answercallbackquery\">answerCallbackQuery</a>. It is, therefore, necessary to react by calling <a href=\"#answercallbackquery\">answerCallbackQuery</a> even if no notification to the user is needed (e.g., without specifying any of the optional parameters).</p></blockquote>"
+  }, {
+    "id" : "type/widget-query-type",
+    "name" : "WidgetQueryType",
+    "kind" : "type",
+    "description" : "<p>This object describes the type of a query from a widget. Currently, it can be one of</p>",
+    "union" : [ "type/widget-query-type-data", "type/widget-query-type-sign-data", "type/widget-query-type-sent-transaction" ]
+  }, {
+    "id" : "type/widget-query-type-data",
+    "name" : "WidgetQueryTypeData",
+    "kind" : "type",
+    "description" : "<p>The query contains data for the bot.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the query, always “data”",
+      "required" : true,
+      "value" : "data"
+    }, {
+      "name" : "wallet_card",
+      "type" : "type/ton-wallet-card",
+      "description" : "<em>Optional</em>. TON wallet card of the user who sent the query, if it was sent to the bot along with the query",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/widget-query-type-sign-data",
+    "name" : "WidgetQueryTypeSignData",
+    "kind" : "type",
+    "description" : "<p>The query contains data signed by a TON wallet of the user who sent the query. The data is signed for the domain <code>bot&lt;bot_id&gt;</code>, where <code>&lt;bot_id&gt;</code> is the identifier of the bot.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the query, always “sign_data”",
+      "required" : true,
+      "value" : "sign_data"
+    }, {
+      "name" : "wallet",
+      "type" : "type/widget-query-wallet",
+      "description" : "The wallet that signed the data",
+      "required" : true
+    }, {
+      "name" : "sign_data",
+      "type" : "String",
+      "description" : "JSON-serialized signed data",
+      "required" : true,
+      "json_serialized" : true
+    } ]
+  }, {
+    "id" : "type/widget-query-type-sent-transaction",
+    "name" : "WidgetQueryTypeSentTransaction",
+    "kind" : "type",
+    "description" : "<p>The query notifies the bot about a transaction sent from a TON wallet of the user who sent the query.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the query, always “sent_transaction”",
+      "required" : true,
+      "value" : "sent_transaction"
+    }, {
+      "name" : "wallet",
+      "type" : "type/widget-query-wallet",
+      "description" : "The wallet from which the transaction was sent",
+      "required" : true
+    }, {
+      "name" : "msg_hash",
+      "type" : "String",
+      "description" : "Value of <em>msg_hash</em> of the transaction",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/widget-query-wallet",
+    "name" : "WidgetQueryWallet",
+    "kind" : "type",
+    "description" : "<p>This object describes a TON wallet of the user, which is used in a query from a widget.</p>",
+    "fields" : [ {
+      "name" : "address",
+      "type" : "String",
+      "description" : "Address of the wallet",
+      "required" : true
+    }, {
+      "name" : "amount",
+      "type" : "String",
+      "description" : "Balance of the wallet, in the <em>smallest units</em> of the cryptocurrency, as a decimal number",
+      "required" : true
+    }, {
+      "name" : "public_key",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Hex-encoded public key of the wallet; omitted if unknown",
+      "required" : false
+    }, {
+      "name" : "state_init",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Base64-encoded serialized StateInit of the wallet contract; omitted if and only if <em>public_key</em> is omitted",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/widget-query",
+    "name" : "WidgetQuery",
+    "kind" : "type",
+    "description" : "<p>This object represents an incoming query from a widget in a message sent by the bot or via the bot. Use <a href=\"#answerwidgetquery\">answerWidgetQuery</a> to answer the query. Each user can send at most 5 queries per 5 seconds to the bot from all its widgets.</p>",
+    "fields" : [ {
+      "name" : "id",
+      "type" : "String",
+      "description" : "Unique identifier for this query",
+      "required" : true
+    }, {
+      "name" : "from",
+      "type" : "type/user",
+      "description" : "Sender",
+      "required" : true
+    }, {
+      "name" : "chat",
+      "type" : "type/chat",
+      "description" : "<em>Optional</em>. Chat with the message containing the widget; omitted if the widget is in an inline message",
+      "required" : false
+    }, {
+      "name" : "message_id",
+      "type" : "Integer",
+      "description" : "<em>Optional</em>. Identifier of the message containing the widget; omitted if the widget is in an inline message",
+      "required" : false
+    }, {
+      "name" : "inline_message_id",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Identifier of the inline message containing the widget",
+      "required" : false
+    }, {
+      "name" : "chat_instance",
+      "type" : "String",
+      "description" : "Global identifier, uniquely corresponding to the chat to which the message with the widget was sent",
+      "required" : true
+    }, {
+      "name" : "chat_type",
+      "type" : "String",
+      "description" : "<em>Optional</em>. For widgets in inline messages, type of the chat to which the message was sent. Can be either “sender” for a private chat with the inline query sender, “private”, “group”, “supergroup”, or “channel”.",
+      "required" : false
+    }, {
+      "name" : "type",
+      "type" : "type/widget-query-type",
+      "description" : "Type of the query",
+      "required" : true
+    }, {
+      "name" : "data",
+      "type" : "String",
+      "description" : "Data of the query, 1-64 bytes",
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
+    }, {
+      "name" : "widget_id",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Unique identifier of the shared widget, which sent the query; omitted if the widget isn't shared",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/shared-widget-query",
+    "name" : "SharedWidgetQuery",
+    "kind" : "type",
+    "description" : "<p>This object represents an incoming query from a forwarded message with a shared widget created by the bot. Use <a href=\"#answerwidgetquery\">answerWidgetQuery</a> to answer the query. Each user can send at most 5 queries per 5 seconds to the bot from all its widgets.</p>",
+    "fields" : [ {
+      "name" : "id",
+      "type" : "String",
+      "description" : "Unique identifier for this query",
+      "required" : true
+    }, {
+      "name" : "from",
+      "type" : "type/user",
+      "description" : "Sender",
+      "required" : true
+    }, {
+      "name" : "type",
+      "type" : "type/widget-query-type",
+      "description" : "Type of the query",
+      "required" : true
+    }, {
+      "name" : "data",
+      "type" : "String",
+      "description" : "Data of the query, 1-64 bytes",
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 64,
+            "unit" : "bytes"
+          }
+        }
+      }
+    }, {
+      "name" : "widget_id",
+      "type" : "String",
+      "description" : "Unique identifier of the shared widget, which sent the query",
+      "required" : true
+    } ]
   }, {
     "id" : "type/force-reply",
     "name" : "ForceReply",
@@ -4959,7 +5276,7 @@
     }, {
       "name" : "can_send_other_messages",
       "type" : "Boolean",
-      "description" : "<em>True</em>, if the user is allowed to send animations, games, stickers and use inline bots",
+      "description" : "<em>True</em>, if the user is allowed to send animations, games, stickers, widgets and use inline bots",
       "required" : true
     }, {
       "name" : "can_add_web_page_previews",
@@ -5130,7 +5447,7 @@
     }, {
       "name" : "can_send_other_messages",
       "type" : "Boolean",
-      "description" : "<em>Optional</em>. <em>True</em>, if the user is allowed to send animations, games, stickers and use inline bots",
+      "description" : "<em>Optional</em>. <em>True</em>, if the user is allowed to send animations, games, stickers, widgets and use inline bots",
       "required" : false
     }, {
       "name" : "can_add_web_page_previews",
@@ -5317,29 +5634,29 @@
       "required" : false
     } ]
   }, {
-    "id" : "type/story-area-position",
-    "name" : "StoryAreaPosition",
+    "id" : "type/area-position",
+    "name" : "AreaPosition",
     "kind" : "type",
-    "description" : "<p>Describes the position of a clickable area within a story.</p>",
+    "description" : "<p>Describes the position of a rectangle area on a story media or a TON wallet card.</p>",
     "fields" : [ {
       "name" : "x_percentage",
       "type" : "Float",
-      "description" : "The abscissa of the area's center, as a percentage of the media width",
+      "description" : "The abscissa of the area's center, as a percentage of the media or the card width",
       "required" : true
     }, {
       "name" : "y_percentage",
       "type" : "Float",
-      "description" : "The ordinate of the area's center, as a percentage of the media height",
+      "description" : "The ordinate of the area's center, as a percentage of the media or the card height",
       "required" : true
     }, {
       "name" : "width_percentage",
       "type" : "Float",
-      "description" : "The width of the area's rectangle, as a percentage of the media width",
+      "description" : "The width of the area's rectangle, as a percentage of the media or the card width",
       "required" : true
     }, {
       "name" : "height_percentage",
       "type" : "Float",
-      "description" : "The height of the area's rectangle, as a percentage of the media height",
+      "description" : "The height of the area's rectangle, as a percentage of the media or the card height",
       "required" : true
     }, {
       "name" : "rotation_angle",
@@ -5357,7 +5674,224 @@
     }, {
       "name" : "corner_radius_percentage",
       "type" : "Float",
-      "description" : "The radius of the rectangle corner rounding, as a percentage of the media width",
+      "description" : "The radius of the rectangle corner rounding, as a percentage of the media or the card width",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/ton-nft",
+    "name" : "TonNft",
+    "kind" : "type",
+    "description" : "<p>This object represents an NFT in the TON blockchain.</p>",
+    "fields" : [ {
+      "name" : "address",
+      "type" : "String",
+      "description" : "Address of the NFT",
+      "required" : true
+    }, {
+      "name" : "collection_address",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Address of the collection to which the NFT belongs; omitted if unknown",
+      "required" : false
+    }, {
+      "name" : "index",
+      "type" : "String",
+      "description" : "Index of the NFT among all NFTs from the collection as a decimal number",
+      "required" : true
+    }, {
+      "name" : "name",
+      "type" : "String",
+      "description" : "Name of the NFT",
+      "required" : true
+    }, {
+      "name" : "description",
+      "type" : "String",
+      "description" : "Description of the NFT",
+      "required" : true
+    }, {
+      "name" : "attributes",
+      "type" : [ "array", "type/ton-nft-attribute" ],
+      "description" : "<em>Optional</em>. Attributes of the NFT",
+      "required" : false
+    }, {
+      "name" : "gift",
+      "type" : "type/unique-gift",
+      "description" : "<em>Optional</em>. The unique gift corresponding to the NFT",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/ton-nft-attribute",
+    "name" : "TonNftAttribute",
+    "kind" : "type",
+    "description" : "<p>This object represents an attribute of an NFT in the TON blockchain.</p>",
+    "fields" : [ {
+      "name" : "trait_type",
+      "type" : "String",
+      "description" : "Trait type of the attribute",
+      "required" : true
+    }, {
+      "name" : "value",
+      "type" : "String",
+      "description" : "Value of the attribute",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/ton-wallet-card-sticker",
+    "name" : "TonWalletCardSticker",
+    "kind" : "type",
+    "description" : "<p>This object describes a sticker on a TON wallet card.</p>",
+    "fields" : [ {
+      "name" : "position",
+      "type" : "type/area-position",
+      "description" : "Position of the sticker on the card",
+      "required" : true
+    }, {
+      "name" : "nft",
+      "type" : "type/ton-nft",
+      "description" : "The NFT shown as the sticker",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/ton-wallet-card",
+    "name" : "TonWalletCard",
+    "kind" : "type",
+    "description" : "<p>This object describes a TON wallet card, which is shown on the profile page of a user to everyone.</p>",
+    "fields" : [ {
+      "name" : "address",
+      "type" : "String",
+      "description" : "Address of the wallet",
+      "required" : true
+    }, {
+      "name" : "amount",
+      "type" : "String",
+      "description" : "Balance of the wallet, in the <em>smallest units</em> of the cryptocurrency, as a decimal number",
+      "required" : true
+    }, {
+      "name" : "stickers",
+      "type" : [ "array", "type/ton-wallet-card-sticker" ],
+      "description" : "Stickers placed on the card",
+      "required" : true
+    }, {
+      "name" : "background_nft_address",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Address of the NFT of one of the stickers, whose colors must be used for the card background; omitted if the default background must be used",
+      "required" : false,
+      "value" : "used"
+    } ]
+  }, {
+    "id" : "type/emoji-type",
+    "name" : "EmojiType",
+    "kind" : "type",
+    "description" : "<p>This object describes an emoji. Currently, it can be one of</p>",
+    "union" : [ "type/emoji-type-emoji", "type/emoji-type-custom-emoji" ]
+  }, {
+    "id" : "type/emoji-type-emoji",
+    "name" : "EmojiTypeEmoji",
+    "kind" : "type",
+    "description" : "<p>A regular emoji.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the emoji, always “emoji”",
+      "required" : true,
+      "value" : "emoji"
+    }, {
+      "name" : "emoji",
+      "type" : "String",
+      "description" : "The emoji",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/emoji-type-custom-emoji",
+    "name" : "EmojiTypeCustomEmoji",
+    "kind" : "type",
+    "description" : "<p>A custom emoji.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the emoji, always “custom_emoji”",
+      "required" : true,
+      "value" : "custom_emoji"
+    }, {
+      "name" : "custom_emoji_id",
+      "type" : "String",
+      "description" : "Identifier of the custom emoji. Use <a href=\"#getcustomemojistickers\">getCustomEmojiStickers</a> to get full information about the sticker.",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/chat-share-theme",
+    "name" : "ChatShareTheme",
+    "kind" : "type",
+    "description" : "<p>This object describes the theme of the screen for sharing a link to a user or a chat. Currently, it can be one of</p>",
+    "union" : [ "type/chat-share-theme-emoji", "type/chat-share-theme-unique-gift" ]
+  }, {
+    "id" : "type/chat-share-theme-emoji",
+    "name" : "ChatShareThemeEmoji",
+    "kind" : "type",
+    "description" : "<p>The theme with emoji placed on a background.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the theme, always “emoji”",
+      "required" : true,
+      "value" : "emoji"
+    }, {
+      "name" : "emojis",
+      "type" : [ "array", "type/emoji-type" ],
+      "description" : "The emoji; 0-6 regular or custom emoji",
+      "required" : true
+    }, {
+      "name" : "background_backdrop_id",
+      "type" : "Integer",
+      "description" : "<em>Optional</em>. Identifier of the backdrop used as the background; omitted if the default background is used. Use <a href=\"#getchatsharethemebackdrops\">getChatShareThemeBackdrops</a> to get details about the backdrop.",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/chat-share-theme-unique-gift",
+    "name" : "ChatShareThemeUniqueGift",
+    "kind" : "type",
+    "description" : "<p>The theme based on a unique gift owned by the user or the chat.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the theme, always “unique_gift”",
+      "required" : true,
+      "value" : "unique_gift"
+    }, {
+      "name" : "gift",
+      "type" : "type/unique-gift",
+      "description" : "The gift",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/chat-share-theme-backdrops",
+    "name" : "ChatShareThemeBackdrops",
+    "kind" : "type",
+    "description" : "<p>This object contains a list of backdrops, which can be used as the background of a theme of the screen for sharing a link to a user or a chat.</p>",
+    "fields" : [ {
+      "name" : "backdrops",
+      "type" : [ "array", "type/chat-share-theme-backdrop" ],
+      "description" : "The list of backdrops",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/chat-share-theme-backdrop",
+    "name" : "ChatShareThemeBackdrop",
+    "kind" : "type",
+    "description" : "<p>This object describes a backdrop, which can be used as the background of a theme of the screen for sharing a link to a user or a chat.</p>",
+    "fields" : [ {
+      "name" : "id",
+      "type" : "Integer",
+      "description" : "Unique identifier of the backdrop",
+      "required" : true
+    }, {
+      "name" : "name",
+      "type" : "String",
+      "description" : "Name of the backdrop",
+      "required" : true
+    }, {
+      "name" : "colors",
+      "type" : "type/unique-gift-backdrop-colors",
+      "description" : "Colors of the backdrop",
       "required" : true
     } ]
   }, {
@@ -5514,7 +6048,7 @@
     "description" : "<p>Describes a clickable area on a story media.</p>",
     "fields" : [ {
       "name" : "position",
-      "type" : "type/story-area-position",
+      "type" : "type/area-position",
       "description" : "Position of the area",
       "required" : true
     }, {
@@ -8111,7 +8645,7 @@
     "name" : "RichText",
     "kind" : "type",
     "description" : "<p>This object represents a rich formatted text. Currently, it can be either a String for plain text, an Array of <a href=\"#richtext\">RichText</a>, or any of the following types:</p>",
-    "union" : [ "String", [ "array", "type/rich-text" ], "type/rich-text-bold", "type/rich-text-italic", "type/rich-text-underline", "type/rich-text-strikethrough", "type/rich-text-spoiler", "type/rich-text-date-time", "type/rich-text-text-mention", "type/rich-text-subscript", "type/rich-text-superscript", "type/rich-text-marked", "type/rich-text-code", "type/rich-text-custom-emoji", "type/rich-text-mathematical-expression", "type/rich-text-url", "type/rich-text-email-address", "type/rich-text-phone-number", "type/rich-text-bank-card-number", "type/rich-text-mention", "type/rich-text-hashtag", "type/rich-text-cashtag", "type/rich-text-bot-command", "type/rich-text-button", "type/rich-text-anchor", "type/rich-text-anchor-link", "type/rich-text-reference", "type/rich-text-reference-link" ]
+    "union" : [ "String", [ "array", "type/rich-text" ], "type/rich-text-bold", "type/rich-text-italic", "type/rich-text-underline", "type/rich-text-strikethrough", "type/rich-text-spoiler", "type/rich-text-date-time", "type/rich-text-text-mention", "type/rich-text-subscript", "type/rich-text-superscript", "type/rich-text-marked", "type/rich-text-code", "type/rich-text-custom-emoji", "type/rich-text-mathematical-expression", "type/rich-text-url", "type/rich-text-email-address", "type/rich-text-phone-number", "type/rich-text-bank-card-number", "type/rich-text-ton-address", "type/rich-text-mention", "type/rich-text-hashtag", "type/rich-text-cashtag", "type/rich-text-bot-command", "type/rich-text-button", "type/rich-text-anchor", "type/rich-text-anchor-link", "type/rich-text-reference", "type/rich-text-reference-link" ]
   }, {
     "id" : "type/rich-text-bold",
     "name" : "RichTextBold",
@@ -8439,6 +8973,28 @@
       "name" : "bank_card_number",
       "type" : "String",
       "description" : "The bank card number",
+      "required" : true
+    } ]
+  }, {
+    "id" : "type/rich-text-ton-address",
+    "name" : "RichTextTonAddress",
+    "kind" : "type",
+    "description" : "<p>An address in the TON blockchain.</p>",
+    "fields" : [ {
+      "name" : "type",
+      "type" : "String",
+      "description" : "Type of the rich text, always “ton_address”",
+      "required" : true,
+      "value" : "ton_address"
+    }, {
+      "name" : "text",
+      "type" : "type/rich-text",
+      "description" : "Text of the address",
+      "required" : true
+    }, {
+      "name" : "address",
+      "type" : "String",
+      "description" : "The address",
       "required" : true
     } ]
   }, {
@@ -11596,7 +12152,7 @@
     "name" : "InputMessageContent",
     "kind" : "type",
     "description" : "<p>This object represents the content of a message to be sent as a result of an inline query. Telegram clients currently support the following types:</p>",
-    "union" : [ "type/input-text-message-content", "type/input-rich-message-content", "type/input-location-message-content", "type/input-venue-message-content", "type/input-contact-message-content", "type/input-invoice-message-content" ]
+    "union" : [ "type/input-text-message-content", "type/input-rich-message-content", "type/input-location-message-content", "type/input-venue-message-content", "type/input-contact-message-content", "type/input-invoice-message-content", "type/input-widget-message-content", "type/input-shared-widget-message-content" ]
   }, {
     "id" : "type/input-text-message-content",
     "name" : "InputTextMessageContent",
@@ -11930,6 +12486,157 @@
       "name" : "is_flexible",
       "type" : "Boolean",
       "description" : "<em>Optional</em>. Pass <em>True</em> if the final price depends on the shipping method. Ignored for payments in <a href=\"https://t.me/BotNews/90\">Telegram Stars</a>.",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-widget-message-content",
+    "name" : "InputWidgetMessageContent",
+    "kind" : "type",
+    "description" : "<p>Represents the <a href=\"#inputmessagecontent\">content</a> of a message with an <a href=\"/bots/widgets\">HTML widget</a> to be sent as the result of an inline query. Currently, widgets can't be sent in response to inline queries in the production environment.</p>",
+    "fields" : [ {
+      "name" : "html",
+      "type" : "String",
+      "description" : "HTML code of the widget, 1-32768 bytes. The code must not exceed 4096 bytes when compressed by zlib with the maximum compression level.",
+      "required" : true,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 32768,
+            "unit" : "bytes"
+          }
+        }
+      }
+    }, {
+      "name" : "width",
+      "type" : "Integer",
+      "description" : "<em>Optional</em>. Width of the widget in logical pixels; omit if the widget must occupy the whole width of the message bubble. The width is clamped by the app to the range from 200 to the maximum width of the message bubble.",
+      "required" : false
+    }, {
+      "name" : "height",
+      "type" : "Integer",
+      "description" : "<em>Optional</em>. Height of the widget in logical pixels; omit if the height of the widget isn't fixed. The height is clamped by the app to the range 50-600.",
+      "required" : false
+    }, {
+      "name" : "public_data",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Public data of the widget, 0-1024 bytes, which will be available wherever the widget is shown. If the widget is shared, then all messages with it will have the same public data.",
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 0,
+            "to" : 1024,
+            "unit" : "bytes"
+          }
+        }
+      }
+    }, {
+      "name" : "chat_data",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Data of the widget, which is specific to the message, 0-1024 bytes",
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 0,
+            "to" : 1024,
+            "unit" : "bytes"
+          }
+        }
+      }
+    }, {
+      "name" : "caption",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Widget caption, 0-1024 characters after entities parsing",
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 0,
+            "to" : 1024
+          },
+          "after_entities_parsing" : true
+        }
+      }
+    }, {
+      "name" : "parse_mode",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Mode for parsing entities in the widget caption. See <a href=\"#formatting-options\">formatting options</a> for more details.",
+      "required" : false
+    }, {
+      "name" : "caption_entities",
+      "type" : [ "array", "type/message-entity" ],
+      "description" : "<em>Optional</em>. List of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
+      "required" : false
+    }, {
+      "name" : "show_caption_above_media",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the caption must be shown above the widget",
+      "required" : false
+    }, {
+      "name" : "allow_queries",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. Pass <em>True</em> to allow the widget to send queries to the bot",
+      "required" : false
+    }, {
+      "name" : "is_shared",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. Pass <em>True</em> to create a shared widget. Each message sent from the result creates a separate shared widget, whose identifier is received by the bot only in the field <em>widget_id</em> of queries from the widget. To send an existing shared widget in response to an inline query, use <a href=\"#inputsharedwidgetmessagecontent\">InputSharedWidgetMessageContent</a> instead.",
+      "required" : false
+    } ]
+  }, {
+    "id" : "type/input-shared-widget-message-content",
+    "name" : "InputSharedWidgetMessageContent",
+    "kind" : "type",
+    "description" : "<p>Represents the <a href=\"#inputmessagecontent\">content</a> of a message with a shared widget to be sent as the result of an inline query. Currently, widgets can't be sent in response to inline queries in the production environment.</p>",
+    "fields" : [ {
+      "name" : "widget_id",
+      "type" : "String",
+      "description" : "Unique identifier of the shared widget created by the bot",
+      "required" : true
+    }, {
+      "name" : "chat_data",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Data of the widget, which is specific to the message, 0-1024 bytes",
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 0,
+            "to" : 1024,
+            "unit" : "bytes"
+          }
+        }
+      }
+    }, {
+      "name" : "caption",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Widget caption, 0-1024 characters after entities parsing",
+      "required" : false,
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 0,
+            "to" : 1024
+          },
+          "after_entities_parsing" : true
+        }
+      }
+    }, {
+      "name" : "parse_mode",
+      "type" : "String",
+      "description" : "<em>Optional</em>. Mode for parsing entities in the widget caption. See <a href=\"#formatting-options\">formatting options</a> for more details.",
+      "required" : false
+    }, {
+      "name" : "caption_entities",
+      "type" : [ "array", "type/message-entity" ],
+      "description" : "<em>Optional</em>. List of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
+      "required" : false
+    }, {
+      "name" : "show_caption_above_media",
+      "type" : "Boolean",
+      "description" : "<em>Optional</em>. Pass <em>True</em> if the caption must be shown above the widget",
       "required" : false
     } ]
   }, {
@@ -13211,8 +13918,8 @@
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
-      "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "required" : false,
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>; required unless the message is sent as an ephemeral reply to a callback query"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -13306,7 +14013,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -13321,7 +14028,7 @@
       "name" : "from_chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the chat where the original message was sent (or username of the target bot, supergroup or channel in the format <code>@username</code>)"
+      "description" : "Unique identifier for the chat where the original message was sent (or username of the target bot, supergroup, or channel in the format <code>@username</code>)"
     }, {
       "name" : "video_start_timestamp",
       "type" : "Integer",
@@ -13363,7 +14070,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -13378,7 +14085,7 @@
       "name" : "from_chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the chat where the original messages were sent (or username of the target bot, supergroup or channel in the format <code>@username</code>)"
+      "description" : "Unique identifier for the chat where the original messages were sent (or username of the target bot, supergroup, or channel in the format <code>@username</code>)"
     }, {
       "name" : "message_ids",
       "type" : [ "array", "Integer" ],
@@ -13408,12 +14115,12 @@
     "id" : "method/copy-message",
     "name" : "copyMessage",
     "kind" : "method",
-    "description" : "<p>Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz <a href=\"#poll\">poll</a> can be copied only if the value of the field <em>correct_option_ids</em> is known to the bot. The method is analogous to the method <a href=\"#forwardmessage\">forwardMessage</a>, but the copied message doesn't have a link to the original message. Returns the <a href=\"#messageid\">MessageId</a> of the sent message on success.</p>",
+    "description" : "<p>Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, invoice messages, and widget messages can't be copied. A quiz <a href=\"#poll\">poll</a> can be copied only if the value of the field <em>correct_option_ids</em> is known to the bot. The method is analogous to the method <a href=\"#forwardmessage\">forwardMessage</a>, but the copied message doesn't have a link to the original message. Returns the <a href=\"#messageid\">MessageId</a> of the sent message on success.</p>",
     "params" : [ {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -13428,7 +14135,7 @@
       "name" : "from_chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the chat where the original message was sent (or username of the target bot, supergroup or channel in the format <code>@username</code>)"
+      "description" : "Unique identifier for the chat where the original message was sent (or username of the target bot, supergroup, or channel in the format <code>@username</code>)"
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -13511,12 +14218,12 @@
     "id" : "method/copy-messages",
     "name" : "copyMessages",
     "kind" : "method",
-    "description" : "<p>Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz <a href=\"#poll\">poll</a> can be copied only if the value of the field <em>correct_option_ids</em> is known to the bot. The method is analogous to the method <a href=\"#forwardmessages\">forwardMessages</a>, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an Array of <a href=\"#messageid\">MessageId</a> of the sent messages is returned.</p>",
+    "description" : "<p>Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, invoice messages, and widget messages can't be copied. A quiz <a href=\"#poll\">poll</a> can be copied only if the value of the field <em>correct_option_ids</em> is known to the bot. The method is analogous to the method <a href=\"#forwardmessages\">forwardMessages</a>, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an Array of <a href=\"#messageid\">MessageId</a> of the sent messages is returned.</p>",
     "params" : [ {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -13531,7 +14238,7 @@
       "name" : "from_chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the chat where the original messages were sent (or username of the target bot, supergroup or channel in the format <code>@username</code>)"
+      "description" : "Unique identifier for the chat where the original messages were sent (or username of the target bot, supergroup, or channel in the format <code>@username</code>)"
     }, {
       "name" : "message_ids",
       "type" : [ "array", "Integer" ],
@@ -13575,8 +14282,8 @@
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
-      "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "required" : false,
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>; required unless the message is sent as an ephemeral reply to a callback query"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -13684,8 +14391,8 @@
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
-      "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target channel (in the format <code>@channelusername</code>)"
+      "required" : false,
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>; required unless the message is sent as an ephemeral reply to a callback query"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -13798,8 +14505,8 @@
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
-      "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "required" : false,
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>; required unless the message is sent as an ephemeral reply to a callback query"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -13917,8 +14624,8 @@
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
-      "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "required" : false,
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>; required unless the message is sent as an ephemeral reply to a callback query"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -14026,8 +14733,8 @@
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
-      "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "required" : false,
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>; required unless the message is sent as an ephemeral reply to a callback query"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -14170,8 +14877,8 @@
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
-      "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "required" : false,
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>; required unless the message is sent as an ephemeral reply to a callback query"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -14299,8 +15006,8 @@
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
-      "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "required" : false,
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>; required unless the message is sent as an ephemeral reply to a callback query"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -14403,8 +15110,8 @@
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
-      "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "required" : false,
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>; required unless the message is sent as an ephemeral reply to a callback query"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -14480,6 +15187,241 @@
       "json_serialized" : true
     } ]
   }, {
+    "id" : "method/send-widget",
+    "name" : "sendWidget",
+    "kind" : "method",
+    "description" : "<p>Use this method to send a message with an <a href=\"/bots/widgets\">HTML widget</a>. Currently, in the production environment, widgets can be sent only to private chats, and sent widgets automatically have protected content and therefore can't be forwarded. On success, the sent <a href=\"#message\">Message</a> is returned.</p>",
+    "params" : [ {
+      "name" : "chat_id",
+      "type" : [ "or", [ "Integer", "String" ] ],
+      "required" : true,
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
+    }, {
+      "name" : "message_thread_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only"
+    }, {
+      "name" : "html",
+      "type" : "String",
+      "required" : true,
+      "description" : "HTML code of the widget, 1-32768 bytes. The code must not exceed 4096 bytes when compressed by zlib with the maximum compression level.",
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 1,
+            "to" : 32768,
+            "unit" : "bytes"
+          }
+        }
+      }
+    }, {
+      "name" : "width",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "Width of the widget in logical pixels; omit if the widget must occupy the whole width of the message bubble. The width is clamped by the app to the range from 200 to the maximum width of the message bubble."
+    }, {
+      "name" : "height",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "Height of the widget in logical pixels; omit if the height of the widget isn't fixed. The height is clamped by the app to the range 50-600."
+    }, {
+      "name" : "public_data",
+      "type" : "String",
+      "required" : false,
+      "description" : "Public data of the widget, 0-1024 bytes, which will be available wherever the widget is shown. If the widget is shared, then all messages with it will have the same public data.",
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 0,
+            "to" : 1024,
+            "unit" : "bytes"
+          }
+        }
+      }
+    }, {
+      "name" : "chat_data",
+      "type" : "String",
+      "required" : false,
+      "description" : "Data of the widget, which is specific to the message, 0-1024 bytes",
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 0,
+            "to" : 1024,
+            "unit" : "bytes"
+          }
+        }
+      }
+    }, {
+      "name" : "caption",
+      "type" : "String",
+      "required" : false,
+      "description" : "Widget caption, 0-1024 characters after entities parsing",
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 0,
+            "to" : 1024
+          },
+          "after_entities_parsing" : true
+        }
+      }
+    }, {
+      "name" : "parse_mode",
+      "type" : "String",
+      "required" : false,
+      "description" : "Mode for parsing entities in the widget caption. See <a href=\"#formatting-options\">formatting options</a> for more details."
+    }, {
+      "name" : "caption_entities",
+      "type" : [ "array", "type/message-entity" ],
+      "required" : false,
+      "description" : "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
+      "json_serialized" : true
+    }, {
+      "name" : "show_caption_above_media",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Pass <em>True</em> if the caption must be shown above the widget"
+    }, {
+      "name" : "allow_queries",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Pass <em>True</em> to allow the widget to send queries to the bot"
+    }, {
+      "name" : "is_shared",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Pass <em>True</em> to create a shared widget, which can be sent again using the method <a href=\"#sendsharedwidget\">sendSharedWidget</a>"
+    }, {
+      "name" : "disable_notification",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Sends the message <a href=\"https://telegram.org/blog/channels-2-0#silent-messages\">silently</a>. Users will receive a notification with no sound."
+    }, {
+      "name" : "protect_content",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Protects the contents of the sent message from forwarding and saving"
+    }, {
+      "name" : "allow_paid_broadcast",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
+    }, {
+      "name" : "message_effect_id",
+      "type" : "String",
+      "required" : false,
+      "description" : "Unique identifier of the message effect to be added to the message; for private chats only"
+    }, {
+      "name" : "reply_parameters",
+      "type" : "type/reply-parameters",
+      "required" : false,
+      "description" : "Description of the message to reply to"
+    }, {
+      "name" : "reply_markup",
+      "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
+      "required" : false,
+      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
+      "json_serialized" : true
+    } ]
+  }, {
+    "id" : "method/send-shared-widget",
+    "name" : "sendSharedWidget",
+    "kind" : "method",
+    "description" : "<p>Use this method to send again a shared widget created by the bot. Currently, in the production environment, widgets can be sent only to private chats, and sent widgets automatically have protected content and therefore can't be forwarded. On success, the sent <a href=\"#message\">Message</a> is returned.</p>",
+    "params" : [ {
+      "name" : "chat_id",
+      "type" : [ "or", [ "Integer", "String" ] ],
+      "required" : true,
+      "description" : "Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>"
+    }, {
+      "name" : "message_thread_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only"
+    }, {
+      "name" : "widget_id",
+      "type" : "String",
+      "required" : true,
+      "description" : "Unique identifier of the shared widget"
+    }, {
+      "name" : "chat_data",
+      "type" : "String",
+      "required" : false,
+      "description" : "Data of the widget, which is specific to the message, 0-1024 bytes",
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 0,
+            "to" : 1024,
+            "unit" : "bytes"
+          }
+        }
+      }
+    }, {
+      "name" : "caption",
+      "type" : "String",
+      "required" : false,
+      "description" : "Widget caption, 0-1024 characters after entities parsing",
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 0,
+            "to" : 1024
+          },
+          "after_entities_parsing" : true
+        }
+      }
+    }, {
+      "name" : "parse_mode",
+      "type" : "String",
+      "required" : false,
+      "description" : "Mode for parsing entities in the widget caption. See <a href=\"#formatting-options\">formatting options</a> for more details."
+    }, {
+      "name" : "caption_entities",
+      "type" : [ "array", "type/message-entity" ],
+      "required" : false,
+      "description" : "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of <em>parse_mode</em>",
+      "json_serialized" : true
+    }, {
+      "name" : "show_caption_above_media",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Pass <em>True</em> if the caption must be shown above the widget"
+    }, {
+      "name" : "disable_notification",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Sends the message <a href=\"https://telegram.org/blog/channels-2-0#silent-messages\">silently</a>. Users will receive a notification with no sound."
+    }, {
+      "name" : "protect_content",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Protects the contents of the sent message from forwarding and saving"
+    }, {
+      "name" : "allow_paid_broadcast",
+      "type" : "Boolean",
+      "required" : false,
+      "description" : "Pass <em>True</em> to allow up to 1000 messages per second, ignoring <a href=\"https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once\">broadcasting limits</a> for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance."
+    }, {
+      "name" : "message_effect_id",
+      "type" : "String",
+      "required" : false,
+      "description" : "Unique identifier of the message effect to be added to the message; for private chats only"
+    }, {
+      "name" : "reply_parameters",
+      "type" : "type/reply-parameters",
+      "required" : false,
+      "description" : "Description of the message to reply to"
+    }, {
+      "name" : "reply_markup",
+      "type" : [ "or", [ "type/inline-keyboard-markup", "type/reply-keyboard-markup", "type/reply-keyboard-remove", "type/force-reply" ] ],
+      "required" : false,
+      "description" : "Additional interface options. A JSON-serialized object for an <a href=\"/bots/features#inline-keyboards\">inline keyboard</a>, <a href=\"/bots/features#keyboards\">custom reply keyboard</a>, instructions to remove a reply keyboard or to force a reply from the user.",
+      "json_serialized" : true
+    } ]
+  }, {
     "id" : "method/send-paid-media",
     "name" : "sendPaidMedia",
     "kind" : "method",
@@ -14493,7 +15435,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>. If the chat is a channel, all Telegram Star proceeds from this media will be credited to the chat's balance. Otherwise, they will be credited to the bot's balance."
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>. If the chat is a channel, all Telegram Star proceeds from this media will be credited to the chat's balance. Otherwise, they will be credited to the bot's balance."
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -14621,7 +15563,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -14685,8 +15627,8 @@
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
-      "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "required" : false,
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>; required unless the message is sent as an ephemeral reply to a callback query"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -14816,8 +15758,8 @@
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
-      "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "required" : false,
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>; required unless the message is sent as an ephemeral reply to a callback query"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -14925,8 +15867,8 @@
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
-      "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "required" : false,
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>; required unless the message is sent as an ephemeral reply to a callback query"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -15024,7 +15966,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>. Polls can't be sent to channel direct messages chats."
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>. Polls can't be sent to channel direct messages chats."
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -15309,7 +16251,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -15454,7 +16396,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>"
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -16331,6 +17273,11 @@
       "description" : "Unique identifier of the target user"
     } ]
   }, {
+    "id" : "method/get-chat-share-theme-backdrops",
+    "name" : "getChatShareThemeBackdrops",
+    "kind" : "method",
+    "description" : "<p>Use this method to get the list of backdrops, which can be used as the background of a theme of the screen for sharing a link to a user or a chat. Requires no parameters. Returns a <a href=\"#chatsharethemebackdrops\">ChatShareThemeBackdrops</a> object.</p>"
+  }, {
     "id" : "method/get-user-personal-chat-messages",
     "name" : "getUserPersonalChatMessages",
     "kind" : "method",
@@ -16390,7 +17337,7 @@
     "id" : "method/create-forum-topic",
     "name" : "createForumTopic",
     "kind" : "method",
-    "description" : "<p>Use this method to create a topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the <em>can_manage_topics</em> administrator right. Returns information about the created topic as a <a href=\"#forumtopic\">ForumTopic</a> object.</p>",
+    "description" : "<p>Use this method to create a topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the <em>can_manage_topics</em> administrator right. In the case of a private chat, a link to the topic can be created in the format <code>https://t.me/&lt;bot_username&gt;/&lt;message_thread_id&gt;</code>; the link opens the topic only for the user. Returns information about the created topic as a <a href=\"#forumtopic\">ForumTopic</a> object.</p>",
     "params" : [ {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
@@ -16640,6 +17587,31 @@
       "type" : "Integer",
       "required" : false,
       "description" : "The maximum amount of time in seconds that the result of the callback query may be cached client-side. Defaults to 0."
+    } ]
+  }, {
+    "id" : "method/answer-widget-query",
+    "name" : "answerWidgetQuery",
+    "kind" : "method",
+    "description" : "<p>Use this method to send an answer to a query from a widget. The query must be answered within 15 seconds. The answer is received only by the widget that sent the query and doesn't change data of the widget; use <a href=\"#editmessagewidgetdata\">editMessageWidgetData</a> or <a href=\"#editsharedwidgetdata\">editSharedWidgetData</a> to change it. On success, <em>True</em> is returned.</p>",
+    "params" : [ {
+      "name" : "widget_query_id",
+      "type" : "String",
+      "required" : true,
+      "description" : "Unique identifier for the query to be answered"
+    }, {
+      "name" : "data",
+      "type" : "String",
+      "required" : false,
+      "description" : "Data to be returned to the widget, 0-1024 bytes",
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 0,
+            "to" : 1024,
+            "unit" : "bytes"
+          }
+        }
+      }
     } ]
   }, {
     "id" : "method/answer-guest-query",
@@ -17007,7 +17979,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : false,
-      "description" : "Required if <em>user_id</em> is not specified. Unique identifier for the chat or username of the channel (in the format <code>@username</code>) that will receive the gift."
+      "description" : "Required if <em>user_id</em> is not specified. Unique identifier for the chat that will receive the gift or username of the channel in the format <code>@username</code>."
     }, {
       "name" : "gift_id",
       "type" : "String",
@@ -17124,6 +18096,17 @@
           }
         }
       }
+    }, {
+      "name" : "custom_description_parse_mode",
+      "type" : "String",
+      "required" : false,
+      "description" : "Mode for parsing entities in the custom description. See <a href=\"#formatting-options\">formatting options</a> for more details. Only “text_link” entities are supported."
+    }, {
+      "name" : "custom_description_entities",
+      "type" : [ "array", "type/message-entity" ],
+      "required" : false,
+      "description" : "A JSON-serialized list of special entities that appear in the custom description, which can be specified instead of <em>custom_description_parse_mode</em>. Only “text_link” entities are supported.",
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/verify-chat",
@@ -17134,7 +18117,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>. Channel direct messages chats can't be verified."
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>. Channel direct messages chats can't be verified."
     }, {
       "name" : "custom_description",
       "type" : "String",
@@ -17148,6 +18131,17 @@
           }
         }
       }
+    }, {
+      "name" : "custom_description_parse_mode",
+      "type" : "String",
+      "required" : false,
+      "description" : "Mode for parsing entities in the custom description. See <a href=\"#formatting-options\">formatting options</a> for more details. Only “text_link” entities are supported."
+    }, {
+      "name" : "custom_description_entities",
+      "type" : [ "array", "type/message-entity" ],
+      "required" : false,
+      "description" : "A JSON-serialized list of special entities that appear in the custom description, which can be specified instead of <em>custom_description_parse_mode</em>. Only “text_link” entities are supported.",
+      "json_serialized" : true
     } ]
   }, {
     "id" : "method/remove-user-verification",
@@ -17593,6 +18587,17 @@
       }
     } ]
   }, {
+    "id" : "method/get-unique-gift",
+    "name" : "getUniqueGift",
+    "kind" : "method",
+    "description" : "<p>Use this method to get information about a unique gift by its name. Returns a <a href=\"#uniquegift\">UniqueGift</a> object on success.</p>",
+    "params" : [ {
+      "name" : "name",
+      "type" : "String",
+      "required" : true,
+      "description" : "Unique name of the gift"
+    } ]
+  }, {
     "id" : "method/convert-gift-to-stars",
     "name" : "convertGiftToStars",
     "kind" : "method",
@@ -17659,6 +18664,22 @@
       "type" : "Integer",
       "required" : false,
       "description" : "The amount of Telegram Stars that will be paid for the transfer from the business account balance. If positive, then the <em>can_transfer_stars</em> business bot right is required."
+    } ]
+  }, {
+    "id" : "method/delete-business-account-gift",
+    "name" : "deleteBusinessAccountGift",
+    "kind" : "method",
+    "description" : "<p>Deletes a regular gift owned by a managed business account without receiving Telegram Stars for it. Requires the <em>can_convert_gifts_to_stars</em> business bot right. The gift can be deleted only if it isn't limited (the field <em>total_count</em> of the <a href=\"#gift\">Gift</a> is omitted) and wasn't refunded. Returns <em>True</em> on success.</p>",
+    "params" : [ {
+      "name" : "business_connection_id",
+      "type" : "String",
+      "required" : true,
+      "description" : "Unique identifier of the business connection"
+    }, {
+      "name" : "owned_gift_id",
+      "type" : "String",
+      "required" : true,
+      "description" : "Unique identifier of the regular gift that should be deleted"
     } ]
   }, {
     "id" : "method/post-story",
@@ -17921,7 +18942,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>."
+      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>."
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -17991,7 +19012,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>."
+      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>."
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -18056,7 +19077,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>."
+      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>."
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -18097,7 +19118,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>."
+      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>."
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -18186,7 +19207,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>."
+      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>."
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -18241,6 +19262,96 @@
       "json_serialized" : true
     } ]
   }, {
+    "id" : "method/edit-message-widget-data",
+    "name" : "editMessageWidgetData",
+    "kind" : "method",
+    "description" : "<p>Use this method to edit data of a widget in a message sent by the bot or via the bot (for inline bots). Public data of a shared widget can be changed at most once per second. On success, <em>True</em> is returned.</p>",
+    "params" : [ {
+      "name" : "chat_id",
+      "type" : [ "or", [ "Integer", "String" ] ],
+      "required" : false,
+      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target supergroup in the format <code>@username</code>."
+    }, {
+      "name" : "message_id",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "Required if <em>inline_message_id</em> is not specified. Identifier of the message with the widget."
+    }, {
+      "name" : "inline_message_id",
+      "type" : "String",
+      "required" : false,
+      "description" : "Required if <em>chat_id</em> and <em>message_id</em> are not specified. Identifier of the inline message."
+    }, {
+      "name" : "public_data",
+      "type" : "String",
+      "required" : false,
+      "description" : "New public data of the widget, 0-1024 bytes; pass an empty string to remove the public data. If omitted, then the public data isn't changed.",
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 0,
+            "to" : 1024,
+            "unit" : "bytes"
+          }
+        }
+      }
+    }, {
+      "name" : "chat_data",
+      "type" : "String",
+      "required" : false,
+      "description" : "New data of the widget, which is specific to the message, 0-1024 bytes; pass an empty string to remove the data. If omitted, then the data isn't changed.",
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 0,
+            "to" : 1024,
+            "unit" : "bytes"
+          }
+        }
+      }
+    } ],
+    "constraints" : {
+      "at_least_one" : [ [ "chat_id", "inline_message_id" ], [ "inline_message_id", "message_id" ] ]
+    }
+  }, {
+    "id" : "method/edit-shared-widget-data",
+    "name" : "editSharedWidgetData",
+    "kind" : "method",
+    "description" : "<p>Use this method to edit public data of a shared widget created by the bot. A shared widget can be edited at most once per second. On success, <em>True</em> is returned.</p>",
+    "params" : [ {
+      "name" : "widget_id",
+      "type" : "String",
+      "required" : true,
+      "description" : "Unique identifier of the shared widget"
+    }, {
+      "name" : "public_data",
+      "type" : "String",
+      "required" : true,
+      "description" : "New public data of the widget, 0-1024 bytes; pass an empty string to remove the public data",
+      "constraints" : {
+        "string" : {
+          "length" : {
+            "from" : 0,
+            "to" : 1024,
+            "unit" : "bytes"
+          }
+        }
+      }
+    }, {
+      "name" : "cache_time",
+      "type" : "Integer",
+      "required" : false,
+      "description" : "The maximum amount of time in seconds that the public data of the widget may be cached client-side; 5-3600. If omitted, then the current value is kept, which is 30 by default.",
+      "constraints" : {
+        "number" : {
+          "in" : [ {
+            "from" : 5,
+            "to" : 3600
+          } ]
+        }
+      }
+    } ]
+  }, {
     "id" : "method/edit-message-reply-markup",
     "name" : "editMessageReplyMarkup",
     "kind" : "method",
@@ -18254,7 +19365,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : false,
-      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>."
+      "description" : "Required if <em>inline_message_id</em> is not specified. Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>."
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -18289,7 +19400,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>"
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -18543,7 +19654,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>"
     }, {
       "name" : "message_id",
       "type" : "Integer",
@@ -18559,7 +19670,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>"
     }, {
       "name" : "message_ids",
       "type" : [ "array", "Integer" ],
@@ -18656,8 +19767,8 @@
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
-      "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "required" : false,
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>; required unless the message is sent as an ephemeral reply to a callback query"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -19081,8 +20192,8 @@
     }, {
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
-      "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "required" : false,
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>; required unless the message is sent as an ephemeral reply to a callback query"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
@@ -19233,7 +20344,7 @@
       "name" : "chat_id",
       "type" : [ "or", [ "Integer", "String" ] ],
       "required" : true,
-      "description" : "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format <code>@username</code>"
+      "description" : "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format <code>@username</code>"
     }, {
       "name" : "message_thread_id",
       "type" : "Integer",
