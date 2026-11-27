@@ -55,6 +55,7 @@ jobs:
             git add modules/core/resources/.tg-bot-api-etag
           fi
           if [ "$VERSION_CHANGED" = "true" ]; then
+            jq '{version}' modules/core/resources/tg-bot-api-spec.json > .github/tg-bot-api-version.json
             git commit -m "Update Telegram Bot API spec, version $BOT_API_VERSION"
           else
             git commit -m "Update Telegram Bot API spec, misc [skip ci]"
